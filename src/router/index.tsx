@@ -6,6 +6,7 @@ import LoginPage from "@/app/Login";
 import EmployeePage from "@/app/employee";
 import EmployeeDetailPage from "@/app/employee/detail";
 import EmployeeCreatePage from "@/app/employee/create";
+import ThemeShowcase from "@/app/ThemeShowcase";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +23,9 @@ export const router = createBrowserRouter([
       { path: "employee", element: <EmployeePage />, },
       { path: "employee/detail/:id", element: <EmployeeDetailPage /> },
       { path: "employee/create", element: <EmployeeCreatePage /> },
+      
+      // Theme showcase for reference
+      { path: "theme-showcase", element: <ThemeShowcase /> },
     ],
   },
 ]);
