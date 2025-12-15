@@ -82,99 +82,125 @@ export default function EmployeePage() {
   );
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader>
-        <div className="flex flex-row justify-between">
-          <CardTitle>Daftar Employees</CardTitle>
-          <Button onClick={() => navigate("/employee/create")}>
-            + Tambah Employee
+        <div className="flex flex-row justify-between items-start">
+          <div className="space-y-1">
+            <CardTitle className="text-2xl text-primary">Employee Management</CardTitle>
+            <p className="text-sm text-muted-foreground">Manage hospital staff and employee records</p>
+          </div>
+          <Button 
+            onClick={() => navigate("/employee/create")}
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+          >
+            + Add New Employee
           </Button>
         </div>
 
-        <Input
-          placeholder="Cari nama..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="w-64"
-        />
+        <div className="flex items-center gap-3 pt-2">
+          <Input
+            placeholder="Search by name..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="max-w-sm"
+          />
+          <div className="text-sm text-muted-foreground">
+            {filtered.length} {filtered.length === 1 ? 'employee' : 'employees'} found
+          </div>
+        </div>
       </CardHeader>
 
       <CardContent>
         {loading ? (
           <LoadingSkeleton lines={6} />
         ) : filtered.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">Tidak ada data</div>
+          <div className="text-center py-12">
+            <div className="text-muted-foreground text-lg">No employees found</div>
+            <p className="text-sm text-muted-foreground mt-2">Try adjusting your search or add a new employee</p>
+          </div>
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>No</TableHead>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telepon</TableHead>
-                  <TableHead>Alamat</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {filtered.map((emp, i) => (
-                  <TableRow key={emp.id}>
-                    <TableCell>{(page - 1) * perPage + (i + 1)}</TableCell>
-                    <TableCell>{emp.user.name}</TableCell>
-                    <TableCell>{emp.user.email}</TableCell>
-                    <TableCell>{emp.phone_number}</TableCell>
-                    <TableCell>{emp.address_domicile}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/employee/detail/${emp.id}`)}
-                      >
-                        Detail
-                      </Button>
-                    </TableCell>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="font-semibold">No</TableHead>
+                    <TableHead className="font-semibold">Name</TableHead>
+                    <TableHead className="font-semibold">Email</TableHead>
+                    <TableHead className="font-semibold">Phone</TableHead>
+                    <TableHead className="font-semibold">Address</TableHead>
+                    <TableHead className="text-right font-semibold">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+
+                <TableBody>
+                  {filtered.map((emp, i) => (
+                    <TableRow key={emp.id} className="table-row-hover">
+                      <TableCell className="font-medium text-muted-foreground">{(page - 1) * perPage + (i + 1)}</TableCell>
+                      <TableCell className="font-medium">{emp.user.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{emp.user.email}</TableCell>
+                      <TableCell className="text-muted-foreground">{emp.phone_number || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground max-w-xs truncate">{emp.address_domicile || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/employee/detail/${emp.id}`)}
+                          className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                        >
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
             {/* Pagination */}
-            <Pagination className="mt-4">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => page > 1 && setPage(page - 1)}
-                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                  />
-                </PaginationItem>
-
-                {pages.map((p) => (
-                  <PaginationItem key={p}>
-                    <PaginationLink
-                      isActive={page === p}
-                      onClick={() => setPage(p)}
-                      className="cursor-pointer"
-                    >
-                      {p}
-                    </PaginationLink>
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {((page - 1) * perPage) + 1} to {Math.min(page * perPage, filtered.length)} of {filtered.length} employees
+              </div>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => page > 1 && setPage(page - 1)}
+                      className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-primary hover:text-primary-foreground"}
+                    />
                   </PaginationItem>
-                ))}
 
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => page < lastPage && setPage(page + 1)}
-                    className={
-                      page === lastPage ? "pointer-events-none opacity-50" : ""
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+                  {pages.slice(Math.max(0, page - 3), Math.min(lastPage, page + 2)).map((p) => (
+                    <PaginationItem key={p}>
+                      <PaginationLink
+                        isActive={page === p}
+                        onClick={() => setPage(p)}
+                        className={`cursor-pointer ${
+                          page === p 
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                            : "hover:bg-muted"
+                        }`}
+                      >
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => page < lastPage && setPage(page + 1)}
+                      className={
+                        page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
           </>
         )}
       </CardContent>

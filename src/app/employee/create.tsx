@@ -77,114 +77,127 @@ export default function EmployeeCreatePage() {
   };
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle>Tambah Employee</CardTitle>
+        <CardTitle className="text-2xl text-primary">Add New Employee</CardTitle>
+        <p className="text-sm text-muted-foreground">Fill in the employee information below</p>
       </CardHeader>
 
       <CardContent>
         <form className="space-y-6" onSubmit={handleSubmit}>
-          {error && <p className="text-red-500">{error}</p>}
+          {error && (
+            <div className="p-3 rounded-md bg-destructive/10 border border-destructive/30">
+              <p className="text-sm text-destructive flex items-center gap-2">
+                <span>⚠</span> {error}
+              </p>
+            </div>
+          )}
 
           {/* GRID 2 KOLOM */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Nama */}
             <div className="flex flex-col space-y-2">
-              <Label htmlFor="name">Nama</Label>
+              <Label htmlFor="name" className="font-medium">Full Name <span className="text-destructive">*</span></Label>
               <Input
                 id="name"
                 name="name"
-                placeholder="Nama Lengkap"
+                placeholder="Enter full name"
                 value={form.name}
                 onChange={handleChange}
                 required
+                className="input-enhanced"
               />
             </div>
 
             {/* Email */}
             <div className="flex flex-col space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="font-medium">Email Address <span className="text-destructive">*</span></Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="Email"
+                placeholder="employee@hospital.com"
                 value={form.email}
                 onChange={handleChange}
                 required
+                className="input-enhanced"
               />
             </div>
 
             {/* Password */}
             <div className="flex flex-col space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="font-medium">Password <span className="text-destructive">*</span></Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Password"
+                placeholder="Min. 8 characters"
                 value={form.password}
                 onChange={handleChange}
                 required
+                className="input-enhanced"
               />
             </div>
 
             {/* Nomor Telepon */}
             <div className="flex flex-col space-y-2">
-              <Label htmlFor="phone_number">Nomor Telepon</Label>
+              <Label htmlFor="phone_number" className="font-medium">Phone Number <span className="text-destructive">*</span></Label>
               <Input
                 id="phone_number"
                 name="phone_number"
-                placeholder="08xxxx"
+                placeholder="08xxxxxxxxxx"
                 value={form.phone_number}
                 onChange={handleChange}
                 required
+                className="input-enhanced"
               />
             </div>
 
             {/* Alamat Domisili */}
             <div className="flex flex-col space-y-2 md:col-span-2">
-              <Label htmlFor="address_domicile">Alamat Domisili</Label>
+              <Label htmlFor="address_domicile" className="font-medium">Current Address <span className="text-destructive">*</span></Label>
               <Input
                 id="address_domicile"
                 name="address_domicile"
-                placeholder="Alamat Domisili"
+                placeholder="Enter current residential address"
                 value={form.address_domicile}
                 onChange={handleChange}
                 required
+                className="input-enhanced"
               />
             </div>
 
             {/* Alamat KTP */}
             <div className="flex flex-col space-y-2 md:col-span-2">
-              <Label htmlFor="address_ktp">Alamat KTP</Label>
+              <Label htmlFor="address_ktp" className="font-medium">ID Card Address <span className="text-destructive">*</span></Label>
               <Input
                 id="address_ktp"
                 name="address_ktp"
-                placeholder="Alamat sesuai KTP"
+                placeholder="Address as per ID card"
                 value={form.address_ktp}
                 onChange={handleChange}
                 required
+                className="input-enhanced"
               />
             </div>
 
             {/* Departement */}
             <div className="flex flex-col space-y-2 md:col-span-2">
-              <Label>Departement</Label>
+              <Label className="font-medium">Department <span className="text-destructive">*</span></Label>
               <Select
                 onValueChange={(val) =>
                   setForm({ ...form, departement_id: val })
                 }
                 value={form.departement_id}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={deptLoading ? "Loading..." : "Pilih Departement"} />
+                <SelectTrigger className="w-full input-enhanced">
+                  <SelectValue placeholder={deptLoading ? "Loading departments..." : "Select a department"} />
                 </SelectTrigger>
 
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Pilih Departement</SelectLabel>
+                    <SelectLabel>Available Departments</SelectLabel>
 
                     {!deptLoading &&
                       departements.map((d) => (
@@ -205,17 +218,26 @@ export default function EmployeeCreatePage() {
           </div>
 
           {/* BUTTON */}
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-3 mt-8 justify-end">
             <Button
               type="button"
               variant="outline"
               onClick={() => navigate("/employee")}
+              className="min-w-[100px]"
             >
-              Kembali
+              Cancel
             </Button>
 
-            <Button type="submit" disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan"}
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 min-w-[100px]"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⏳</span> Saving...
+                </span>
+              ) : "Save Employee"}
             </Button>
           </div>
         </form>
