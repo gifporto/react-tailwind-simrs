@@ -17,7 +17,7 @@ export default function ErrorPage() {
 
   if (is404) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center p-6 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <div className="min-h-screen w-full flex items-center justify-center p-6 ">
         <Card className="max-w-2xl w-full shadow-lg">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto w-20 h-20 rounded-full bg-secondary/10 flex items-center justify-center">

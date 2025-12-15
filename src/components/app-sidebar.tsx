@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { useLocation } from "react-router-dom"
-import { Hospital } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -14,6 +13,9 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { mainMenus } from "@/config/menu"
+import logoCollapse from "@/assets/img/rsuad_logo_3.png"
+import logoOpen from "@/assets/img/rsuad_logo_4.png"
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation()
@@ -31,7 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
     } else {
       // Menu with children
-      const isActive = menu.children?.some(child => 
+      const isActive = menu.children?.some(child =>
         location.pathname.startsWith(child.url)
       ) || false
 
@@ -52,20 +54,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
-            <Hospital className="h-5 w-5 text-sidebar-primary-foreground" />
+        <div className="flex items-center justify-center">
+          {/* Logo saat sidebar COLLAPSE */}
+          <div className="object-contain hidden group-data-[collapsible=icon]:block">
+            <img
+              src={logoCollapse}
+              alt="RSUAD Logo"
+              className="h-8 w-8"
+            />
           </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-semibold text-sidebar-foreground">
-              Hospital Management
-            </span>
-            <span className="text-xs text-sidebar-foreground/70">
-              System Information
-            </span>
+
+          {/* Logo saat sidebar TERBUKA */}
+          <div className="object-contain group-data-[collapsible=icon]:hidden">
+            <img
+              src={logoOpen}
+              alt="RSUAD Logo"
+              className="h-16"
+            />
           </div>
         </div>
       </SidebarHeader>
+
       <SidebarContent>
         <NavMain items={navItems} />
       </SidebarContent>

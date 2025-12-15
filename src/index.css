@@ -8,8 +8,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
-  /* Sidebar colors */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -18,26 +16,15 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  
-  /* Chart colors */
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
-  
-  /* Base colors */
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -50,8 +37,6 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  
-  /* Border radius tokens */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -60,136 +45,71 @@
 
 :root {
   --radius: 0.625rem;
-  
-  /* Base colors - Light, calm backgrounds for healthcare environment */
-  --background: oklch(0.98 0.002 240); /* Soft white with slight blue tint */
-  --foreground: oklch(0.25 0.01 250); /* Dark blue-gray for text */
-  
-  /* Card & Surface colors - Clean, professional */
-  --card: oklch(1 0 0); /* Pure white for cards */
-  --card-foreground: oklch(0.25 0.01 250);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.01 250);
-  
-  /* Primary: #1C3C6E - Deep professional blue for structure & navigation */
-  --primary: oklch(0.32 0.08 255); /* #1C3C6E converted to OKLCH */
-  --primary-foreground: oklch(0.99 0 0); /* White text on primary */
-  
-  /* Secondary: #ED8123 - Vibrant orange for CTAs and highlights */
-  --secondary: oklch(0.68 0.15 45); /* #ED8123 converted to OKLCH */
-  --secondary-foreground: oklch(0.99 0 0); /* White text on secondary */
-  
-  /* Muted - Subtle backgrounds for less emphasis */
-  --muted: oklch(0.96 0.005 240); /* Light blue-gray */
-  --muted-foreground: oklch(0.50 0.02 250); /* Medium gray-blue */
-  
-  /* Accent - Subtle highlights */
-  --accent: oklch(0.95 0.01 240); /* Very light blue */
-  --accent-foreground: oklch(0.32 0.08 255); /* Primary color text */
-  
-  /* Destructive - Error & delete actions */
-  --destructive: oklch(0.55 0.22 25); /* Medical red */
-  --destructive-foreground: oklch(0.99 0 0);
-  
-  /* Success - Completed, approved states */
-  --success: oklch(0.55 0.15 145); /* Medical green */
-  --success-foreground: oklch(0.99 0 0);
-  
-  /* Warning - Pending, attention needed */
-  --warning: oklch(0.75 0.15 85); /* Amber */
-  --warning-foreground: oklch(0.25 0.01 250);
-  
-  /* Info - Informational states */
-  --info: oklch(0.60 0.15 240); /* Blue info */
-  --info-foreground: oklch(0.99 0 0);
-  
-  /* Borders & Inputs */
-  --border: oklch(0.90 0.005 240); /* Subtle blue-gray border */
-  --input: oklch(0.90 0.005 240); /* Same as border for consistency */
-  --ring: oklch(0.32 0.08 255); /* Primary color for focus rings */
-  
-  /* Chart colors - Healthcare friendly palette */
-  --chart-1: oklch(0.32 0.08 255); /* Primary blue */
-  --chart-2: oklch(0.68 0.15 45); /* Secondary orange */
-  --chart-3: oklch(0.55 0.15 145); /* Green */
-  --chart-4: oklch(0.60 0.15 285); /* Purple */
-  --chart-5: oklch(0.60 0.12 200); /* Cyan */
-  
-  /* Sidebar - Professional navigation with primary color */
-  --sidebar: oklch(0.32 0.08 255); /* Primary blue background */
-  --sidebar-foreground: oklch(0.99 0 0); /* White text */
-  --sidebar-primary: oklch(0.68 0.15 45); /* Secondary orange for active items */
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.40 0.08 255); /* Lighter blue for hover */
-  --sidebar-accent-foreground: oklch(0.99 0 0);
-  --sidebar-border: oklch(0.40 0.06 255); /* Subtle border */
-  --sidebar-ring: oklch(0.68 0.15 45); /* Secondary for focus */
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(35.425% 0.08207 247.969);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: rgb(255, 148, 103);
+  --chart-3: oklch(35.425% 0.08207 247.969);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(79.444% 0.17083 71.184);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(35.425% 0.08207 247.969);
+  --sidebar-accent-foreground: oklch(100% 0.00011 271.152);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-  /* Base colors - Dark mode with blue undertones */
-  --background: oklch(0.18 0.01 250); /* Dark blue-gray */
-  --foreground: oklch(0.95 0.005 240); /* Off-white with slight warmth */
-  
-  /* Card & Surface colors */
-  --card: oklch(0.22 0.01 250); /* Slightly lighter than background */
-  --card-foreground: oklch(0.95 0.005 240);
-  --popover: oklch(0.22 0.01 250);
-  --popover-foreground: oklch(0.95 0.005 240);
-  
-  /* Primary - Lighter in dark mode for better contrast */
-  --primary: oklch(0.50 0.10 255); /* Lighter blue */
-  --primary-foreground: oklch(0.99 0 0);
-  
-  /* Secondary - Slightly desaturated for dark mode */
-  --secondary: oklch(0.65 0.13 45); /* Softer orange */
-  --secondary-foreground: oklch(0.99 0 0);
-  
-  /* Muted */
-  --muted: oklch(0.25 0.01 250); /* Dark blue-gray */
-  --muted-foreground: oklch(0.65 0.01 240); /* Medium gray */
-  
-  /* Accent */
-  --accent: oklch(0.28 0.02 250); /* Subtle blue accent */
-  --accent-foreground: oklch(0.95 0.005 240);
-  
-  /* Destructive */
-  --destructive: oklch(0.60 0.20 25); /* Brighter red for dark mode */
-  --destructive-foreground: oklch(0.99 0 0);
-  
-  /* Success */
-  --success: oklch(0.60 0.13 145); /* Softer green */
-  --success-foreground: oklch(0.99 0 0);
-  
-  /* Warning */
-  --warning: oklch(0.70 0.13 85); /* Softer amber */
-  --warning-foreground: oklch(0.18 0.01 250);
-  
-  /* Info */
-  --info: oklch(0.65 0.13 240); /* Lighter blue */
-  --info-foreground: oklch(0.99 0 0);
-  
-  /* Borders & Inputs */
-  --border: oklch(0.35 0.02 250); /* Subtle border */
-  --input: oklch(0.35 0.02 250);
-  --ring: oklch(0.50 0.10 255); /* Primary color for focus */
-  
-  /* Chart colors - Adjusted for dark mode */
-  --chart-1: oklch(0.50 0.10 255); /* Primary blue */
-  --chart-2: oklch(0.65 0.13 45); /* Secondary orange */
-  --chart-3: oklch(0.60 0.13 145); /* Green */
-  --chart-4: oklch(0.65 0.13 285); /* Purple */
-  --chart-5: oklch(0.65 0.10 200); /* Cyan */
-  
-  /* Sidebar - Darker in dark mode */
-  --sidebar: oklch(0.20 0.01 250); /* Very dark blue */
-  --sidebar-foreground: oklch(0.95 0.005 240);
-  --sidebar-primary: oklch(0.65 0.13 45); /* Secondary orange for active */
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.30 0.02 250); /* Lighter for hover */
-  --sidebar-accent-foreground: oklch(0.95 0.005 240);
-  --sidebar-border: oklch(0.30 0.02 250);
-  --sidebar-ring: oklch(0.65 0.13 45);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(35.425% 0.08207 247.969);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: rgb(255, 148, 103);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(35.425% 0.08207 247.969);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
@@ -199,135 +119,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* ===================================
-   Healthcare Status Indicators
-   =================================== */
-
-/* Patient Status */
-.status-admitted { @apply bg-info/10 text-info border-info/30; }
-.status-discharged { @apply bg-success/10 text-success border-success/30; }
-.status-emergency { @apply bg-destructive/10 text-destructive border-destructive/30; }
-.status-observation { @apply bg-warning/10 text-warning border-warning/30; }
-
-/* Payment Status */
-.payment-paid { @apply bg-success/10 text-success border-success/30; }
-.payment-pending { @apply bg-warning/10 text-warning border-warning/30; }
-.payment-overdue { @apply bg-destructive/10 text-destructive border-destructive/30; }
-.payment-partial { @apply bg-secondary/10 text-secondary border-secondary/30; }
-
-/* Appointment Status */
-.appointment-scheduled { @apply bg-info/10 text-info border-info/30; }
-.appointment-confirmed { @apply bg-primary/10 text-primary border-primary/30; }
-.appointment-completed { @apply bg-success/10 text-success border-success/30; }
-.appointment-cancelled { @apply bg-muted text-muted-foreground border-border; }
-.appointment-noshow { @apply bg-destructive/10 text-destructive border-destructive/30; }
-
-/* Lab Result Status */
-.lab-pending { @apply bg-warning/10 text-warning border-warning/30; }
-.lab-inprogress { @apply bg-info/10 text-info border-info/30; }
-.lab-completed { @apply bg-success/10 text-success border-success/30; }
-.lab-critical { @apply bg-destructive/10 text-destructive border-destructive/30; }
-
-/* Queue Status */
-.queue-waiting { @apply bg-muted text-muted-foreground border-border; }
-.queue-called { @apply bg-info/10 text-info border-info/30; }
-.queue-serving { @apply bg-secondary/10 text-secondary border-secondary/30; }
-.queue-completed { @apply bg-success/10 text-success border-success/30; }
-
-/* Priority Badges */
-.priority-high { @apply bg-destructive text-destructive-foreground; }
-.priority-medium { @apply bg-warning text-warning-foreground; }
-.priority-low { @apply bg-muted text-muted-foreground; }
-
-/* ===================================
-   Enhanced Button States
-   =================================== */
-
-/* Primary button hover/focus improvements */
-.btn-primary-enhanced {
-  @apply bg-primary text-primary-foreground hover:bg-primary/90 
-         focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-         transition-all duration-200 active:scale-95;
-}
-
-/* Secondary button (CTA) with emphasis */
-.btn-secondary-enhanced {
-  @apply bg-secondary text-secondary-foreground hover:bg-secondary/90
-         focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2
-         transition-all duration-200 active:scale-95 shadow-sm hover:shadow-md;
-}
-
-/* Destructive actions with confirmation feel */
-.btn-destructive-enhanced {
-  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90
-         focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2
-         transition-all duration-200;
-}
-
-/* ===================================
-   Form Enhancement Classes
-   =================================== */
-
-/* Input with better focus states */
-.input-enhanced {
-  @apply border-input bg-background ring-offset-background
-         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-         disabled:cursor-not-allowed disabled:opacity-50
-         transition-all duration-200;
-}
-
-/* Validation states */
-.input-error {
-  @apply border-destructive focus-visible:ring-destructive;
-}
-
-.input-success {
-  @apply border-success focus-visible:ring-success;
-}
-
-.input-warning {
-  @apply border-warning focus-visible:ring-warning;
-}
-
-/* ===================================
-   Table Enhancements
-   =================================== */
-
-/* Improved table row hover */
-.table-row-hover {
-  @apply hover:bg-muted/50 transition-colors duration-150;
-}
-
-/* Alternate row coloring for long tables */
-.table-striped tbody tr:nth-child(even) {
-  @apply bg-muted/30;
-}
-
-/* ===================================
-   Card Variations
-   =================================== */
-
-.card-elevated {
-  @apply shadow-md hover:shadow-lg transition-shadow duration-200;
-}
-
-.card-interactive {
-  @apply cursor-pointer hover:border-primary/50 transition-all duration-200;
-}
-
-/* ===================================
-   Accessibility Enhancements
-   =================================== */
-
-/* High contrast focus for accessibility */
-.focus-high-contrast:focus-visible {
-  @apply outline-dashed outline-2 outline-offset-2 outline-ring;
-}
-
-/* Skip to main content link */
-.skip-to-main {
-  @apply absolute -top-10 left-0 z-50 bg-primary text-primary-foreground px-4 py-2
-         focus:top-0 transition-all;
 }
