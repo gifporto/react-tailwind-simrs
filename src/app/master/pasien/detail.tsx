@@ -22,6 +22,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { User } from "lucide-react";
 
 export default function PatientDetailPage() {
   const navigate = useNavigate();
@@ -113,76 +114,170 @@ export default function PatientDetailPage() {
     return "-";
   };
 
-  const renderField = (label: string, name: string, value: any) => (
-    <div className="mt-2">
-      <Label>{label}</Label>
-
-      {isEditing ? (
+  const renderField = (
+    label: string,
+    name: string,
+    value: any,
+    editable: boolean = true
+  ) => (
+    <div className="space-y-1">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {isEditing && editable ? (
         <Input name={name} value={value ?? ""} onChange={handleChange} />
       ) : (
-        <p className="mt-1 text-sm text-gray-700">{value || "-"}</p>
+        <p className="text-sm">{value && value !== "" ? value : "-"}</p>
       )}
     </div>
   );
 
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{isEditing ? "Edit Data Pasien" : "Detail Pasien"}</CardTitle>
+      <CardHeader className="border-b">
+        <div
+          className="flex items-center gap-3"
+        >
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <User className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <CardTitle className="text-2xl text-primary">{isEditing ? "Edit Data Pasien" : "Detail Pasien"}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {isEditing ? "Edit form berikut untuk update data pasien" : "Menampilkan form data pasien"}
+
+            </p>
+          </div>
+        </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-lg font-semibold">Identitas Utama</h3>
-            <div className="mt-2">
-              <Label>NORM</Label>
-              <p className="mt-1 text-sm text-gray-700 font-mono">{patient.norm || "-"}</p>
-            </div>
-            {renderField("Nama", "nama", patient.nama)}
-            {renderField("NIK", "nik", patient.nik)}
-            {renderField("No. BPJS", "no_bpjs", patient.no_bpjs)}
-            {renderField("No. IHS", "ihs_number", patient.ihs_number)}
-            {renderField("Jenis Kelamin", "sex", formatGender(patient.sex))}
-            {renderField("Tempat Lahir", "tmp_lahir", patient.tmp_lahir)}
-            {renderField("Tanggal Lahir", "tgl_lahir", formatDate(patient.tgl_lahir))}
-          </div>
+      <CardContent className="space-y-8">
 
-          <div>
-            <h3 className="text-lg font-semibold">Kontak & Alamat</h3>
-            {renderField("HP", "hp", patient.hp)}
-            {renderField("HP 2", "hp_2", patient.hp_2)}
+        {/* ================= IDENTITAS UTAMA ================= */}
+        <section>
+          <h3 className="text-lg font-semibold text-primary border-b pb-2 mb-6 flex items-center gap-2">
+            Identitas Utama
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {renderField("NORM", "norm", patient.norm, false)}
+            {renderField("Nama Lengkap", "nama", patient.nama)}
+            {renderField("Jenis Kelamin", "sex", formatGender(patient.sex), false)}
+
+            {renderField("Tempat Lahir", "tmp_lahir", patient.tmp_lahir)}
+            {renderField("Tanggal Lahir", "tgl_lahir", formatDate(patient.tgl_lahir), false)}
+            {renderField("NIK", "nik", patient.nik)}
+
+            {renderField("No BPJS", "no_bpjs", patient.no_bpjs)}
+            {renderField("IHS Number", "ihs_number", patient.ihs_number)}
+          </div>
+        </section>
+
+        {/* ================= KONTAK & ALAMAT ================= */}
+        <section>
+          <h3 className="text-lg font-semibold text-primary border-b pb-2 mb-6 flex items-center gap-2">
+            Kontak & Alamat
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderField("No HP", "hp", patient.hp)}
+            {renderField("No HP Alternatif", "hp_2", patient.hp_2)}
             {renderField("Email", "email", patient.email)}
+
             {renderField("Alamat KTP", "alamat_ktp", patient.alamat_ktp)}
             {renderField("Alamat Domisili", "alamat_domisili", patient.alamat_domisili)}
+          </div>
+        </section>
+
+        {/* ================= DATA SOSIAL ================= */}
+        <section>
+          <h3 className="text-lg font-semibold text-primary border-b pb-2 mb-6 flex items-center gap-2">
+            Data Sosial
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {renderField("Agama", "agama", patient.agama?.nama_agama || "-")}
+            {renderField("Pendidikan", "pendidikan", patient.pendidikan?.desk_pendidikan || "-")}
+            {renderField("Pekerjaan", "pekerjaan", patient.pekerjaan?.desk_pekerjaan || "-")}
+
+            {renderField(
+              "Status Menikah",
+              "status_menikah",
+              patient.status_menikah?.desk_status_menikah || "-"
+            )}
+            {renderField("Suku", "id_suku", patient.id_suku)}
+            {renderField("Status WN", "id_sts_wn", patient.id_sts_wn)}
+          </div>
+        </section>
+
+        {/* ================= DATA KELUARGA ================= */}
+        <section>
+          <h3 className="text-lg font-semibold text-primary border-b pb-2 mb-6 flex items-center gap-2">
+            Data Keluarga
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {renderField("Nama Keluarga", "nama_keluarga", patient.nama_keluarga)}
-            {renderField("HP Keluarga", "hp_keluarga", patient.hp_keluarga)}
-            <div className="mt-2">
-              <Label>Hub Keluarga</Label>
-              <p className="mt-1 text-sm text-gray-700">{patient.hub_keluarga?.desk_hub_keluarga || "-"}</p>
+            {renderField("NIK Keluarga", "nik_keluarga", patient.nik_keluarga)}
+            {renderField("No HP Keluarga", "hp_keluarga", patient.hp_keluarga)}
+
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Hubungan Keluarga</Label>
+              <p className="text-sm">
+                {patient.hub_keluarga?.desk_hub_keluarga || "-"}
+              </p>
             </div>
-            <div className="mt-2">
-              <Label>Tipe Pasien</Label>
-              <p className="mt-1 text-sm text-gray-700">{patient.tipe_pasien?.desk_tipe_pasien || "-"}</p>
+
+            {renderField("Alamat Keluarga", "alamat_keluarga", patient.alamat_keluarga)}
+          </div>
+        </section>
+
+        {/* ================= TIPE PASIEN ================= */}
+        <section>
+          <h3 className="text-lg font-semibold text-primary border-b pb-2 mb-6 flex items-center gap-2">
+            Administrasi
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs text-muted-foreground">Tipe Pasien</Label>
+              <p className="text-sm">
+                {patient.tipe_pasien?.desk_tipe_pasien || "-"}
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Retensi</Label>
+              <p className="text-sm">{patient.retensi === "Y" ? "Ya" : "Tidak"}</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div>
-          <h3 className="text-lg font-semibold">Informasi Audit</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-2">
+        {/* ================= AUDIT ================= */}
+        <section>
+          <h3 className="text-lg font-semibold text-primary border-b pb-2 mb-6 flex items-center gap-2">
+            Informasi Audit
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <Label>Dibuat pada</Label>
-              <p className="mt-1 text-sm text-gray-700">{formatDate(patient.created_at || patient.insert_date)}</p>
+              <Label className="text-xs">Dibuat</Label>
+              <p>{formatDate(patient.created_at || patient.insert_date)}</p>
             </div>
+
             <div>
-              <Label>Terakhir diupdate</Label>
-              <p className="mt-1 text-sm text-gray-700">{formatDate(patient.last_update || patient.updated_at)}</p>
+              <Label className="text-xs">Terakhir Update</Label>
+              <p>{formatDate(patient.last_update || patient.updated_at)}</p>
+            </div>
+
+            <div>
+              <Label className="text-xs">Created By</Label>
+              <p>{patient.created_by || "-"}</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="flex gap-3 mt-6">
+        {/* ================= ACTION ================= */}
+        <div className="flex flex-wrap gap-2 pt-4">
           <Button variant="outline" onClick={() => navigate("/master/pasien")}>
             Kembali
           </Button>
@@ -222,7 +317,9 @@ export default function PatientDetailPage() {
             </AlertDialog>
           )}
         </div>
+
       </CardContent>
+
     </Card>
   );
 }

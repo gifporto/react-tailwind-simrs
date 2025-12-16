@@ -113,7 +113,7 @@ export function NavUser() {
 
             {/* LOGOUT */}
             <DropdownMenuItem onClick={logout}>
-              <LogOut /> Log out
+              <LogOut className="text-red-600" /> <span className="text-red-600"> Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

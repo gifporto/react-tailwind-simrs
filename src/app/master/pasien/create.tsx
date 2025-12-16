@@ -17,19 +17,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  Users,
-  Phone,
-  Mail,
-  MapPin,
-  Calendar,
-  CreditCard,
-  FileText,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+import {
+  CalendarIcon,
   Save,
   ArrowLeft,
   UserPlus,
   Loader2,
-  UserCircle,
 } from "lucide-react";
 
 export default function CreatePatientPage() {
@@ -51,7 +51,7 @@ export default function CreatePatientPage() {
     birth_date: "",
     family_name: "",
   });
-
+  const [birthDate, setBirthDate] = React.useState<Date | undefined>(undefined);
   const [saving, setSaving] = React.useState(false);
 
   const handleChange = (e: any) => {
@@ -111,7 +111,7 @@ export default function CreatePatientPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="max-w-4xl mx-auto">
+      <Card>
         <CardHeader className="border-b">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -142,13 +142,11 @@ export default function CreatePatientPage() {
                 className="space-y-4"
               >
                 <h3 className="text-lg font-semibold text-primary border-b pb-2 flex items-center gap-2">
-                  <UserCircle className="h-5 w-5" />
                   Identitas Utama
                 </h3>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
                     NORM <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -162,7 +160,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
                     Nama Lengkap <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -176,7 +173,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
                     NIK
                   </Label>
                   <Input
@@ -189,7 +185,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
                     No. BPJS
                   </Label>
                   <Input
@@ -202,7 +197,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
                     No. IHS
                   </Label>
                   <Input
@@ -215,11 +209,10 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
                     Jenis Kelamin <span className="text-destructive">*</span>
                   </Label>
                   <Select value={formData.gender} onValueChange={handleGenderChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Pilih jenis kelamin" />
                     </SelectTrigger>
                     <SelectContent>
@@ -238,26 +231,50 @@ export default function CreatePatientPage() {
                 className="space-y-4"
               >
                 <h3 className="text-lg font-semibold text-primary border-b pb-2 flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
                   Data Tambahan
                 </h3>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">
                     Tanggal Lahir
                   </Label>
-                  <Input
-                    name="birth_date"
-                    type="date"
-                    value={formData.birth_date}
-                    onChange={handleChange}
-                  />
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between font-normal"
+                      >
+                        {birthDate
+                          ? birthDate.toLocaleDateString("id-ID")
+                          : "Pilih tanggal lahir"}
+                        <CalendarIcon className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        captionLayout="dropdown"
+                        selected={birthDate}
+                        onSelect={(date) => {
+                          setBirthDate(date);
+                          setFormData({
+                            ...formData,
+                            birth_date: date
+                              ? date.toISOString().split("T")[0]
+                              : "",
+                          });
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
+
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
                     Nama Keluarga
                   </Label>
                   <Input
@@ -270,7 +287,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
                     Email
                   </Label>
                   <Input
@@ -284,7 +300,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
                     Nomor Telepon
                   </Label>
                   <Input
@@ -297,7 +312,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
                     Alamat KTP
                   </Label>
                   <Input
@@ -310,7 +324,6 @@ export default function CreatePatientPage() {
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
                     Alamat Domisili
                   </Label>
                   <Input

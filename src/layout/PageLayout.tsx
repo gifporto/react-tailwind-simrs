@@ -1,5 +1,7 @@
 "use client"
 
+import { useMatches, useNavigate, useLocation } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -17,36 +19,76 @@ import {
 } from "@/components/ui/sidebar"
 
 export default function PageLayout({ children }: { children: React.ReactNode }) {
+  const matches = useMatches()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const breadcrumbs = matches
+  .filter((match) => (match.handle as any)?.breadcrumb)
+  .map((match) => ({
+    label: (match.handle as any).breadcrumb as string,
+    href: match.pathname,
+  }))
+
+
   return (
     <SidebarProvider>
       <AppSidebar />
 
       <SidebarInset>
         {/* HEADER */}
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
 
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumbs.map((item, index) => {
+                  const isLast = index === breadcrumbs.length - 1
+
+                  return (
+                    <BreadcrumbItem key={item.href}>
+                      {!isLast ? (
+                        <>
+                          <BreadcrumbLink
+                            onClick={() => navigate(item.href)}
+                            className="cursor-pointer"
+                          >
+                            {item.label}
+                          </BreadcrumbLink>
+                          <BreadcrumbSeparator />
+                        </>
+                      ) : (
+                        <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      )}
+                    </BreadcrumbItem>
+                  )
+                })}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
 
-        {/* 👉 ROUTER CHILD MUNCUL DI SINI */}
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {children}
+        {/* CONTENT */}
+        <div className="flex flex-1 flex-col w-full">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <AnimatePresence mode="wait">
+                <motion.main
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="px-4 lg:px-6 w-full"
+                >
+                  {children}
+                </motion.main>
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
-
       </SidebarInset>
     </SidebarProvider>
   )

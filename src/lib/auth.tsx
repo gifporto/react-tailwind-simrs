@@ -29,12 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const response = await AuthAPI.login(email, password) as any;
+  const login = async (name: string, password: string) => {
+    const response = await AuthAPI.login(name, password) as any;
 
     const token = response.data.token;
     // For now, we'll create a basic user object since the API doesn't return user data
-    const user = { email };
+    const user = { name };
 
     setToken(token);
     setUser(user);
