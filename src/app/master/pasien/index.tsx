@@ -52,7 +52,7 @@ export default function PatientPage() {
   const [lastPage, setLastPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
 
-  const limit = 10;
+  const limit = 30;
 
   // Params dari URL
   const deleted = searchParams.get("deleted");
