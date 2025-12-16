@@ -104,7 +104,7 @@ export function NavMain({
                             asChild
                             className={
                               isSubActive 
-                                ? "bg-sidebar-primary/10 font-medium text-sidebar-primary border-l-2 border-sidebar-primary" 
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
                                 : ""
                             }
                           >
