@@ -6,6 +6,9 @@ import LoginPage from "@/app/Login";
 import EmployeePage from "@/app/employee";
 import EmployeeDetailPage from "@/app/employee/detail";
 import EmployeeCreatePage from "@/app/employee/create";
+import PatientPage from "@/app/master/pasien";
+import PatientDetailPage from "@/app/master/pasien/detail";
+import PatientCreatePage from "@/app/master/pasien/create";
 import ThemeShowcase from "@/app/ThemeShowcase";
 import ErrorPage from "@/app/ErrorPage";
 import ForbiddenPage from "@/app/ForbiddenPage";
@@ -32,6 +35,11 @@ export const router = createBrowserRouter([
       { path: "employee", element: <EmployeePage />, },
       { path: "employee/detail/:id", element: <EmployeeDetailPage /> },
       { path: "employee/create", element: <EmployeeCreatePage /> },
+      
+      // Patient/Pasien routes
+      { path: "master/pasien", element: <PatientPage />, },
+      { path: "master/pasien/detail/:id", element: <PatientDetailPage /> },
+      { path: "master/pasien/create", element: <PatientCreatePage /> },
       
       // Theme showcase for reference
       { path: "theme-showcase", element: <ThemeShowcase /> },

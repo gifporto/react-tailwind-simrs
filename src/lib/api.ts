@@ -13,6 +13,35 @@ export const AuthAPI = {
   },
 };
 
+export const PatientsAPI = {
+    getList: async (page = 1, perPage = 10, search = "") => {
+        const res = await api.get("/v2/patients", {
+            params: { page, per_page: perPage, search },
+        });
+        return res.data;
+    },
+
+    getDetail: async (id: string) => {
+        const res = await api.get(`/v2/patients/${id}`);
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/v2/patients", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/v2/patients/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string) => {
+        const res = await api.delete(`/v2/patients/${id}`);
+        return res.data;
+    },
+};
+
 export const EmployeeAPI = {
     getList: async (page = 1, perPage = 10) => {
         const res = await api.get("/employees", {
