@@ -219,7 +219,7 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {summaryData.map((item, index) => (
           <Card key={index} className="overflow-hidden">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-muted-foreground">

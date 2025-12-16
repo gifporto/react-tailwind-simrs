@@ -59,7 +59,7 @@ export function NavMain({
                 <SidebarMenuButton
                   asChild
                   tooltip={item.title}
-                  className={isParentActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : ""}
+                  className={isParentActive ? "bg-sidebar-primary text-primary-foreground font-medium" : ""}
                 >
                   <Link to={item.url}>
                     {item.icon && <item.icon />}
@@ -82,7 +82,7 @@ export function NavMain({
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     tooltip={item.title}
-                    className={isParentActive ? "text-sidebar-primary font-medium" : ""}
+                    className={isParentActive ? "text-sidebar-primary bg-primary/5 font-medium" : ""}
                   >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -104,7 +104,7 @@ export function NavMain({
                             asChild
                             className={
                               isSubActive 
-                                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+                                ? "bg-sidebar-primary text-primary-foreground font-medium" 
                                 : ""
                             }
                           >

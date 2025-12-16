@@ -40,7 +40,7 @@ export const mainMenus: MenuItem[] = [
     type: '1',
     icon: Home,
     title: 'Beranda',
-    url: '/dashboard',
+    url: '/',
     module: 'beranda',
   },
 

@@ -29,17 +29,20 @@ import {
 } from "@/components/ui/pagination";
 
 import { toast } from "sonner";
-import { 
-  Search, 
-  Users, 
-  Phone, 
-  CreditCard, 
-  Calendar, 
+import {
+  Search,
+  Users,
+  Phone,
+  CreditCard,
+  Calendar,
   UserPlus,
   Eye,
   Loader2,
-  UserCircle
+  UserCircle,
+  Mars,
+  Venus
 } from "lucide-react";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export default function PatientPage() {
   const navigate = useNavigate();
@@ -112,25 +115,22 @@ export default function PatientPage() {
   const getGenderBadge = (gender: string) => {
     if (gender === "L") {
       return (
-        <Badge variant="default" className="gap-1">
-          <UserCircle className="w-3 h-3" />
+        <Badge variant="secondary" className="gap-1 bg-blue-50">
+          <Mars className="w-3 h-3 text-blue-500" />
           Laki-laki
         </Badge>
       );
     }
     if (gender === "P") {
       return (
-        <Badge variant="secondary" className="gap-1">
-          <UserCircle className="w-3 h-3" />
+        <Badge variant="secondary" className="gap-1 bg-pink-50">
+          <Venus className="w-3 h-3 text-pink-500" />
           Perempuan
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="gap-1 text-muted-foreground">
-        <UserCircle className="w-3 h-3" />
-        -
-      </Badge>
+      <span>-</span>
     );
   };
 
@@ -138,14 +138,11 @@ export default function PatientPage() {
   const getBpjsBadge = (bpjsNumber: string) => {
     if (!bpjsNumber) {
       return (
-        <Badge variant="outline" className="gap-1 text-muted-foreground">
-          <CreditCard className="w-3 h-3" />
-          Tidak ada
-        </Badge>
+        <span>-</span>
       );
     }
     return (
-      <Badge variant="default" className="gap-1 font-mono text-xs">
+      <Badge variant="success" className="gap-1 font-mono text-xs">
         <CreditCard className="w-3 h-3" />
         {bpjsNumber}
       </Badge>
@@ -154,11 +151,15 @@ export default function PatientPage() {
 
   // Age Badge with variant based on age group
   const getAgeBadge = (age: number) => {
-    let variant: "default" | "secondary" | "outline" | "destructive" = "outline";
-    
-    if (age < 12) variant = "secondary";
-    else if (age < 18) variant = "default";
-    else if (age < 60) variant = "outline";
+    if (!age || age === 0) {
+      return <span>-</span>;
+    }
+    let variant: "info" | "warning" | "secondary" | "outline" | "destructive" = "outline";
+
+    if (age < 12) variant = "info";
+    else if (age < 18) variant = "outline";
+    else if (age < 32) variant = "secondary";
+    else if (age < 60) variant = "warning";
     else variant = "destructive";
 
     return (
@@ -173,10 +174,7 @@ export default function PatientPage() {
   const getPhoneBadge = (phones: string[]) => {
     if (!phones || phones.length === 0) {
       return (
-        <Badge variant="outline" className="gap-1 text-muted-foreground">
-          <Phone className="w-3 h-3" />
-          -
-        </Badge>
+        <span>-</span>
       );
     }
     return (
@@ -225,7 +223,7 @@ export default function PatientPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="shadow-sm">
+      <Card>
         <CardHeader className="border-b">
           <motion.div
             variants={containerVariants}
@@ -239,7 +237,6 @@ export default function PatientPage() {
             >
               <div className="space-y-1">
                 <CardTitle className="text-2xl text-primary flex items-center gap-2">
-                  <Users className="w-6 h-6" />
                   Data Master Pasien
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -281,28 +278,7 @@ export default function PatientPage() {
         <CardContent className="pt-6">
           <AnimatePresence mode="wait">
             {loading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-16"
-              >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Loader2 className="w-10 h-10 text-primary" />
-                </motion.div>
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mt-4 text-muted-foreground font-medium"
-                >
-                  Memuat data pasien...
-                </motion.p>
-              </motion.div>
+              <LoadingSkeleton lines={15} />
             ) : patients.length === 0 ? (
               <motion.div
                 key="empty"
