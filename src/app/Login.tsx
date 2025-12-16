@@ -68,14 +68,14 @@ export default function LoginPage() {
             <form className="space-y-4" onSubmit={handleSubmit}>
               {/* EMAIL */}
               <div>
-                <Label htmlFor="email" className="text-foreground">Email Address</Label>
+                <Label htmlFor="email" className="text-foreground">Username</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`mt-1.5 ${getFieldError("email") ? "input-error" : ""}`}
-                  placeholder="doctor@hospital.com"
+                  placeholder="wahjujaya"
                 />
                 {getFieldError("email") && (
                   <p className="text-sm text-destructive mt-1.5 flex items-center gap-1">
