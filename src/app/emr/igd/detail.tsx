@@ -6,12 +6,14 @@ import MainContent from "./components/MainContent"
 import KunjunganLayanan from "@/components/kunjunganLayanan"
 import KunjunganUnit from "@/components/kunjunganUnit"
 import OrderLab from "@/components/orderLab"
+import OrderRadiologi from "@/components/orderRadiologi"
+import Asesment from "./components/Asesment"
 
 const EmrIgdIndexPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4">
       <div className="text-sm text-muted-foreground">
         No. Registrasi: <span className="font-medium">{id}</span>
       </div>
@@ -20,7 +22,8 @@ const EmrIgdIndexPage: React.FC = () => {
       <KunjunganUnit />
       <KunjunganLayanan />
       <OrderLab />
-      
+      <OrderRadiologi/>
+      <Asesment/>
     </div>
   )
 }
