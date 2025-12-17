@@ -34,7 +34,7 @@ export default function WongBakerScale({ editable = false }: Props) {
   };
 
   return (
-    <AccordionItem value="wongBakerScale" className="border rounded-md mb-2">
+    <AccordionItem value="wongBakerScale" className="border rounded-md">
       <AccordionTrigger className="px-4 py-3 text-sm font-semibold hover:no-underline">
         <div className="flex items-center gap-2">
           <Badge variant="outline">9</Badge>

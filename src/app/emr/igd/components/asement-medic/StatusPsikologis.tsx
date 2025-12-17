@@ -48,7 +48,7 @@ export default function StatusPsikologis() {
   };
 
   return (
-    <AccordionItem value="statusPsikologis" className="border rounded-md mb-2">
+    <AccordionItem value="statusPsikologis" className="border rounded-md">
       <AccordionTrigger className="px-4 py-3 text-sm font-semibold">
         <div className="flex items-center gap-2">
           <Badge variant="outline">3</Badge>

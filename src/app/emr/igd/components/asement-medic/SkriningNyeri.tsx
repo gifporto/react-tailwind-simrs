@@ -31,7 +31,7 @@ export default function SkriningNyeri({ editable = false }: Props) {
   };
 
   return (
-    <AccordionItem value="skriningNyeri" className="border rounded-md mb-2">
+    <AccordionItem value="skriningNyeri" className="border rounded-md">
       <AccordionTrigger className="px-4 py-3 text-sm font-semibold">
         <div className="flex items-center gap-2">
           <Badge variant="outline">7</Badge>
