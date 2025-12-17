@@ -84,7 +84,7 @@ export const mainMenus: MenuItem[] = [
     title: 'Pemeriksaan',
     module: 'pemeriksaan',
     children: [
-      { title: 'IGD', url: '/emr-igd', module: 'med_igd' },
+      { title: 'IGD', url: '/emr/igd', module: 'med_igd' },
       { title: 'Rawat Jalan', url: '/emr-rajal', module: 'med_rajal' },
       { title: 'Rawat Inap', url: '/emr-ranap', module: 'med_ranap' },
       { title: 'Laboratorium', url: '/emr-lab', module: 'med_lab' },

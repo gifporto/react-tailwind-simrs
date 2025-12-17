@@ -16,6 +16,8 @@ import PlaceholderPage from "@/components/PlaceholderPage";
 
 
 import { ProtectedRoute, PublicRoute } from "@/lib/route-guard";
+import EmrIgdIndexPage from "@/app/emr/igd";
+import EmrIgdDetailPage from "@/app/emr/igd/detail";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -77,6 +79,17 @@ export const router = createBrowserRouter([
             path: "master/pasien/detail/:id",
             element: <PatientDetailPage />,
             handle: { breadcrumb: "Detail Pasien" },
+          },
+
+          {
+            path: "emr/igd",
+            element: <EmrIgdIndexPage />,
+            handle: { breadcrumb: "Pasien" },
+          },
+          {
+            path: "emr/igd/detail/:id",
+            element: <EmrIgdDetailPage />,
+            handle: { breadcrumb: "Detail EMR IGD" },
           },
 
           // Theme showcase for reference
