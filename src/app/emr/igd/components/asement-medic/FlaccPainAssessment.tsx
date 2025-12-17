@@ -102,87 +102,85 @@ export default function FlaccPainAssessment({ editable = false }: Props) {
   }, [totalScore]);
 
   return (
-    <Accordion type="single" collapsible>
-      <AccordionItem value="flacc" className="border rounded-md">
-        <AccordionTrigger className="px-4 py-3 text-sm font-semibold">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">10</Badge>
-            FLACC Behavioral Pain Scale
-          </div>
-        </AccordionTrigger>
+    <AccordionItem value="flacc" className="border rounded-md">
+      <AccordionTrigger className="px-4 py-3 text-sm font-semibold">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">10</Badge>
+          FLACC Behavioral Pain Scale
+        </div>
+      </AccordionTrigger>
 
-        <AccordionContent className="px-4 pb-4 space-y-4">
-          {/* info */}
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              Digunakan untuk bayi & anak usia 2 bulan – 7 tahun
-            </AlertDescription>
-          </Alert>
+      <AccordionContent className="px-4 pb-4 space-y-4">
+        {/* info */}
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Digunakan untuk bayi & anak usia 2 bulan – 7 tahun
+          </AlertDescription>
+        </Alert>
 
-          {/* sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {SECTIONS.map((section) => {
-              const Icon = section.icon;
-              return (
-                <Card key={section.key} className="p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-semibold">
-                      {section.label}
-                    </span>
-                  </div>
+        {/* sections */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {SECTIONS.map((section) => {
+            const Icon = section.icon;
+            return (
+              <Card key={section.key} className="p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-semibold">
+                    {section.label}
+                  </span>
+                </div>
 
-                  <RadioGroup
-                    value={scores[section.key]}
-                    onValueChange={(val: Score) =>
-                      setScores((prev) => ({
-                        ...prev,
-                        [section.key]: val,
-                      }))
-                    }
-                    className="space-y-2"
-                    disabled={!editable}
-                  >
-                    {section.options.map((opt) => (
-                      <div
-                        key={opt.value}
-                        className="flex items-center gap-2 border rounded p-2"
+                <RadioGroup
+                  value={scores[section.key]}
+                  onValueChange={(val: Score) =>
+                    setScores((prev) => ({
+                      ...prev,
+                      [section.key]: val,
+                    }))
+                  }
+                  className="space-y-2"
+                  disabled={!editable}
+                >
+                  {section.options.map((opt) => (
+                    <div
+                      key={opt.value}
+                      className="flex items-center gap-2 border rounded p-2"
+                    >
+                      <RadioGroupItem
+                        value={opt.value}
+                        id={`${section.key}-${opt.value}`}
+                      />
+                      <Label
+                        htmlFor={`${section.key}-${opt.value}`}
+                        className="flex items-center gap-2 text-sm"
                       >
-                        <RadioGroupItem
-                          value={opt.value}
-                          id={`${section.key}-${opt.value}`}
-                        />
-                        <Label
-                          htmlFor={`${section.key}-${opt.value}`}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <Badge variant="secondary">{opt.value}</Badge>
-                          {opt.text}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </Card>
-              );
-            })}
-          </div>
+                        <Badge variant="secondary">{opt.value}</Badge>
+                        {opt.text}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </Card>
+            );
+          })}
+        </div>
 
-          {/* total */}
-          <Card className="bg-primary/20">
-            <div className="py-4 text-center space-y-1">
-              <div className="flex justify-center items-center gap-2">
-                <Calculator className="h-4 w-4" />
-                <span className="text-sm font-semibold">
-                  Total FLACC Score
-                </span>
-              </div>
-              <div className="text-4xl font-bold">{totalScore}</div>
-              <Badge variant="secondary">{interpretation}</Badge>
+        {/* total */}
+        <Card className="bg-primary/20">
+          <div className="py-4 text-center space-y-1">
+            <div className="flex justify-center items-center gap-2">
+              <Calculator className="h-4 w-4" />
+              <span className="text-sm font-semibold">
+                Total FLACC Score
+              </span>
             </div>
-          </Card>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+            <div className="text-4xl font-bold">{totalScore}</div>
+            <Badge variant="secondary">{interpretation}</Badge>
+          </div>
+        </Card>
+      </AccordionContent>
+    </AccordionItem>
   );
 }

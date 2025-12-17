@@ -21,7 +21,7 @@ interface Props {
 
 export default function TindakanTerapi({ editable = false }: Props) {
   return (
-    <AccordionItem value="tindakanTerapi" className="border rounded-md mb-2">
+    <AccordionItem value="tindakanTerapi" className="border rounded-md">
       <AccordionTrigger className="px-4 py-3 text-sm font-semibold hover:no-underline">
         <div className="flex items-center gap-2">
           <Badge variant="outline">16</Badge>

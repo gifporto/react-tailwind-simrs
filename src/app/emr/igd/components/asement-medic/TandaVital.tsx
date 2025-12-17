@@ -50,7 +50,7 @@ export default function TandaVital({ editable = false }: Props) {
   };
 
   return (
-    <AccordionItem value="tandaVital" className="border rounded-md mb-2">
+    <AccordionItem value="tandaVital" className="border rounded-md">
       <AccordionTrigger className="px-4 py-3 text-sm font-semibold hover:no-underline">
         <div className="flex items-center gap-2">
           <Badge variant="outline">6</Badge>
