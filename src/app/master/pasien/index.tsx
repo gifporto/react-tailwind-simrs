@@ -2,13 +2,13 @@
 
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { PatientsAPI } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { usePatients } from "@/hooks/queries/usePatients";
 
 import {
   Table,
@@ -37,23 +37,18 @@ import {
   Calendar,
   UserPlus,
   Eye,
-  Loader2,
-  UserCircle,
   Mars,
   Venus
 } from "lucide-react";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
+import type { Patient } from "@/types/patient";
 
 export default function PatientPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [patients, setPatients] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
   const [page, setPage] = React.useState(1);
-  const [lastPage, setLastPage] = React.useState(1);
-  const [total, setTotal] = React.useState(0);
 
   const limit = 30;
 
@@ -61,6 +56,26 @@ export default function PatientPage() {
   const deleted = searchParams.get("deleted");
   const created = searchParams.get("created");
   const updated = searchParams.get("updated");
+
+  const [debouncedSearch, setDebouncedSearch] = React.useState(search);
+  const {
+    data,
+    isLoading,
+  } = usePatients(page, limit, debouncedSearch);
+
+  const patients: Patient[] = data?.data ?? [];
+  const lastPage = data?.meta?.pagination?.total_pages ?? 1;
+  const total = data?.meta?.pagination?.total ?? 0;
+
+
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => clearTimeout(t);
+  }, [search]);
+
 
   // Handle Toast untuk created / deleted / updated
   React.useEffect(() => {
@@ -76,27 +91,6 @@ export default function PatientPage() {
       return () => clearTimeout(t);
     }
   }, [deleted, created, updated]);
-
-  // Load API with debounced search
-  React.useEffect(() => {
-    const loadPatients = async () => {
-      setLoading(true);
-      try {
-        const result: any = await PatientsAPI.getList(page, limit, search);
-        setPatients(result.data);
-        setLastPage(result.meta.pagination.total_pages);
-        setTotal(result.meta.pagination.total);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const debounceTimer = setTimeout(() => {
-      loadPatients();
-    }, search ? 500 : 0);
-
-    return () => clearTimeout(debounceTimer);
-  }, [page, search]);
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === "0000-00-00") return "-";
@@ -277,7 +271,7 @@ export default function PatientPage() {
 
         <CardContent className="pt-6">
           <AnimatePresence mode="wait">
-            {loading ? (
+            {isLoading ? (
               <LoadingSkeleton lines={15} />
             ) : patients.length === 0 ? (
               <motion.div
@@ -320,7 +314,7 @@ export default function PatientPage() {
                     </TableHeader>
 
                     <TableBody>
-                      {patients.map((patient, i) => (
+                      {patients.map((patient: Patient, i: number) => (
                         <motion.tr
                           key={patient.id}
                           custom={i}
@@ -345,14 +339,15 @@ export default function PatientPage() {
                               {patient.nik || "-"}
                             </span>
                           </TableCell>
-                          <TableCell>{getBpjsBadge(patient.bpjs_number)}</TableCell>
-                          <TableCell>{getGenderBadge(patient.gender)}</TableCell>
+                          <TableCell>{getBpjsBadge(patient.bpjs_number || "")}</TableCell>
+                          <TableCell>{getGenderBadge(patient.gender || "")}</TableCell>
                           <TableCell>
                             <span className="text-sm text-muted-foreground">
-                              {formatDate(patient.birth_date)}
+                              {formatDate(patient.birth_date || "")}
                             </span>
                           </TableCell>
-                          <TableCell>{getAgeBadge(patient.age)}</TableCell>
+                          <TableCell>{getAgeBadge(patient.age ?? 0)}</TableCell>
+
                           <TableCell>{getPhoneBadge(patient.phones)}</TableCell>
                           <TableCell className="text-center">
                             <motion.div

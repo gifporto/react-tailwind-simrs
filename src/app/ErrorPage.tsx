@@ -98,7 +98,7 @@ export default function ErrorPage() {
 
   // General error
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-gradient-to-br from-destructive/5 via-background to-destructive/10">
+    <div className="w-full flex mt-8 items-center justify-center">
       <Card className="max-w-2xl w-full shadow-lg border-destructive/20">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
