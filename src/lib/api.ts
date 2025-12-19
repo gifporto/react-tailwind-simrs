@@ -4,13 +4,13 @@
 import { api } from "./axios";
 
 export const AuthAPI = {
-  login: async (email: string, password: string) => {
-    const res = await api.post("/v2/auth/login", {
-        username: email,
-        password: password,
-    });
-    return res.data;
-  },
+    login: async (email: string, password: string) => {
+        const res = await api.post("/v2/auth/login", {
+            username: email,
+            password: password,
+        });
+        return res.data;
+    },
 };
 
 export const PatientsAPI = {
@@ -198,6 +198,27 @@ export const OvertimeAPI = {
 
     delete: async (id: string) => {
         const res = await api.delete(`/manager/overtimes/${id}`);
+        return res.data;
+    },
+};
+
+export const RadiologyAPI = {
+    getDoctors: async (search = "") => {
+        const res = await api.get("/v2/master/doctors", {
+            params: { search },
+        });
+        return res.data;
+    },
+
+    getRadiologies: async (page = 1, perPage = 15) => {
+        const res = await api.get("/v2/master/radiologies", {
+            params: { page, per_page: perPage },
+        });
+        return res.data;
+    },
+
+    createOrder: async (igdId: string, payload: { dokter_id: number; pemeriksaan_ids: number[] }) => {
+        const res = await api.post(`/v2/inspections/igd/${igdId}/radiologies`, payload);
         return res.data;
     },
 };
