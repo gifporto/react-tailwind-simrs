@@ -90,7 +90,7 @@ export const EmrIgdAPI = {
         const res = await api.delete(`/inspections/igd/${id}/laboratories/${idLab}`);
         return res.data;
     },
-    
+
     getRadiologi: async (id: string) => {
         const res = await api.get(`/inspections/igd/${id}/radiologies`);
         return res.data;
@@ -105,7 +105,7 @@ export const EmrIgdAPI = {
         const res = await api.delete(`/inspections/igd/${id}/radiologies/${idRadiologi}`);
         return res.data;
     },
-    
+
     getList: async (page = 1, perPage = 10) => {
         const res = await api.get("/inspections/igd", {
             params: { page, per_page: perPage },
@@ -154,15 +154,62 @@ export const EmrIgdAPI = {
     },
 };
 
+export const AsesmentMedicAPI = {
+    getAsesment: async (id: string) => {
+        const res = await api.get(`/inspections/igd/${id}/asesmen-medis`);
+        return res.data;
+    },
+
+    updateAnamnesa: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/anamnesa`, payload);
+        return res.data;
+    },
+
+    updateAlergi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/alergi`, payload);
+        return res.data;
+    },
+
+    updatePsikologi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/status-psikologis`, payload);
+        return res.data;
+    },
+
+    updateKeadaanUmum: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/keadaan-umum`, payload);
+        return res.data;
+    },
+
+    updateGscScore: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/gsc-score`, payload);
+        return res.data;
+    },
+
+    updateVitalSign: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/vital-signs`, payload);
+        return res.data;
+    },
+    
+    deleteVitalSign: async (id: string, idVitalSign: string) => {
+        const res = await api.delete(`/inspections/igd/${id}/asesmen-medis/vital-signs/${idVitalSign}`);
+        return res.data;
+    },
+
+    updateSkriningNeyri: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/skrining-nyeri`, payload);
+        return res.data;
+    },
+};
+
 export const RadiologyAPI = {
-     getCategory: async (page = 1, limit = 30, search = "") => {
+    getCategory: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/radiologies/categories", {
             params: { page, limit, search },
         });
         return res.data;
     },
 
-     getList: async (page = 1, limit = 30, search = "") => {
+    getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/radiologies", {
             params: { page, limit, search },
         });
@@ -176,14 +223,14 @@ export const RadiologyAPI = {
 };
 
 export const LabAPI = {
-     getCategory: async (page = 1, limit = 30, search = "") => {
+    getCategory: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/laboratories/categories", {
             params: { page, limit, search },
         });
         return res.data;
     },
 
-     getList: async (page = 1, limit = 30, search = "") => {
+    getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/laboratories", {
             params: { page, limit, search },
         });
@@ -192,7 +239,7 @@ export const LabAPI = {
 };
 
 export const ServiceAPI = {
-     getList: async (page = 1, limit = 30, search = "") => {
+    getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/services", {
             params: { page, limit, search },
         });
