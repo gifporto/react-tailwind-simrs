@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, DoctorAPI } from "@/lib/api"
+import { EmrIgdAPI, DoctorAPI, RadiologyAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -21,7 +21,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import {
   Command,
   CommandEmpty,
@@ -39,18 +38,29 @@ import { cn } from "@/lib/utils"
 
 import {
   Plus,
-  Eye,
-  Play,
   Check,
   X,
   Calendar,
   FileImage,
-  RotateCcw,
-  Info,
   ScanHeart,
   Loader2,
   ChevronsUpDown,
+  ClipboardList,
+  User,
+  Download,
+  AlertTriangle,
 } from "lucide-react"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 /* =====================
    Helpers
@@ -66,7 +76,7 @@ const statusBadge = (status: string) => {
 
 const rupiah = (val: string | number) => {
   const num = typeof val === "string" ? parseFloat(val) : val
-  return `Rp ${num.toLocaleString("id-ID")}`
+  return `Rp ${num}`
 }
 
 /* =====================
@@ -74,23 +84,33 @@ const rupiah = (val: string | number) => {
 ===================== */
 const OrderRadiologi: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-  
+
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<any[]>([])
   const [actionLoading, setActionLoading] = useState(false)
 
   // --- UI States ---
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isResultOpen, setIsResultOpen] = useState(false) // State Dialog Hasil
   const [openDoctorCombo, setOpenDoctorCombo] = useState(false)
+  const [openRadCombo, setOpenRadCombo] = useState(false)
+
+  // --- Selected States ---
+  const [selectedResult, setSelectedResult] = useState<any>(null)
 
   // --- Master Data States ---
   const [doctors, setDoctors] = useState<any[]>([])
+  const [radiologyList, setRadiologyList] = useState<any[]>([])
   const [doctorSearch, setDoctorSearch] = useState("")
+  const [radSearch, setRadSearch] = useState("")
+
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false)
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(null)
 
   // --- Form State ---
   const [formData, setFormData] = useState({
     dokter_id: "",
-    temp_pemeriksaan_id: "",
+    pemeriksaan_ids: [] as number[],
   })
 
   // --- Fetch Data List ---
@@ -111,36 +131,47 @@ const OrderRadiologi: React.FC = () => {
     fetchRadiology()
   }, [fetchRadiology])
 
-  // --- Fetch Master Dokter ---
+  // --- Master Data Fetch ---
   useEffect(() => {
     if (isCreateOpen) {
-      const fetchDocs = async () => {
+      const fetchMaster = async () => {
         try {
-          const res = await DoctorAPI.getList(1, 50, doctorSearch)
-          setDoctors(res.data || [])
+          const [resDoc, resRad] = await Promise.all([
+            DoctorAPI.getList(1, 50, doctorSearch),
+            RadiologyAPI.getList(1, 50, radSearch)
+          ])
+          setDoctors(resDoc.data || [])
+          setRadiologyList(resRad.data || [])
         } catch (e) { console.error(e) }
       }
-      fetchDocs()
+      fetchMaster()
     }
-  }, [isCreateOpen, doctorSearch])
+  }, [isCreateOpen, doctorSearch, radSearch])
 
-  // --- Create Action ---
+  const toggleRadSelection = (radId: number) => {
+    setFormData(prev => ({
+      ...prev,
+      pemeriksaan_ids: prev.pemeriksaan_ids.includes(radId)
+        ? prev.pemeriksaan_ids.filter(i => i !== radId)
+        : [...prev.pemeriksaan_ids, radId]
+    }))
+  }
+
   const handleCreateOrder = async () => {
     if (!id) return
-    if (!formData.dokter_id || !formData.temp_pemeriksaan_id) {
-      return toast.error("Lengkapi data dokter dan ID pemeriksaan")
+    if (!formData.dokter_id || formData.pemeriksaan_ids.length === 0) {
+      return toast.error("Lengkapi data dokter dan pilih minimal satu pemeriksaan")
     }
-
     setActionLoading(true)
     try {
       const payload = {
         dokter_id: parseInt(formData.dokter_id),
-        pemeriksaan_ids: [parseInt(formData.temp_pemeriksaan_id)]
+        pemeriksaan_ids: formData.pemeriksaan_ids
       }
       await EmrIgdAPI.createRadiologi(id, payload)
       toast.success("Order radiologi berhasil dibuat")
       setIsCreateOpen(false)
-      setFormData({ dokter_id: "", temp_pemeriksaan_id: "" })
+      setFormData({ dokter_id: "", pemeriksaan_ids: [] })
       fetchRadiology()
     } catch (error) {
       toast.error("Gagal membuat order")
@@ -149,27 +180,30 @@ const OrderRadiologi: React.FC = () => {
     }
   }
 
-  // --- Delete Action ---
   const handleDelete = async (idRadiologi: string) => {
-    if (!id || !confirm("Batalkan order radiologi ini?")) return
+    if (!id) return
+
+    setActionLoading(true)
     try {
       await EmrIgdAPI.deleteRadiologi(id, idRadiologi)
       toast.success("Order berhasil dibatalkan")
       fetchRadiology()
+      setIsDeleteAlertOpen(false)
     } catch (error) {
       toast.error("Gagal membatalkan order")
+    } finally {
+      setActionLoading(false)
+      setSelectedIdToDelete(null)
     }
   }
 
   return (
     <Card className="mt-4">
-      {/* Header Tetap Sama */}
       <CardHeader className="flex flex-row items-center justify-between py-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ScanHeart className="w-5 h-5 text-yellow-600" />
           Order Radiologi
         </CardTitle>
-
         <Button size="sm" className="h-8 gap-1" onClick={() => setIsCreateOpen(true)}>
           <Plus className="w-4 h-4" />
           Order
@@ -184,7 +218,7 @@ const OrderRadiologi: React.FC = () => {
         ) : orders.length > 0 ? (
           orders.map((order) => {
             const totalHarga = order.details?.reduce(
-              (acc: number, curr: any) => acc + parseFloat(curr.pemeriksaan.harga || 0), 
+              (acc: number, curr: any) => acc + parseFloat(curr.pemeriksaan.harga || 0),
               0
             )
 
@@ -201,113 +235,81 @@ const OrderRadiologi: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-2">
                     <Badge variant={statusBadge(order.status) as any} className="text-xs">
                       {order.status}
                     </Badge>
 
-                    <div className="flex gap-1">
-                      <Button variant="outline" size="icon" className="h-7 w-7">
-                        <Eye className="w-4 h-4" />
+                    {order.status !== "selesai" && order.status !== "dibatalkan" && (
+                      <Button variant="destructive" size="icon" className="h-7 w-7"
+                        onClick={() => {
+                          setSelectedIdToDelete(order.id.toString())
+                          setIsDeleteAlertOpen(true)
+                        }}>
+                        <X className="w-4 h-4" />
                       </Button>
+                    )}
 
-                      {order.status !== "selesai" && order.status !== "dibatalkan" && (
-                        <Button 
-                          variant="destructive" 
-                          size="icon" 
-                          className="h-7 w-7"
-                          onClick={() => handleDelete(order.id.toString())}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-
-                      {order.status === "selesai" && (
-                        <Button variant="outline" size="icon" className="h-7 w-7">
-                          <RotateCcw className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
                   </div>
                 </div>
 
-                {order.catatan && (
-                  <>
-                    <Separator />
-                    <p className="text-xs text-muted-foreground flex gap-1 items-center">
-                      <Info className="w-3 h-3" />
-                      {order.catatan}
-                    </p>
-                  </>
-                )}
-
                 <div className="flex flex-wrap gap-1">
-                  {order.details?.slice(0, 6).map((det: any) => (
-                    <Badge
-                      key={det.id}
-                      variant={statusBadge(det.status) as any}
-                      className="text-xs font-normal"
-                    >
+                  {order.details?.map((det: any) => (
+                    <Badge key={det.id} variant="outline" className="text-xs font-normal">
                       {det.pemeriksaan.nama}
                     </Badge>
                   ))}
-                  {order.details?.length > 6 && (
-                    <span className="text-xs text-muted-foreground">
-                      +{order.details.length - 6} lainnya
-                    </span>
-                  )}
                 </div>
 
                 <Separator />
                 <div className="flex items-center justify-between text-xs">
-                  {order.result ? (
-                    <div className="flex items-center gap-1 text-primary">
-                      <FileImage className="w-4 h-4" />
-                      Hasil tersedia
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">Belum ada hasil</span>
-                  )}
-
-                  <strong className="text-green-600">
-                    {rupiah(totalHarga)}
-                  </strong>
+                  <div className="flex gap-2 items-center">
+                    <Badge variant="info">
+                      <User className="w-3 h-3 mr-1" />
+                      {order.dokter.nama}
+                    </Badge>
+                    {order.result && (
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-primary flex items-center gap-1 text-xs"
+                        onClick={() => {
+                          setSelectedResult(order);
+                          setIsResultOpen(true);
+                        }}
+                      >
+                        <FileImage className="w-3 h-3" /> Hasil tersedia
+                      </Button>
+                    )}
+                  </div>
+                  <strong className="text-green-600">{rupiah(totalHarga)}</strong>
                 </div>
               </div>
             )
           })
         ) : (
-          <div className="text-center py-6 text-muted-foreground">
-            <ScanHeart className="mx-auto mb-2 opacity-20" size={40} />
-            Belum ada order radiologi
-          </div>
+          <div className="text-center py-10 text-muted-foreground text-sm">Belum ada order radiologi.</div>
         )}
       </CardContent>
 
-      {/* Dialog Create Order */}
+      {/* --- DIALOG CREATE (Sama seperti sebelumnya) --- */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Tambah Order Radiologi</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader><DialogTitle>Buat Order Radiologi</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Dokter Pengirim</Label>
               <Popover open={openDoctorCombo} onOpenChange={setOpenDoctorCombo}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-between">
-                    {formData.dokter_id 
-                      ? doctors.find(d => d.id.toString() === formData.dokter_id)?.nama_dokter 
-                      : "Pilih dokter..."}
+                    {formData.dokter_id ? doctors.find(d => d.id.toString() === formData.dokter_id)?.nama_dokter : "Pilih dokter..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[350px] p-0">
+                <PopoverContent className="w-[400px] p-0">
                   <Command>
                     <CommandInput placeholder="Cari dokter..." onValueChange={setDoctorSearch} />
                     <CommandList>
-                      <CommandEmpty>Dokter tidak ditemukan.</CommandEmpty>
+                      <CommandEmpty>Tidak ditemukan.</CommandEmpty>
                       <CommandGroup>
                         {doctors.map((d) => (
                           <CommandItem key={d.id} onSelect={() => {
@@ -324,26 +326,185 @@ const OrderRadiologi: React.FC = () => {
                 </PopoverContent>
               </Popover>
             </div>
-
             <div className="space-y-2">
-              <Label>ID Pemeriksaan (Angka)</Label>
-              <Input 
-                type="number" 
-                placeholder="Contoh: 1" 
-                value={formData.temp_pemeriksaan_id}
-                onChange={(e) => setFormData(f => ({ ...f, temp_pemeriksaan_id: e.target.value }))}
-              />
+              <Label>Pemeriksaan ({formData.pemeriksaan_ids.length} terpilih)</Label>
+              <Popover open={openRadCombo} onOpenChange={setOpenRadCombo}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between h-auto min-h-10 py-2">
+                    <span className="truncate">{formData.pemeriksaan_ids.length > 0 ? `${formData.pemeriksaan_ids.length} Item dipilih` : "Pilih pemeriksaan..."}</span>
+                    <Plus className="ml-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Cari..." onValueChange={setRadSearch} />
+                    <CommandList>
+                      <CommandEmpty>Tidak ditemukan.</CommandEmpty>
+                      <CommandGroup>
+                        {radiologyList.map((rad) => (
+                          <CommandItem key={rad.id} onSelect={() => toggleRadSelection(rad.id)}>
+                            <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", formData.pemeriksaan_ids.includes(rad.id) ? "bg-primary text-primary-foreground" : "opacity-50")}>
+                              {formData.pemeriksaan_ids.includes(rad.id) && <Check className="h-3 w-3" />}
+                            </div>
+                            <div className="flex flex-col">
+                              <span>{rad.nama_pemeriksaan}</span>
+                              <span className="text-[10px] text-muted-foreground">{rupiah(rad.harga)}</span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>Batal</Button>
-            <Button onClick={handleCreateOrder} disabled={actionLoading}>
-              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Kirim Order
+            <Button onClick={handleCreateOrder} disabled={actionLoading}>Kirim Order</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* --- DIALOG HASIL RADIOLOGI --- */}
+      <Dialog open={isResultOpen} onOpenChange={setIsResultOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="w-5 h-5 text-primary" />
+              Hasil Pemeriksaan Radiologi
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedResult && (
+            <div className="space-y-6 py-2">
+              {/* Info Header */}
+              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
+                <div className="space-y-1">
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">No. Order</p>
+                  <p className="font-mono font-medium">{selectedResult.no_order}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Tanggal Hasil</p>
+                  <p className="font-medium">{selectedResult.result?.tanggal_hasil}</p>
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Dokter Pengirim</p>
+                  <div className="flex items-center gap-2">
+                    <User className="w-3 h-3" />
+                    <p className="font-medium">{selectedResult.dokter?.nama}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Daftar Pemeriksaan */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-500 uppercase">Item Pemeriksaan</Label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedResult.details?.map((d: any) => (
+                    <Badge key={d.id} variant="secondary" className="bg-white border-slate-200 shadow-sm font-medium">
+                      {d.pemeriksaan.nama}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Konten Hasil */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-bold flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    Temuan
+                  </Label>
+                  <div className="p-3 border rounded-md bg-white text-sm leading-relaxed text-slate-700 min-h-[60px] whitespace-pre-wrap">
+                    {selectedResult.result?.temuan || "-"}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-bold flex items-center gap-2 text-green-600">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    Kesimpulan
+                  </Label>
+                  <div className="p-3 border border-green-100 rounded-md bg-green-50/30 text-sm leading-relaxed text-slate-700 min-h-[60px] whitespace-pre-wrap font-medium italic">
+                    {selectedResult.result?.kesimpulan || "-"}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-bold flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                    Saran
+                  </Label>
+                  <div className="p-3 border rounded-md bg-white text-sm leading-relaxed text-slate-700 min-h-[40px] whitespace-pre-wrap">
+                    {selectedResult.result?.saran || "-"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Lampiran File */}
+              {selectedResult.result?.file_lampiran && (
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-500 uppercase">Lampiran Gambar</Label>
+                  <div className="border rounded-lg p-2 bg-slate-50 flex items-center justify-between group">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white rounded border">
+                        <FileImage className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <div className="text-xs">
+                        <p className="font-medium truncate max-w-[200px]">{selectedResult.result.file_lampiran.split('/').pop()}</p>
+                        <p className="text-muted-foreground uppercase">Image File</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="gap-2" asChild>
+                      <a href={selectedResult.result.file_lampiran} target="_blank" rel="noreferrer">
+                        <Download className="w-4 h-4" />
+                        Unduh
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" className="w-full" onClick={() => setIsResultOpen(false)}>
+              Tutup
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Batalkan Order Radiologi
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin membatalkan order ini? Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Kembali</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault() // Mencegah dialog menutup sebelum API selesai
+                if (selectedIdToDelete) handleDelete(selectedIdToDelete)
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={actionLoading}
+            >
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Ya, Batalkan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }
