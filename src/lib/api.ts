@@ -4,202 +4,126 @@
 import { api } from "./axios";
 
 export const AuthAPI = {
-  login: async (email: string, password: string) => {
-    const res = await api.post("/v2/auth/login", {
-        username: email,
-        password: password,
-    });
-    return res.data;
-  },
+    login: async (email: string, password: string) => {
+        const res = await api.post("/v2/auth/login", {
+            username: email,
+            password: password,
+        });
+        return res.data;
+    },
 };
 
 export const PatientsAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
-        const res = await api.get("/v2/patients", {
+        const res = await api.get("/patients", {
             params: { page, limit, search },
         });
         return res.data;
     },
 
     getDetail: async (id: string) => {
-        const res = await api.get(`/v2/patients/${id}`);
+        const res = await api.get(`/patients/${id}`);
         return res.data;
     },
 
     create: async (payload: any) => {
-        const res = await api.post("/v2/patients", payload);
+        const res = await api.post("/patients", payload);
         return res.data;
     },
 
     update: async (id: string, payload: any) => {
-        const res = await api.put(`/v2/patients/${id}`, payload);
+        const res = await api.put(`/patients/${id}`, payload);
         return res.data;
     },
 
     delete: async (id: string) => {
-        const res = await api.delete(`/v2/patients/${id}`);
+        const res = await api.delete(`/patients/${id}`);
         return res.data;
     },
 };
 
-export const EmployeeAPI = {
+export const DoctorAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/doctors", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const PoliAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/polis", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const EmrIgdAPI = {
+     getRadiologi: async (id: string) => {
+        const res = await api.get(`/inspections/igd/${id}/radiologies`);
+        return res.data;
+    },
+
+    createRadiologi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/radiologies`, payload);
+        return res.data;
+    },
+
+    deleteRadiologi: async (id: string, idRadiologi: string) => {
+        const res = await api.delete(`/inspections/igd/${id}/radiologies/${idRadiologi}`);
+        return res.data;
+    },
+    
     getList: async (page = 1, perPage = 10) => {
-        const res = await api.get("/employees", {
+        const res = await api.get("/inspections/igd", {
             params: { page, per_page: perPage },
         });
         return res.data;
     },
 
     getDetail: async (id: string) => {
-        const res = await api.get(`/employees/${id}`);
+        const res = await api.get(`/inspections/igd/${id}`);
         return res.data;
     },
 
     create: async (payload: any) => {
-        const res = await api.post("/employees", payload);
+        const res = await api.post("/inspections/igd", payload);
         return res.data;
     },
 
     update: async (id: string, payload: any) => {
-        const res = await api.put(`/employees/${id}`, payload);
+        const res = await api.post(`/inspections/igd/${id}`, payload);
         return res.data;
     },
 
     delete: async (id: string) => {
-        const res = await api.delete(`/employees/${id}`);
+        const res = await api.delete(`/inspections/igd/${id}`);
         return res.data;
     },
 
-};
-
-export const DepartementAPI = {
-    getList: async (page = 1, perPage = 10) => {
-        const res = await api.get("/departments", {
-            params: { per_page: perPage, page }
-        });
+    getVisit: async (id: string) => {
+        const res = await api.get(`/inspections/igd/${id}/visits`);
         return res.data;
     },
 
-    getDetail: async (id: string) => {
-        const res = await api.get(`/departments/${id}`);
+    createVisit: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/visits`, payload);
         return res.data;
     },
 
-    create: async (payload: any) => {
-        const res = await api.post("/departments", payload);
+    updateVisit: async (id: string, idVisit: string, payload: { id_dokter: string }) => {
+        const res = await api.put(`/inspections/igd/${id}/visits/${idVisit}`, payload);
         return res.data;
     },
 
-    update: async (id: string, payload: any) => {
-        const res = await api.put(`/departments/${id}`, payload);
+    deleteVisit: async (id: string, idVisit: string) => {
+        const res = await api.delete(`/inspections/igd/${id}/visits/${idVisit}`);
         return res.data;
     },
 
-    delete: async (id: string) => {
-        const res = await api.delete(`/departments/${id}`);
-        return res.data;
-    },
-};
-
-export const CompetencieAPI = {
-    getList: async (page = 1, perPage = 10, search = "") => {
-        const res = await api.get("/competencies", {
-            params: { per_page: perPage, page, search }
-        });
-        return res.data;
-    },
-
-    getDetail: async (id: string) => {
-        const res = await api.get(`/competencies/${id}`);
-        return res.data;
-    },
-
-    create: async (payload: any) => {
-        const res = await api.post("/competencies", payload);
-        return res.data;
-    },
-
-    update: async (id: string, payload: any) => {
-        const res = await api.put(`/competencies/${id}`, payload);
-        return res.data;
-    },
-
-    delete: async (id: string) => {
-        const res = await api.delete(`/competencies/${id}`);
-        return res.data;
-    },
-};
-
-export const TrainingAPI = {
-    getList: async (page = 1, perPage = 10, search = "") => {
-        const res = await api.get("/trainings", {
-            params: { per_page: perPage, page, search },
-        });
-        return res.data;
-    },
-
-    getDetail: async (id: string) => {
-        const res = await api.get(`/trainings/${id}`);
-        return res.data;
-    },
-
-    create: async (payload: any) => {
-        const res = await api.post("/trainings", payload);
-        return res.data;
-    },
-
-    update: async (id: string, payload: any) => {
-        const res = await api.put(`/trainings/${id}`, payload);
-        return res.data;
-    },
-
-    delete: async (id: string) => {
-        const res = await api.delete(`/trainings/${id}`);
-        return res.data;
-    },
-};
-
-export const AttendanceAPI = {
-    getList: async (page = 1, perPage = 10, search = "") => {
-        const res = await api.get("/attendances", {
-            params: { per_page: perPage, page, search },
-        });
-        return res.data;
-    },
-
-    getDetail: async (id: string) => {
-        const res = await api.get(`/attendances/${id}`);
-        return res.data;
-    },
-};
-
-export const OvertimeAPI = {
-    getList: async (page = 1, perPage = 10, search = "") => {
-        const res = await api.get("/manager/overtimes", {
-            params: { per_page: perPage, page, search },
-        });
-        return res.data;
-    },
-
-    getDetail: async (id: string) => {
-        const res = await api.get(`/manager/overtimes/${id}`);
-        return res.data;
-    },
-
-    create: async (payload: any) => {
-        const res = await api.post("/manager/overtimes", payload);
-        return res.data;
-    },
-
-    update: async (id: string, payload: any) => {
-        const res = await api.put(`/manager/overtimes/${id}`, payload);
-        return res.data;
-    },
-
-    delete: async (id: string) => {
-        const res = await api.delete(`/manager/overtimes/${id}`);
-        return res.data;
-    },
+   
 };
 
 

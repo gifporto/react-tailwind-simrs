@@ -1,6 +1,8 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState, useCallback } from "react"
+import { useParams } from "react-router-dom"
+import { EmrIgdAPI, DoctorAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -10,6 +12,30 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 import {
   Plus,
@@ -22,243 +48,302 @@ import {
   RotateCcw,
   Info,
   ScanHeart,
+  Loader2,
+  ChevronsUpDown,
 } from "lucide-react"
-
-/* =====================
-   Types
-===================== */
-type Status = "ordered" | "proses" | "selesai" | "dibatalkan"
-
-interface RadiologiItem {
-  id: number
-  nama: string
-  kode: string
-  kontras?: "non-kontras" | "dengan-kontras"
-  status: Status
-}
-
-interface RadiologiOrder {
-  id: number
-  nomor: string
-  tanggal: string
-  status: Status
-  catatan?: string
-  total: number
-  hasil?: boolean
-  items: RadiologiItem[]
-}
-
-/* =====================
-   Dummy Data
-===================== */
-const radiologiOrders: RadiologiOrder[] = [
-  {
-    id: 1,
-    nomor: "RAD-001",
-    tanggal: "16/12/2025 11:20",
-    status: "ordered",
-    catatan: "Pasien trauma kepala",
-    total: 450000,
-    items: [
-      {
-        id: 1,
-        nama: "CT Scan Kepala",
-        kode: "CT-HD",
-        kontras: "non-kontras",
-        status: "ordered",
-      },
-      {
-        id: 2,
-        nama: "Rontgen Thorax",
-        kode: "XR-THX",
-        status: "ordered",
-      },
-    ],
-  },
-  {
-    id: 2,
-    nomor: "RAD-002",
-    tanggal: "15/12/2025 09:10",
-    status: "selesai",
-    total: 250000,
-    hasil: true,
-    items: [
-      {
-        id: 1,
-        nama: "USG Abdomen",
-        kode: "USG-ABD",
-        status: "selesai",
-      },
-    ],
-  },
-]
 
 /* =====================
    Helpers
 ===================== */
-const statusBadge = (status: Status) => {
-  switch (status) {
-    case "ordered":
-      return "secondary"
-    case "proses":
-      return "default"
-    case "selesai":
-      return "success"
-    case "dibatalkan":
-      return "destructive"
-  }
+const statusBadge = (status: string) => {
+  const s = status?.toLowerCase()
+  if (s === "pending" || s === "ordered") return "secondary"
+  if (s === "proses") return "default"
+  if (s === "selesai") return "success"
+  if (s === "dibatalkan") return "destructive"
+  return "outline"
 }
 
-const rupiah = (val: number) =>
-  `Rp ${val.toLocaleString("id-ID")}`
+const rupiah = (val: string | number) => {
+  const num = typeof val === "string" ? parseFloat(val) : val
+  return `Rp ${num.toLocaleString("id-ID")}`
+}
 
 /* =====================
    Component
 ===================== */
 const OrderRadiologi: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
+  
+  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState<any[]>([])
+  const [actionLoading, setActionLoading] = useState(false)
+
+  // --- UI States ---
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [openDoctorCombo, setOpenDoctorCombo] = useState(false)
+
+  // --- Master Data States ---
+  const [doctors, setDoctors] = useState<any[]>([])
+  const [doctorSearch, setDoctorSearch] = useState("")
+
+  // --- Form State ---
+  const [formData, setFormData] = useState({
+    dokter_id: "",
+    temp_pemeriksaan_id: "",
+  })
+
+  // --- Fetch Data List ---
+  const fetchRadiology = useCallback(async () => {
+    if (!id) return
+    setLoading(true)
+    try {
+      const response = await EmrIgdAPI.getRadiologi(id)
+      setOrders(response.data || [])
+    } catch (error) {
+      toast.error("Gagal memuat data radiologi")
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
+
+  useEffect(() => {
+    fetchRadiology()
+  }, [fetchRadiology])
+
+  // --- Fetch Master Dokter ---
+  useEffect(() => {
+    if (isCreateOpen) {
+      const fetchDocs = async () => {
+        try {
+          const res = await DoctorAPI.getList(1, 50, doctorSearch)
+          setDoctors(res.data || [])
+        } catch (e) { console.error(e) }
+      }
+      fetchDocs()
+    }
+  }, [isCreateOpen, doctorSearch])
+
+  // --- Create Action ---
+  const handleCreateOrder = async () => {
+    if (!id) return
+    if (!formData.dokter_id || !formData.temp_pemeriksaan_id) {
+      return toast.error("Lengkapi data dokter dan ID pemeriksaan")
+    }
+
+    setActionLoading(true)
+    try {
+      const payload = {
+        dokter_id: parseInt(formData.dokter_id),
+        pemeriksaan_ids: [parseInt(formData.temp_pemeriksaan_id)]
+      }
+      await EmrIgdAPI.createRadiologi(id, payload)
+      toast.success("Order radiologi berhasil dibuat")
+      setIsCreateOpen(false)
+      setFormData({ dokter_id: "", temp_pemeriksaan_id: "" })
+      fetchRadiology()
+    } catch (error) {
+      toast.error("Gagal membuat order")
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  // --- Delete Action ---
+  const handleDelete = async (idRadiologi: string) => {
+    if (!id || !confirm("Batalkan order radiologi ini?")) return
+    try {
+      await EmrIgdAPI.deleteRadiologi(id, idRadiologi)
+      toast.success("Order berhasil dibatalkan")
+      fetchRadiology()
+    } catch (error) {
+      toast.error("Gagal membatalkan order")
+    }
+  }
+
   return (
     <Card className="mt-4">
-      {/* Header */}
+      {/* Header Tetap Sama */}
       <CardHeader className="flex flex-row items-center justify-between py-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ScanHeart className="w-5 h-5 text-yellow-600" />
           Order Radiologi
         </CardTitle>
 
-        <Button size="sm" className="h-8 gap-1">
+        <Button size="sm" className="h-8 gap-1" onClick={() => setIsCreateOpen(true)}>
           <Plus className="w-4 h-4" />
           Order
         </Button>
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {radiologiOrders.map((order) => (
-          <div
-            key={order.id}
-            className="border rounded-md px-3 py-2 space-y-2"
-          >
-            {/* Header Order */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-start gap-2">
-                <ScanHeart className="w-4 h-4 text-muted-foreground mt-0.5" />
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : orders.length > 0 ? (
+          orders.map((order) => {
+            const totalHarga = order.details?.reduce(
+              (acc: number, curr: any) => acc + parseFloat(curr.pemeriksaan.harga || 0), 
+              0
+            )
 
-                <div className="leading-tight">
-                  <p className="text-sm font-medium">
-                    {order.nomor}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
-                    {order.tanggal}
+            return (
+              <div key={order.id} className="border rounded-md px-3 py-2 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-start gap-2">
+                    <ScanHeart className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <div className="leading-tight">
+                      <p className="text-sm font-medium">{order.no_order}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Calendar className="w-3 h-3" />
+                        {order.tanggal_order}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Badge variant={statusBadge(order.status) as any} className="text-xs">
+                      {order.status}
+                    </Badge>
+
+                    <div className="flex gap-1">
+                      <Button variant="outline" size="icon" className="h-7 w-7">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+
+                      {order.status !== "selesai" && order.status !== "dibatalkan" && (
+                        <Button 
+                          variant="destructive" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={() => handleDelete(order.id.toString())}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {order.status === "selesai" && (
+                        <Button variant="outline" size="icon" className="h-7 w-7">
+                          <RotateCcw className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant={statusBadge(order.status)}
-                  className="text-xs"
-                >
-                  {order.status}
-                </Badge>
+                {order.catatan && (
+                  <>
+                    <Separator />
+                    <p className="text-xs text-muted-foreground flex gap-1 items-center">
+                      <Info className="w-3 h-3" />
+                      {order.catatan}
+                    </p>
+                  </>
+                )}
 
-                {/* Actions */}
-                <div className="flex gap-1">
-                  <Button variant="outline" size="icon" className="h-7 w-7">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-
-                  {order.status === "ordered" && (
-                    <>
-                      <Button variant="outline" size="icon" className="h-7 w-7">
-                        <Play className="w-4 h-4" />
-                      </Button>
-                      <Button variant="destructive" size="icon" className="h-7 w-7">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </>
-                  )}
-
-                  {order.status === "proses" && (
-                    <>
-                      <Button variant="success" size="icon" className="h-7 w-7">
-                        <Check className="w-4 h-4" />
-                      </Button>
-                      <Button variant="destructive" size="icon" className="h-7 w-7">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </>
-                  )}
-
-                  {order.status === "selesai" && (
-                    <Button variant="outline" size="icon" className="h-7 w-7">
-                      <RotateCcw className="w-4 h-4" />
-                    </Button>
+                <div className="flex flex-wrap gap-1">
+                  {order.details?.slice(0, 6).map((det: any) => (
+                    <Badge
+                      key={det.id}
+                      variant={statusBadge(det.status) as any}
+                      className="text-xs font-normal"
+                    >
+                      {det.pemeriksaan.nama}
+                    </Badge>
+                  ))}
+                  {order.details?.length > 6 && (
+                    <span className="text-xs text-muted-foreground">
+                      +{order.details.length - 6} lainnya
+                    </span>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* Catatan */}
-            {order.catatan && (
-              <>
                 <Separator />
-                <p className="text-xs text-muted-foreground flex gap-1 items-center">
-                  <Info className="w-3 h-3" />
-                  {order.catatan}
-                </p>
-              </>
-            )}
-
-            {/* Items */}
-            <div className="flex flex-wrap gap-1">
-              {order.items.slice(0, 6).map((item) => (
-                <Badge
-                  key={item.id}
-                  variant={statusBadge(item.status)}
-                  className="text-xs font-normal"
-                >
-                  {item.nama}
-                  {item.kontras && item.kontras !== "non-kontras" && (
-                    <span className="ml-1">(Kontras)</span>
+                <div className="flex items-center justify-between text-xs">
+                  {order.result ? (
+                    <div className="flex items-center gap-1 text-primary">
+                      <FileImage className="w-4 h-4" />
+                      Hasil tersedia
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Belum ada hasil</span>
                   )}
-                </Badge>
-              ))}
-              {order.items.length > 6 && (
-                <span className="text-xs text-muted-foreground">
-                  +{order.items.length - 6} lainnya
-                </span>
-              )}
-            </div>
 
-            {/* Result & Cost */}
-            <Separator />
-
-            <div className="flex items-center justify-between text-xs">
-              {order.hasil ? (
-                <div className="flex items-center gap-1 text-primary">
-                  <FileImage className="w-4 h-4" />
-                  Hasil tersedia
+                  <strong className="text-green-600">
+                    {rupiah(totalHarga)}
+                  </strong>
                 </div>
-              ) : (
-                <span className="text-muted-foreground">
-                  Belum ada hasil
-                </span>
-              )}
-
-              <strong className="text-green-600">
-                {rupiah(order.total)}
-              </strong>
-            </div>
-          </div>
-        ))}
-
-        {radiologiOrders.length === 0 && (
+              </div>
+            )
+          })
+        ) : (
           <div className="text-center py-6 text-muted-foreground">
-            <ScanHeart className="mx-auto mb-2" />
+            <ScanHeart className="mx-auto mb-2 opacity-20" size={40} />
             Belum ada order radiologi
           </div>
         )}
       </CardContent>
+
+      {/* Dialog Create Order */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Tambah Order Radiologi</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Dokter Pengirim</Label>
+              <Popover open={openDoctorCombo} onOpenChange={setOpenDoctorCombo}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between">
+                    {formData.dokter_id 
+                      ? doctors.find(d => d.id.toString() === formData.dokter_id)?.nama_dokter 
+                      : "Pilih dokter..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[350px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Cari dokter..." onValueChange={setDoctorSearch} />
+                    <CommandList>
+                      <CommandEmpty>Dokter tidak ditemukan.</CommandEmpty>
+                      <CommandGroup>
+                        {doctors.map((d) => (
+                          <CommandItem key={d.id} onSelect={() => {
+                            setFormData(f => ({ ...f, dokter_id: d.id.toString() }))
+                            setOpenDoctorCombo(false)
+                          }}>
+                            <Check className={cn("mr-2 h-4 w-4", formData.dokter_id === d.id.toString() ? "opacity-100" : "opacity-0")} />
+                            {d.nama_dokter}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label>ID Pemeriksaan (Angka)</Label>
+              <Input 
+                type="number" 
+                placeholder="Contoh: 1" 
+                value={formData.temp_pemeriksaan_id}
+                onChange={(e) => setFormData(f => ({ ...f, temp_pemeriksaan_id: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>Batal</Button>
+            <Button onClick={handleCreateOrder} disabled={actionLoading}>
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Kirim Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
