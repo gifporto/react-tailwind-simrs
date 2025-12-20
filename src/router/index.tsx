@@ -1,11 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "@/App";
 import Dashboard from "@/app/Dashboard";
-import About from "@/app/About";
 import LoginPage from "@/app/Login";
-import EmployeePage from "@/app/employee";
-import EmployeeDetailPage from "@/app/employee/detail";
-import EmployeeCreatePage from "@/app/employee/create";
 import PatientPage from "@/app/master/pasien";
 import PatientDetailPage from "@/app/master/pasien/detail";
 import PatientCreatePage from "@/app/master/pasien/create";
@@ -18,6 +14,7 @@ import PlaceholderPage from "@/components/PlaceholderPage";
 import { ProtectedRoute, PublicRoute } from "@/lib/route-guard";
 import EmrIgdIndexPage from "@/app/emr/igd";
 import EmrIgdDetailPage from "@/app/emr/igd/detail";
+import EmrIgdCreatePage from "@/app/emr/igd/create";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -48,22 +45,6 @@ export const router = createBrowserRouter([
             handle: { breadcrumb: "Dashboard" },
           },
 
-          {
-            path: "employee",
-            element: <EmployeePage />,
-            handle: { breadcrumb: "Pegawai" },
-          },
-          {
-            path: "employee/create",
-            element: <EmployeeCreatePage />,
-            handle: { breadcrumb: "Tambah Pegawai" },
-          },
-          {
-            path: "employee/detail/:id",
-            element: <EmployeeDetailPage />,
-            handle: { breadcrumb: "Detail Pegawai" },
-          },
-
           // ✅ PASIEN
           {
             path: "master/pasien",
@@ -85,6 +66,11 @@ export const router = createBrowserRouter([
             path: "emr/igd",
             element: <EmrIgdIndexPage />,
             handle: { breadcrumb: "Pasien" },
+          },
+          {
+            path: "emr/igd/create",
+            element: <EmrIgdCreatePage />,
+            handle: { breadcrumb: "Tambah EMR IGD" },
           },
           {
             path: "emr/igd/detail/:id",

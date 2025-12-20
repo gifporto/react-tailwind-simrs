@@ -1,5 +1,11 @@
 "use client"
 
+import React from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
+import { EmrIgdAPI } from "@/lib/api" // Sesuaikan path
+import LoadingSkeleton from "@/components/LoadingSkeleton" // Sesuaikan path
+
 import {
   Card,
   CardContent,
@@ -22,33 +28,47 @@ import {
   Check,
   X,
   InfoIcon,
+  AlertCircle,
 } from "lucide-react"
 
-/* =====================
-   Dummy Data
-===================== */
-const kunjungan = {
-  no_reg: "REG-001",
-  tgl_periksa: "16 Desember 2025",
-  jam: "09:30",
-  poli: "IGD",
-  dokter: "dr. Andi Wijaya",
-  caraMasuk: "Datang Sendiri",
-  tipePasien: "Umum",
-  norm: "RM-123456",
-  pasien: {
-    nama: "Budi Santoso",
-    nik: "317xxxxxxxxx",
-    no_bpjs: "000111222333",
-    sex: "L",
-    tmp_lahir: "Jakarta",
-    tgl_lahir: "20 Mei 1990",
-    hp: "08123456789",
-    alamat: "Jakarta Timur",
-  },
-}
+export default function EmrIgdDetailPage() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
 
-export default function MainContent() {
+  /* =====================
+     FETCH DATA API
+  ===================== */
+  const { data: apiResponse, isLoading, isError } = useQuery({
+    queryKey: ["emr-igd-detail", id],
+    queryFn: () => EmrIgdAPI.getDetail(id as string),
+    enabled: !!id,
+  })
+
+  const kunjungan = apiResponse?.data
+
+  // Format Tanggal
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-"
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })
+  }
+
+  if (isLoading) return <LoadingSkeleton lines={20} />
+  
+  if (isError || !kunjungan) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+        <h3 className="text-lg font-bold">Data Tidak Ditemukan</h3>
+        <p className="text-muted-foreground mb-6">Gagal memuat detail registrasi IGD.</p>
+        <Button onClick={() => navigate(-1)}>Kembali</Button>
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-12 gap-6">
       {/* ================= MAIN ================= */}
@@ -72,18 +92,20 @@ export default function MainContent() {
               </Info>
 
               <Info label="Tanggal & Waktu">
-                <p>{kunjungan.tgl_periksa}</p>
+                <p>{formatDate(kunjungan.tgl_periksa)}</p>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   {kunjungan.jam} WIB
                 </p>
               </Info>
 
-              <Info label="Unit Tujuan">{kunjungan.poli}</Info>
-              <Info label="Dokter">{kunjungan.dokter}</Info>
-              <Info label="Cara Masuk">{kunjungan.caraMasuk}</Info>
+              <Info label="Unit Tujuan">{kunjungan.poli?.desk_poli || "-"}</Info>
+              <Info label="Dokter">
+                {kunjungan.dokter?.karyawan?.nama || "Tidak ada dokter"}
+              </Info>
+              <Info label="Cara Masuk">{kunjungan.cara_masuk?.desk_cara_masuk || "-"}</Info>
               <Info label="Tipe Pasien">
-                <Badge variant="outline">{kunjungan.tipePasien}</Badge>
+                <Badge variant="outline">{kunjungan.tipe_pasien?.desk_tipe_pasien || "-"}</Badge>
               </Info>
             </div>
           </CardContent>
@@ -106,26 +128,26 @@ export default function MainContent() {
               <Info label="No. Rekam Medis">
                 <Badge variant="secondary">{kunjungan.norm}</Badge>
               </Info>
-              <Info label="Nama">{kunjungan.pasien.nama}</Info>
-              <Info label="NIK">{kunjungan.pasien.nik}</Info>
+              <Info label="Nama">{kunjungan.pasien?.nama || "-"}</Info>
+              <Info label="NIK">{kunjungan.pasien?.nik || "-"}</Info>
               <Info label="BPJS">
-                {kunjungan.pasien.no_bpjs || "Tidak ada"}
+                {kunjungan.pasien?.no_bpjs || "Tidak ada"}
               </Info>
               <Info label="TTL">
-                {kunjungan.pasien.tmp_lahir},{" "}
-                {kunjungan.pasien.tgl_lahir}
+                {kunjungan.pasien?.tmp_lahir || "-"},{" "}
+                {formatDate(kunjungan.pasien?.tgl_lahir)}
               </Info>
               <Info label="No. HP">
                 <a
-                  href={`tel:${kunjungan.pasien.hp}`}
-                  className="text-primary underline flex items-center gap-1"
+                  href={`tel:${kunjungan.pasien?.hp}`}
+                  className="text-green-600 underline flex items-center gap-1"
                 >
                   <Phone className="w-4 h-4" />
-                  {kunjungan.pasien.hp}
+                  {kunjungan.pasien?.hp || "-"}
                 </a>
               </Info>
               <Info label="Alamat" className="md:col-span-2">
-                {kunjungan.pasien.alamat}
+                {kunjungan.pasien?.alamat_ktp || "-"}
               </Info>
             </div>
           </CardContent>
@@ -153,7 +175,11 @@ export default function MainContent() {
               Edit Registrasi
             </Button>
 
-            <Button variant="secondary" className="w-full gap-2">
+            <Button 
+              variant="secondary" 
+              className="w-full gap-2"
+              onClick={() => navigate(-1)}
+            >
               <ArrowLeft className="w-4 h-4" />
               Kembali
             </Button>
@@ -178,15 +204,15 @@ export default function MainContent() {
             </div>
 
             <div>
-              <p className="font-semibold">{kunjungan.pasien.nama}</p>
+              <p className="font-semibold uppercase">{kunjungan.pasien?.nama}</p>
               <p className="text-sm text-muted-foreground">
                 {kunjungan.norm}
               </p>
             </div>
 
             <div className="grid grid-cols-3 gap-2 border-t pt-3 text-sm">
-              <Summary label="BPJS" ok={!!kunjungan.pasien.no_bpjs} />
-              <Summary label="HP" ok={!!kunjungan.pasien.hp} />
+              <Summary label="BPJS" ok={!!kunjungan.pasien?.no_bpjs} />
+              <Summary label="HP" ok={!!kunjungan.pasien?.hp} />
               <Summary label="Valid" ok />
             </div>
           </CardContent>

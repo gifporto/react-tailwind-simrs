@@ -17,6 +17,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function PageLayout({ children }: { children: React.ReactNode }) {
   const matches = useMatches()
@@ -24,11 +25,11 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
   const location = useLocation()
 
   const breadcrumbs = matches
-  .filter((match) => (match.handle as any)?.breadcrumb)
-  .map((match) => ({
-    label: (match.handle as any).breadcrumb as string,
-    href: match.pathname,
-  }))
+    .filter((match) => (match.handle as any)?.breadcrumb)
+    .map((match) => ({
+      label: (match.handle as any).breadcrumb as string,
+      href: match.pathname,
+    }))
 
 
   return (
@@ -36,6 +37,13 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
       <AppSidebar />
 
       <SidebarInset>
+        <Toaster
+          richColors
+          position="top-right"
+          closeButton
+          theme="light"
+        />
+
         {/* HEADER */}
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">

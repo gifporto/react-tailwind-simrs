@@ -81,7 +81,7 @@ export const mainMenus: MenuItem[] = [
   {
     type: '2',
     icon: Stethoscope,
-    title: 'Pemeriksaan',
+    title: 'EMR',
     module: 'pemeriksaan',
     children: [
       { title: 'IGD', url: '/emr/igd', module: 'med_igd' },
