@@ -52,6 +52,8 @@ import {
   ChevronsUpDown,
 } from "lucide-react"
 
+import { RadiologyAPI } from "@/lib/api"
+
 /* =====================
    Helpers
 ===================== */
@@ -71,82 +73,6 @@ const rupiah = (val: string | number) => {
 
 /* =====================
    Component
-===================== */
-const OrderRadiologi: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
-  
-  const [loading, setLoading] = useState(true)
-  const [orders, setOrders] = useState<any[]>([])
-  const [actionLoading, setActionLoading] = useState(false)
-
-  // --- UI States ---
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [openDoctorCombo, setOpenDoctorCombo] = useState(false)
-
-  // --- Master Data States ---
-  const [doctors, setDoctors] = useState<any[]>([])
-  const [doctorSearch, setDoctorSearch] = useState("")
-
-  // --- Form State ---
-  const [formData, setFormData] = useState({
-    dokter_id: "",
-    temp_pemeriksaan_id: "",
-  })
-
-  // --- Fetch Data List ---
-  const fetchRadiology = useCallback(async () => {
-    if (!id) return
-    setLoading(true)
-    try {
-      const response = await EmrIgdAPI.getRadiologi(id)
-      setOrders(response.data || [])
-    } catch (error) {
-      toast.error("Gagal memuat data radiologi")
-    } finally {
-      setLoading(false)
-    }
-  }, [id])
-
-  useEffect(() => {
-    fetchRadiology()
-  }, [fetchRadiology])
-
-  // --- Fetch Master Dokter ---
-  useEffect(() => {
-    if (isCreateOpen) {
-      const fetchDocs = async () => {
-        try {
-          const res = await DoctorAPI.getList(1, 50, doctorSearch)
-          setDoctors(res.data || [])
-        } catch (e) { console.error(e) }
-      }
-      fetchDocs()
-    }
-  }, [isCreateOpen, doctorSearch])
-
-  // --- Create Action ---
-  const handleCreateOrder = async () => {
-    if (!id) return
-    if (!formData.dokter_id || !formData.temp_pemeriksaan_id) {
-      return toast.error("Lengkapi data dokter dan ID pemeriksaan")
-    }
-
-    setActionLoading(true)
-    try {
-      const payload = {
-        dokter_id: parseInt(formData.dokter_id),
-        pemeriksaan_ids: [parseInt(formData.temp_pemeriksaan_id)]
-      }
-      await EmrIgdAPI.createRadiologi(id, payload)
-      toast.success("Order radiologi berhasil dibuat")
-      setIsCreateOpen(false)
-      setFormData({ dokter_id: "", temp_pemeriksaan_id: "" })
-      fetchRadiology()
-    } catch (error) {
-      toast.error("Gagal membuat order")
-    } finally {
-      setActionLoading(false)
-    }
   }
 
   // --- Delete Action ---
