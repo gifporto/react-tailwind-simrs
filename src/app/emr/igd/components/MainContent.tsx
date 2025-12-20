@@ -57,7 +57,7 @@ export default function EmrIgdDetailPage() {
   }
 
   if (isLoading) return <LoadingSkeleton lines={20} />
-  
+
   if (isError || !kunjungan) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -101,7 +101,10 @@ export default function EmrIgdDetailPage() {
 
               <Info label="Unit Tujuan">{kunjungan.poli?.desk_poli || "-"}</Info>
               <Info label="Dokter">
-                {kunjungan.dokter?.karyawan?.nama || "Tidak ada dokter"}
+                <Badge variant="info">
+                  <User className="w-3 h-3 mr-1" />
+                  {kunjungan.dokter?.karyawan?.nama}
+                </Badge>
               </Info>
               <Info label="Cara Masuk">{kunjungan.cara_masuk?.desk_cara_masuk || "-"}</Info>
               <Info label="Tipe Pasien">
@@ -126,7 +129,7 @@ export default function EmrIgdDetailPage() {
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <Info label="No. Rekam Medis">
-                <Badge variant="secondary">{kunjungan.norm}</Badge>
+                <Badge variant="default">{kunjungan.norm}</Badge>
               </Info>
               <Info label="Nama">{kunjungan.pasien?.nama || "-"}</Info>
               <Info label="NIK">{kunjungan.pasien?.nik || "-"}</Info>
@@ -175,8 +178,8 @@ export default function EmrIgdDetailPage() {
               Edit Registrasi
             </Button>
 
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               className="w-full gap-2"
               onClick={() => navigate(-1)}
             >

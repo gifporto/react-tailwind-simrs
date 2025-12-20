@@ -61,6 +61,21 @@ export const PoliAPI = {
 };
 
 export const EmrIgdAPI = {
+    getService: async (id: string) => {
+        const res = await api.get(`/inspections/igd/${id}/services`);
+        return res.data;
+    },
+
+    createService: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/services`, payload);
+        return res.data;
+    },
+
+    deleteService: async (id: string, idService: string) => {
+        const res = await api.delete(`/inspections/igd/${id}/services/${idService}`);
+        return res.data;
+    },
+
     getLab: async (id: string) => {
         const res = await api.get(`/inspections/igd/${id}/laboratories`);
         return res.data;
@@ -170,6 +185,15 @@ export const LabAPI = {
 
      getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/laboratories", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const ServiceAPI = {
+     getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/services", {
             params: { page, limit, search },
         });
         return res.data;

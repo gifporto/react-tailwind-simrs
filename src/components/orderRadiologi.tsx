@@ -67,8 +67,8 @@ import {
 ===================== */
 const statusBadge = (status: string) => {
   const s = status?.toLowerCase()
-  if (s === "pending" || s === "ordered") return "secondary"
-  if (s === "proses") return "default"
+  if (s === "ordered") return "secondary"
+  if (s === "proses") return "warning"
   if (s === "selesai") return "success"
   if (s === "dibatalkan") return "destructive"
   return "outline"
