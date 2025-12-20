@@ -29,6 +29,7 @@ import {
   Check,
   ChevronsUpDown,
   CheckCheck,
+  User,
 } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -241,8 +242,8 @@ export default function KunjunganUnit() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2 text-primary">
-          <Hospital className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2">
+          <Hospital className="w-5 h-5 text-primary" />
           Kunjungan Unit
         </CardTitle>
         <div className="flex gap-2">
@@ -288,12 +289,17 @@ export default function KunjunganUnit() {
                   <TableRow key={item.id}>
                     <TableCell><Badge variant="outline">{item.no_reg}</Badge></TableCell>
                     <TableCell className="font-bold">{item.poli.nama_poli}</TableCell>
-                    <TableCell>{item.dokter.nama_dokter}</TableCell>
+                    <TableCell>
+                      <Badge variant="info">
+                        <User className="w-3 h-3 mr-1" />
+                        {item.dokter.nama_dokter}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-center">{item.no_antrian}</TableCell>
                     <TableCell className="text-sm">{item.checkin_time}</TableCell>
                     <TableCell className="text-center">
                       {item.is_closed === "Y" ? (
-                        <Badge variant="secondary">Selesai</Badge>
+                        <Badge variant="destructive">Tidak Aktif</Badge>
                       ) : (
                         <Badge variant="success">Aktif</Badge>
                       )}
