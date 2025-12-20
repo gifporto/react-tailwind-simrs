@@ -61,7 +61,22 @@ export const PoliAPI = {
 };
 
 export const EmrIgdAPI = {
-     getRadiologi: async (id: string) => {
+    getLab: async (id: string) => {
+        const res = await api.get(`/inspections/igd/${id}/laboratories`);
+        return res.data;
+    },
+
+    createLab: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/laboratories`, payload);
+        return res.data;
+    },
+
+    deleteLab: async (id: string, idLab: string) => {
+        const res = await api.delete(`/inspections/igd/${id}/laboratories/${idLab}`);
+        return res.data;
+    },
+    
+    getRadiologi: async (id: string) => {
         const res = await api.get(`/inspections/igd/${id}/radiologies`);
         return res.data;
     },
@@ -122,32 +137,41 @@ export const EmrIgdAPI = {
         const res = await api.delete(`/inspections/igd/${id}/visits/${idVisit}`);
         return res.data;
     },
-
-   
 };
 
 export const RadiologyAPI = {
-    getDoctors: async (search = "") => {
-        const res = await api.get("/v2/master/doctors", {
-            params: { search },
+     getCategory: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/radiologies/categories", {
+            params: { page, limit, search },
         });
         return res.data;
     },
 
-    getRadiologies: async (page = 1, perPage = 15) => {
-        const res = await api.get("/v2/master/radiologies", {
-            params: { page, per_page: perPage },
+     getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/radiologies", {
+            params: { page, limit, search },
         });
         return res.data;
     },
 
-    getOrders: async (igdId: string) => {
-        const res = await api.get(`/v2/inspections/igd/${igdId}/radiologies`);
+    getDetail: async (id: string) => {
+        const res = await api.get(`/master/radiologies/${id}`);
+        return res.data;
+    },
+};
+
+export const LabAPI = {
+     getCategory: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/laboratories/categories", {
+            params: { page, limit, search },
+        });
         return res.data;
     },
 
-    createOrder: async (igdId: string, payload: { dokter_id: number; pemeriksaan_ids: number[] }) => {
-        const res = await api.post(`/v2/inspections/igd/${igdId}/radiologies`, payload);
+     getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/laboratories", {
+            params: { page, limit, search },
+        });
         return res.data;
     },
 };
