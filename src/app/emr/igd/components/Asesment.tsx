@@ -177,7 +177,9 @@ export default function Asesment() {
                 initialData={dataAsesmen?.skrining_nyeri}
               />
 
-              <PhysicalExam initialData={dataAsesmen?.pemeriksaan_fisik} />
+              <PhysicalExam
+                editable={editMode}
+                initialData={dataAsesmen?.pemeriksaan_fisik} />
 
               <EdukasiDischarge
                 editable={editMode}
@@ -189,7 +191,11 @@ export default function Asesment() {
                 initialData={dataAsesmen?.pemeriksaan_penunjang}
               />
 
-              <Diagnosis initialData={dataAsesmen?.diagnosis} />
+              <Diagnosis
+                editable={editMode}
+                initialData={dataAsesmen?.diagnosis}
+              />
+
               <Prescription />
 
               <TindakanTerapi

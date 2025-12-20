@@ -199,6 +199,21 @@ export const AsesmentMedicAPI = {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/skrining-nyeri`, payload);
         return res.data;
     },
+
+    updatePemeriksaanFisik: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/pemeriksaan-fisik`, payload);
+        return res.data;
+    },
+    
+    updatePenunjang: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/pemeriksaan-penunjang`, payload);
+        return res.data;
+    },
+
+    updateDiagnosis: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/diagnosis`, payload);
+        return res.data;
+    },
 };
 
 export const RadiologyAPI = {
@@ -242,6 +257,22 @@ export const ServiceAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/services", {
             params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const IcdAPI = {
+    getListIcd9: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/icd9", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    getListIcd10: async ( limit = "", search = "") => {
+        const res = await api.get("/master/icd10", {
+            params: { limit, search },
         });
         return res.data;
     },
