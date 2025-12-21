@@ -214,6 +214,26 @@ export const AsesmentMedicAPI = {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/diagnosis`, payload);
         return res.data;
     },
+
+    updatePerencanaanTindakan: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/perencanaan-tindakan`, payload);
+        return res.data;
+    },
+
+    updateTindakLanjut: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/rencana-tindak-lanjut`, payload);
+        return res.data;
+    },
+
+    updateKondisiMeninggalkan: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/kondisi-meninggalkan-igd`, payload);
+        return res.data;
+    },
+
+    updateDischargePlan: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/discharge-planning`, payload);
+        return res.data;
+    },
 };
 
 export const RadiologyAPI = {
@@ -273,6 +293,15 @@ export const IcdAPI = {
     getListIcd10: async (limit = "", search = "") => {
         const res = await api.get("/master/icd10", {
             params: { limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const HakKelasAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/hak-kelas", {
+            params: { page, limit, search },
         });
         return res.data;
     },
