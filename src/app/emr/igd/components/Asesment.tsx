@@ -21,7 +21,6 @@ import { AsesmentMedicAPI } from "@/lib/api";
 // Sub-components Medis
 import Alergi from "./asement-medic/Alergi";
 import Anamnesa from "./asement-medic/Anamnesa";
-import AssessmentKeluar from "./asement-medic/AssessmentKeluar";
 import Diagnosis from "./asement-medic/Diagnosis";
 import EdukasiDischarge from "./asement-medic/EdukasiDischarge";
 import FlaccPainAssessment from "./asement-medic/FlaccPainAssessment";
@@ -41,6 +40,7 @@ import WongBakerScale from "./asement-medic/WongBakerScale";
 // Tab components lainnya
 import AsesmenPerawat from "./asement-perawat/Index";
 import AsesmenTriase from "./asesment-tringe/index";
+import KondisiMeninggalkanIGD from "./asement-medic/KondisiMeniggalkanIgd";
 
 export default function Asesment() {
   const { id } = useParams<{ id: string }>();
@@ -208,7 +208,7 @@ export default function Asesment() {
                 initialData={dataAsesmen?.rencana_tindak_lanjut}
               />
 
-              <AssessmentKeluar
+              <KondisiMeninggalkanIGD
                 editable={editMode}
                 initialData={dataAsesmen?.kondisi_keluar_igd}
               />
