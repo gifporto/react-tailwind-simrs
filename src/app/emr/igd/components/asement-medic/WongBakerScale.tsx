@@ -18,7 +18,7 @@ export default function WongBakerScale({ initialData, editable = false }: { init
   const [score, setScore] = useState<string>("0");
 
   useEffect(() => {
-    if (initialData?.wong_baker_scale !== undefined) {
+    if (initialData?.wong_baker_scale != null) {
       setScore(initialData.wong_baker_scale.toString());
     }
   }, [initialData]);
@@ -53,7 +53,7 @@ export default function WongBakerScale({ initialData, editable = false }: { init
           {["0", "2", "4", "6", "8", "10"].map((v) => (
             <Label key={v} className={`flex flex-col items-center p-3 border-2 rounded-lg cursor-pointer transition-all ${score === v ? "border-primary bg-primary/5" : "border-muted"}`}>
               <RadioGroupItem value={v} className="sr-only" />
-              <span className="text-3xl mb-1">{v==="0"?"😊":v==="2"?"🙂":v==="4"?"😐":v==="6"?"😣":v==="8"?"😢":"😭"}</span>
+              <span className="text-3xl mb-1">{v === "0" ? "😊" : v === "2" ? "🙂" : v === "4" ? "😐" : v === "6" ? "😣" : v === "8" ? "😢" : "😭"}</span>
               <span className="font-bold text-sm">{v}</span>
             </Label>
           ))}

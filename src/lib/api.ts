@@ -5,7 +5,7 @@ import { api } from "./axios";
 
 export const AuthAPI = {
     login: async (email: string, password: string) => {
-        const res = await api.post("/v2/auth/login", {
+        const res = await api.post("/auth/login", {
             username: email,
             password: password,
         });
@@ -189,7 +189,7 @@ export const AsesmentMedicAPI = {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/vital-signs`, payload);
         return res.data;
     },
-    
+
     deleteVitalSign: async (id: string, idVitalSign: string) => {
         const res = await api.delete(`/inspections/igd/${id}/asesmen-medis/vital-signs/${idVitalSign}`);
         return res.data;
@@ -204,7 +204,7 @@ export const AsesmentMedicAPI = {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/pemeriksaan-fisik`, payload);
         return res.data;
     },
-    
+
     updatePenunjang: async (id: string, payload: any) => {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/pemeriksaan-penunjang`, payload);
         return res.data;
@@ -270,7 +270,7 @@ export const IcdAPI = {
         return res.data;
     },
 
-    getListIcd10: async ( limit = "", search = "") => {
+    getListIcd10: async (limit = "", search = "") => {
         const res = await api.get("/master/icd10", {
             params: { limit, search },
         });
