@@ -166,7 +166,59 @@ const triageCriteria = {
             { id: 'pp_lebih_5_tahun', label: '> 5 tahun : < 30' }
         ]
     },
-    // Data lainnya akan ditambahkan berikutnya...
+    sirkulasi: {
+        merah: [
+            { id: 's_henti_jantung', label: 'Henti Jantung' },
+            { id: 's_hipotensi_hiperfusi', label: 'Hipotensi dgn hiperfusi' },
+            { id: 's_hipotensi_berat', label: 'Hipotensi berat' },
+            { id: 's_perdarahan_hebat', label: 'Perdarahan hebat' },
+            { id: 's_crt_2_detik', label: 'CRT > 2 detik' }
+        ],
+        kuning: [
+            { id: 's_td_sistolik_160', label: 'TD Sistolik > 160 dgn kerusakan organ' },
+            { id: 's_nadi_lemah_2', label: 'Nadi lemah' },
+            { id: 's_hr_50', label: 'HR < 50' },
+            { id: 's_hr_150', label: 'HR > 150' },
+            { id: 's_pucat_nadi_lemah', label: 'Pucat dgn nadi lemah' },
+            { id: 's_sangat_kehausan', label: 'Sangat Kehausan' },
+            { id: 's_turgor_turun', label: 'Turgor turun' }
+        ],
+        hijau: [
+            { id: 's_hr_50_150', label: 'HR 50-150 (Dewasa)' },
+            { id: 's_perdarahan_sedang', label: 'Perdarahan sedang' },
+            { id: 's_td_sistolik_180', label: 'TD Sistolik < 180' },
+            { id: 's_td_diastolik_120', label: 'TD diastolik > 120' },
+            { id: 's_pallor_berat', label: 'Pallor (berat)' },
+            { id: 's_edema_kedua_tungkai', label: 'Edema kedua tungkai' }
+        ],
+        biru: [
+            { id: 's_dewasa_60_100', label: 'Dewasa : 60-100 ; >90' },
+            { id: 's_0_1_thn', label: '0-1 thn : 100-160 ; >60' },
+            { id: 's_1_3_thn', label: '1-3 thn : 90-150 ; >70' },
+            { id: 's_3_6_thn', label: '3-6 thn : 80-140 ; >75' },
+            { id: 's_lebih_6_thn', label: '> 6 thn : 70-120 ; >80' }
+        ]
+    },
+    disability: {
+        merah: [
+            { id: 'd_avpu_pain', label: 'AVPU : Pain' },
+            { id: 'd_kejang', label: 'Kejang' },
+            { id: 'd_flaccid_baby', label: 'Flaccid Baby' },
+            { id: 'd_lumpuh_layu', label: 'Lumpuh layu' }
+        ],
+        kuning: [],
+        hijau: [],
+        biru: []
+    },
+    lainLain: {
+        merah: [
+            { id: 'll_gds_60', label: 'GDS < 60' },
+            { id: 'll_luka_bakar_mayor', label: 'Luka bakar mayor' }
+        ],
+        kuning: [],
+        hijau: [],
+        biru: []
+    }
 };
 
 const TriageAssessmentTable: React.FC = () => {
@@ -192,11 +244,46 @@ const TriageAssessmentTable: React.FC = () => {
     }, []);
 
     const handleCheckboxChange = (id: string) => {
-        setSelectedCriteria(prev =>
-            prev.includes(id)
-                ? prev.filter(item => item !== id)
-                : [...prev, id]
-        );
+        setSelectedCriteria(prev => {
+            const isSelected = prev.includes(id);
+
+            // If unchecking, just remove it
+            if (isSelected) {
+                return prev.filter(item => item !== id);
+            }
+
+            // If checking, enforce mutual exclusion (one color category per row)
+            // 1. Find which category (e.g., 'jalanNafas') and color (e.g., 'merah') this ID belongs to
+            let targetCategory: string | null = null;
+            let targetColor: string | null = null;
+
+            for (const [catKey, catValue] of Object.entries(triageCriteria)) {
+                for (const [colorKey, items] of Object.entries(catValue)) {
+                    if (items.some((item: { id: string }) => item.id === id)) {
+                        targetCategory = catKey;
+                        targetColor = colorKey;
+                        break;
+                    }
+                }
+                if (targetCategory) break;
+            }
+
+            if (!targetCategory || !targetColor) return [...prev, id];
+
+            // 2. Identify all IDs in the SAME category but DIFFERENT color
+            const idsToRemove: string[] = [];
+            const categoryData = triageCriteria[targetCategory as keyof typeof triageCriteria];
+
+            Object.entries(categoryData).forEach(([colorKey, items]) => {
+                if (colorKey !== targetColor) {
+                    items.forEach((item: { id: string }) => idsToRemove.push(item.id));
+                }
+            });
+
+            // 3. Remove conflicting IDs and add the new one
+            const filteredPrev = prev.filter(itemId => !idsToRemove.includes(itemId));
+            return [...filteredPrev, id];
+        });
     };
 
     const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -424,71 +511,16 @@ const TriageAssessmentTable: React.FC = () => {
                                         </div>
                                     </TableCell>
                                     <TableCell className="p-2 border-r align-top bg-red-50/30">
-                                        <div className="space-y-2">
-                                            {[
-                                                { id: 's_henti_jantung', label: 'Henti Jantung' },
-                                                { id: 's_hipotensi_hiperfusi', label: 'Hipotensi dgn hiperfusi' },
-                                                { id: 's_hipotensi_berat', label: 'Hipotensi berat' },
-                                                { id: 's_perdarahan_hebat', label: 'Perdarahan hebat' },
-                                                { id: 's_crt_2_detik', label: 'CRT > 2 detik' }
-                                            ].map((item) => (
-                                                <div key={item.id} className="flex items-start space-x-2">
-                                                    <Checkbox id={item.id} checked={selectedCriteria.includes(item.id)} onCheckedChange={() => handleCheckboxChange(item.id)} />
-                                                    <Label htmlFor={item.id} className="text-[11px] leading-none">{item.label}</Label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {renderCheckboxGroup(triageCriteria.sirkulasi.merah, 'merah')}
                                     </TableCell>
                                     <TableCell className="p-2 border-r align-top bg-yellow-50/30">
-                                        <div className="space-y-2">
-                                            {[
-                                                { id: 's_td_sistolik_160', label: 'TD Sistolik > 160 dgn kerusakan organ' },
-                                                { id: 's_nadi_lemah_2', label: 'Nadi lemah' },
-                                                { id: 's_hr_50', label: 'HR < 50' },
-                                                { id: 's_hr_150', label: 'HR > 150' },
-                                                { id: 's_pucat_nadi_lemah', label: 'Pucat dgn nadi lemah' },
-                                                { id: 's_sangat_kehausan', label: 'Sangat Kehausan' },
-                                                { id: 's_turgor_turun', label: 'Turgor turun' }
-                                            ].map((item) => (
-                                                <div key={item.id} className="flex items-start space-x-2">
-                                                    <Checkbox id={item.id} checked={selectedCriteria.includes(item.id)} onCheckedChange={() => handleCheckboxChange(item.id)} />
-                                                    <Label htmlFor={item.id} className="text-[11px] leading-none">{item.label}</Label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {renderCheckboxGroup(triageCriteria.sirkulasi.kuning, 'kuning')}
                                     </TableCell>
                                     <TableCell className="p-2 border-r align-top bg-green-50/30">
-                                        <div className="space-y-2">
-                                            {[
-                                                { id: 's_hr_50_150', label: 'HR 50-150 (Dewasa)' },
-                                                { id: 's_perdarahan_sedang', label: 'Perdarahan sedang' },
-                                                { id: 's_td_sistolik_180', label: 'TD Sistolik < 180' },
-                                                { id: 's_td_diastolik_120', label: 'TD diastolik > 120' },
-                                                { id: 's_pallor_berat', label: 'Pallor (berat)' },
-                                                { id: 's_edema_kedua_tungkai', label: 'Edema kedua tungkai' }
-                                            ].map((item) => (
-                                                <div key={item.id} className="flex items-start space-x-2">
-                                                    <Checkbox id={item.id} checked={selectedCriteria.includes(item.id)} onCheckedChange={() => handleCheckboxChange(item.id)} />
-                                                    <Label htmlFor={item.id} className="text-[11px] leading-none">{item.label}</Label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {renderCheckboxGroup(triageCriteria.sirkulasi.hijau, 'hijau')}
                                     </TableCell>
                                     <TableCell className="p-2 align-top bg-blue-50/30">
-                                        <div className="space-y-2">
-                                            {[
-                                                { id: 's_dewasa_60_100', label: 'Dewasa : 60-100 ; >90' },
-                                                { id: 's_0_1_thn', label: '0-1 thn : 100-160 ; >60' },
-                                                { id: 's_1_3_thn', label: '1-3 thn : 90-150 ; >70' },
-                                                { id: 's_3_6_thn', label: '3-6 thn : 80-140 ; >75' },
-                                                { id: 's_lebih_6_thn', label: '> 6 thn : 70-120 ; >80' }
-                                            ].map((item) => (
-                                                <div key={item.id} className="flex items-start space-x-2">
-                                                    <Checkbox id={item.id} checked={selectedCriteria.includes(item.id)} onCheckedChange={() => handleCheckboxChange(item.id)} />
-                                                    <Label htmlFor={item.id} className="text-[11px] leading-none">{item.label}</Label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {renderCheckboxGroup(triageCriteria.sirkulasi.biru, 'biru')}
                                     </TableCell>
                                 </TableRow>
 
@@ -502,14 +534,16 @@ const TriageAssessmentTable: React.FC = () => {
                                     </TableCell>
                                     {/* ... Lanjutkan pola yang sama untuk Disability ... */}
                                     <TableCell className="p-2 border-r align-top bg-red-50/30">
-                                        <div className="space-y-2">
-                                            {[{ id: 'd_avpu_pain', label: 'AVPU : Pain' }, { id: 'd_kejang', label: 'Kejang' }, { id: 'd_flaccid_baby', label: 'Flaccid Baby' }, { id: 'd_lumpuh_layu', label: 'Lumpuh layu' }].map((item) => (
-                                                <div key={item.id} className="flex items-start space-x-2">
-                                                    <Checkbox id={item.id} checked={selectedCriteria.includes(item.id)} onCheckedChange={() => handleCheckboxChange(item.id)} />
-                                                    <Label htmlFor={item.id} className="text-[11px] leading-none">{item.label}</Label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {renderCheckboxGroup(triageCriteria.disability.merah, 'merah')}
+                                    </TableCell>
+                                    <TableCell className="p-2 border-r align-top bg-yellow-50/30">
+                                        {renderCheckboxGroup(triageCriteria.disability.kuning, 'kuning')}
+                                    </TableCell>
+                                    <TableCell className="p-2 border-r align-top bg-green-50/30">
+                                        {renderCheckboxGroup(triageCriteria.disability.hijau, 'hijau')}
+                                    </TableCell>
+                                    <TableCell className="p-2 align-top bg-blue-50/30">
+                                        {renderCheckboxGroup(triageCriteria.disability.biru, 'biru')}
                                     </TableCell>
                                     {/* Sisanya diisi dengan data Anda menggunakan pola TableCell di atas */}
                                 </TableRow>
@@ -523,14 +557,16 @@ const TriageAssessmentTable: React.FC = () => {
                                         </div>
                                     </TableCell>
                                     <TableCell className="p-2 border-r align-top bg-red-50/30">
-                                        <div className="space-y-2">
-                                            {[{ id: 'll_gds_60', label: 'GDS < 60' }, { id: 'll_luka_bakar_mayor', label: 'Luka bakar mayor' }].map((item) => (
-                                                <div key={item.id} className="flex items-start space-x-2">
-                                                    <Checkbox id={item.id} checked={selectedCriteria.includes(item.id)} onCheckedChange={() => handleCheckboxChange(item.id)} />
-                                                    <Label htmlFor={item.id} className="text-[11px] leading-none">{item.label}</Label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {renderCheckboxGroup(triageCriteria.lainLain.merah, 'merah')}
+                                    </TableCell>
+                                    <TableCell className="p-2 border-r align-top bg-yellow-50/30">
+                                        {renderCheckboxGroup(triageCriteria.lainLain.kuning, 'kuning')}
+                                    </TableCell>
+                                    <TableCell className="p-2 border-r align-top bg-green-50/30">
+                                        {renderCheckboxGroup(triageCriteria.lainLain.hijau, 'hijau')}
+                                    </TableCell>
+                                    <TableCell className="p-2 align-top bg-blue-50/30">
+                                        {renderCheckboxGroup(triageCriteria.lainLain.biru, 'biru')}
                                     </TableCell>
                                     {/* ... Lanjutkan pola yang sama untuk sisa kolom ... */}
                                 </TableRow>
