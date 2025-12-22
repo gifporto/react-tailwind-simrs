@@ -113,7 +113,7 @@ export default function TindakanTerapi({ initialData, editable = false }: Props)
   };
 
   return (
-    <AccordionItem value="kondisiMeninggalkan" className="border rounded-lg">
+    <AccordionItem value="tindakanTerapi" className="border rounded-lg">
       <AccordionTrigger className="px-4 py-3 text-sm font-semibold hover:no-underline">
         <div className="flex items-center gap-3">
           <Badge variant="outline">16</Badge>

@@ -50,9 +50,9 @@ export default function SkriningNyeri({ initialData, editable = false }: Props) 
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4 space-y-4">
-        <Alert className="bg-amber-50 border-amber-200">
+        <Alert variant="warning">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800">
+          <AlertDescription>
             Penilaian nyeri penting untuk penanganan yang tepat.
           </AlertDescription>
         </Alert>

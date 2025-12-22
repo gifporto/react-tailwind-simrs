@@ -54,9 +54,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center">
           {/* Logo saat sidebar COLLAPSE */}
-          <div className="object-contain hidden group-data-[collapsible=icon]:block">
+          <div className="object-contain hidden group-data-[collapsible=icon]:block justify-center">
             <img
               src={logoCollapse}
               alt="RSUAD Logo"
@@ -65,7 +65,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
 
           {/* Logo saat sidebar TERBUKA */}
-          <div className="object-contain group-data-[collapsible=icon]:hidden">
+          <div className="object-contain group-data-[collapsible=icon]:hidden mx-2">
             <img
               src={logoOpen}
               alt="RSUAD Logo"

@@ -54,10 +54,10 @@ export default function NumericPainScale({ initialData, editable = false }: { in
                 </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 space-y-4">
-                <Alert className="bg-blue-50 border-blue-200">
+                <Alert variant="info">
                     <Info className="w-4 h-4 text-blue-600" />
-                    <AlertTitle className="text-blue-800 text-xs font-bold">INFORMASI</AlertTitle>
-                    <AlertDescription className="text-blue-700 text-xs">Untuk pasien dewasa yang dapat berkomunikasi verbal.</AlertDescription>
+                    <AlertTitle>INFORMASI</AlertTitle>
+                    <AlertDescription>Untuk pasien dewasa yang dapat berkomunikasi verbal.</AlertDescription>
                 </Alert>
 
                 <div className="space-y-6 py-4">

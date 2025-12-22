@@ -116,9 +116,9 @@ export default function RencanaTindakLanjut({ initialData, editable = false }: P
                 </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 space-y-6">
-                <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertDescription className="text-xs">
+                <Alert variant="info">
+                    <Info className="h-4 w-4 text-blue-500" />
+                    <AlertDescription>
                         Tentukan disposisi dan instruksi medis lanjutan untuk pasien sebelum meninggalkan IGD.
                     </AlertDescription>
                 </Alert>

@@ -12,7 +12,7 @@ import Kesadaran from "./Kesadaran";
 import NumericPainScale from "./NumericPainScale";
 import PemeriksaanPenunjang from "./PemeriksaanPenunjang";
 import PhysicalExam from "./PhysicalExam";
-import { Prescription } from "./Prescription";
+import { Prescription } from "./ResepObat";
 import StatusPsikologis from "./StatusPsikologis";
 import RencanaTindakLanjut from "./RencanaTindakLanjut";
 import SkriningNyeri from "./SkriningNyeri";
