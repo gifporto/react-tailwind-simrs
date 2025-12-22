@@ -16,7 +16,7 @@ import { Accordion } from "@/components/ui/accordion";
 import { Printer, Pencil, Save, X, Loader2 } from "lucide-react";
 
 // API
-import { AsesmentMedicAPI } from "@/lib/api";
+import { AsesmentMedicAPI, AsesmentTriageAPI } from "@/lib/api";
 
 // Sub-components Medis
 import Alergi from "./asement-medic/Alergi";
@@ -36,17 +36,39 @@ import TindakanTerapi from "./asement-medic/TindakanTerapi";
 import TandaVital from "./asement-medic/TandaVital";
 import WongBakerScale from "./asement-medic/WongBakerScale";
 
+// Sub-komponen Perawat
+import AsesmenRisikoJatuh from "./asement-perawat/AsesmenRisikoJatuh";
+import DiagnosisKeperawatan from "./asement-perawat/DiagnosisKeperawatan";
+import FaktorSosioKulturalSpiritual from "./asement-perawat/FaktorSosioKulturalSpiritual";
+import RiwayatPenyakitSekarang from "./asement-perawat/RiwayatPenyakitSekarang";
+import SkriningGizi from "./asement-perawat/SkriningGizi";
+import StatusFungsional from "./asement-perawat/StatusFungsional";
+
+// Import komponen table untuk Tab Triase
+import TriageAssessmentTable from "./asesment-tringe/triage";
+
 // Tab components lainnya
-import AsesmenPerawat from "./asement-perawat/Index";
-import AsesmenTriase from "./asesment-tringe/index";
 import KondisiMeninggalkanIGD from "./asement-medic/KondisiMeniggalkanIgd";
 import Prescription from "./asement-medic/ResepObat";
 
 export default function Asesment() {
   const { id } = useParams<{ id: string }>();
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("activeAsesmenTab") || "medis";
+    }
+    return "medis";
+  });
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dataAsesmen, setDataAsesmen] = useState<any>(null);
+
+  // State untuk menyimpan data Triage lama (old values)
+  const [dataTriage, setDataTriage] = useState<any>(null);
+
+  useEffect(() => {
+    localStorage.setItem("activeAsesmenTab", activeTab);
+  }, [activeTab]);
 
   // 1. Fetch data saat halaman dimuat
   useEffect(() => {
@@ -54,16 +76,28 @@ export default function Asesment() {
       if (!id) return;
       try {
         setLoading(true);
-        const response = await AsesmentMedicAPI.getAsesment(id);
-        setDataAsesmen(response.data);
+
+        if (activeTab === "triase") {
+          // Hanya hit API Triage jika tab triase aktif
+          const resTriage = await AsesmentTriageAPI.getList(id);
+          if (resTriage?.data?.penilaian_triage) {
+            setDataTriage(resTriage.data.penilaian_triage);
+          }
+        } else {
+          // Hit API Medis jika tab Medis atau Perawat aktif 
+          // (Asumsi: Data Perawat & Medis berada di endpoint yang sama)
+          const resMedis = await AsesmentMedicAPI.getAsesment(id);
+          setDataAsesmen(resMedis.data);
+        }
       } catch (error) {
-        console.error("Gagal mengambil data:", error);
+        console.error("Gagal mengambil data asesmen:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [id]);
+  }, [id, activeTab]);
 
   if (loading) {
     return (
@@ -74,157 +108,109 @@ export default function Asesment() {
   }
 
   return (
-    <Card className="mt-4">
+    <Card className="mt-4 shadow-sm border-slate-200">
       {/* Header */}
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
+      <CardHeader className="flex flex-row items-start justify-between gap-4 border-b pb-6">
         <div className="space-y-1">
-          <CardTitle className="text-lg">
+          <CardTitle className="text-xl font-bold text-slate-800">
             Asesmen Awal Pasien Gawat Darurat Terintegrasi
           </CardTitle>
-          <CardDescription>
-            No. RM: {dataAsesmen?.norm} | No. REG: {dataAsesmen?.no_reg}
+          <CardDescription className="text-slate-500 font-medium">
+            No. RM: {dataAsesmen?.norm || dataTriage?.no_rm || "-"} | No. REG: {dataAsesmen?.no_reg || dataTriage?.no_kunjungan || "-"}
           </CardDescription>
         </div>
 
         <div className="flex items-center gap-2">
           {!editMode ? (
-            <Button size="sm" variant="outline" onClick={() => setEditMode(true)}>
-              <Pencil className="w-4 h-4 mr-1" />
-              Edit
+            <Button size="sm" variant="outline" onClick={() => setEditMode(true)} className="bg-white">
+              <Pencil className="w-4 h-4 mr-2" />
+              Mode Edit
             </Button>
           ) : (
-            <>
-              <Button size="sm" variant="ghost" onClick={() => setEditMode(false)}>
-                <X className="w-4 h-4 mr-1" />
-                Batal
-              </Button>
-            </>
+            <Button size="sm" variant="destructive" onClick={() => setEditMode(false)}>
+              <X className="w-4 h-4 mr-2" />
+              Batal Edit
+            </Button>
           )}
 
-          <Button size="sm" variant="ghost" onClick={() => window.print()}>
-            <Printer className="w-4 h-4 mr-1" />
-            Cetak
+          <Button size="sm" variant="secondary" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" />
+            Cetak Asesmen
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6 pt-6">
         {/* Info Bar */}
-        <div className="flex items-center justify-between rounded-md border bg-muted/40 px-4 py-2">
-          <span className="text-sm text-muted-foreground capitalize">
-            Dokter Jaga: {dataAsesmen?.dokter_jaga || "-"}
-          </span>
-          <Badge variant={dataAsesmen?.status === "draft" ? "outline" : "default"}>
-            {dataAsesmen?.status || "Draft"}
+        <div className="flex items-center justify-between rounded-lg border bg-slate-50 px-4 py-3">
+          <div className="flex gap-6 text-sm">
+            <span className="text-slate-600">
+              <span className="font-semibold">Dokter Jaga:</span> {dataAsesmen?.dokter_jaga || dataTriage?.petugas_triage || "-"}
+            </span>
+            <span className="text-slate-600">
+              <span className="font-semibold">Poli:</span> {dataAsesmen?.poli || "IGD"}
+            </span>
+          </div>
+          <Badge variant={dataAsesmen?.status === "draft" ? "outline" : "default"} className="px-3">
+            {dataAsesmen?.status?.toUpperCase() || "NEW"}
           </Badge>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="medis" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="medis">Medis</TabsTrigger>
-            <TabsTrigger value="perawat">Perawat</TabsTrigger>
-            <TabsTrigger value="triase">Triase</TabsTrigger>
+        {/* Tabs Utama */}
+        <Tabs value={activeTab}
+          onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-slate-100 p-1">
+            <TabsTrigger value="medis" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Medis</TabsTrigger>
+            <TabsTrigger value="perawat" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Perawat</TabsTrigger>
+            <TabsTrigger value="triase" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Triase</TabsTrigger>
           </TabsList>
 
+          {/* TAB MEDIS */}
           <TabsContent value="medis" className="pt-4 space-y-4">
             <Accordion type="multiple" className="w-full space-y-4">
-              {/* Distribusi data spesifik ke masing-masing Child */}
-              <Anamnesa
-                editable={editMode}
-                initialData={dataAsesmen?.anamnesa}
-              />
-
-              <Alergi
-                editable={editMode}
-                initialData={dataAsesmen?.status_alergi}
-              />
-
-              <StatusPsikologis
-                editable={editMode}
-                initialData={dataAsesmen?.status_psikologis}
-              />
-
-              <KeadaanUmum
-                editable={editMode}
-                initialData={dataAsesmen?.keadaan_umum}
-              />
-
-              <Kesadaran
-                editable={editMode}
-                initialData={dataAsesmen?.kesadaran}
-              />
-
-              <TandaVital
-                editable={editMode}
-                initialData={dataAsesmen?.vital_signs}
-              />
-
-              <SkriningNyeri
-                editable={editMode}
-                initialData={dataAsesmen?.skrining_nyeri}
-              />
-              <NumericPainScale
-                editable={editMode}
-                initialData={dataAsesmen?.skrining_nyeri}
-              />
-              <WongBakerScale
-                editable={editMode}
-                initialData={dataAsesmen?.skrining_nyeri}
-              />
-
-              <FlaccPainAssessment
-                editable={editMode}
-                initialData={dataAsesmen?.skrining_nyeri}
-              />
-
-              <PhysicalExam
-                editable={editMode}
-                initialData={dataAsesmen?.pemeriksaan_fisik} />
-
-              <PemeriksaanPenunjang
-                editable={editMode}
-                initialData={dataAsesmen?.pemeriksaan_penunjang}
-              />
-
-              <Diagnosis
-                editable={editMode}
-                initialData={dataAsesmen?.diagnosis}
-              />
-
-              <Prescription
-                editable={editMode}
-                initialData={dataAsesmen?.reseps}
-              />
-
-              <TindakanTerapi
-                editable={editMode}
-                initialData={dataAsesmen?.perencanaan_tindakan}
-              />
-
-              <RencanaTindakLanjut
-                editable={editMode}
-                initialData={dataAsesmen?.rencana_tindak_lanjut}
-              />
-
-              <KondisiMeninggalkanIGD
-                editable={editMode}
-                initialData={dataAsesmen?.kondisi_keluar_igd}
-              />
-              
-               <EdukasiDischarge
-                editable={editMode}
-                initialData={dataAsesmen?.edukasi_discharge}
-              />
+              <Anamnesa editable={editMode} initialData={dataAsesmen?.anamnesa} />
+              <Alergi editable={editMode} initialData={dataAsesmen?.status_alergi} />
+              <StatusPsikologis editable={editMode} initialData={dataAsesmen?.status_psikologis} />
+              <KeadaanUmum editable={editMode} initialData={dataAsesmen?.keadaan_umum} />
+              <Kesadaran editable={editMode} initialData={dataAsesmen?.kesadaran} />
+              <TandaVital editable={editMode} initialData={dataAsesmen?.vital_signs} />
+              <SkriningNyeri editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
+              <NumericPainScale editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
+              <WongBakerScale editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
+              <FlaccPainAssessment editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
+              <PhysicalExam editable={editMode} initialData={dataAsesmen?.pemeriksaan_fisik} />
+              <PemeriksaanPenunjang editable={editMode} initialData={dataAsesmen?.pemeriksaan_penunjang} />
+              <Diagnosis editable={editMode} initialData={dataAsesmen?.diagnosis} />
+              <Prescription editable={editMode} initialData={dataAsesmen?.reseps} />
+              <TindakanTerapi editable={editMode} initialData={dataAsesmen?.perencanaan_tindakan} />
+              <RencanaTindakLanjut editable={editMode} initialData={dataAsesmen?.rencana_tindak_lanjut} />
+              <KondisiMeninggalkanIGD editable={editMode} initialData={dataAsesmen?.kondisi_keluar_igd} />
+              <EdukasiDischarge editable={editMode} initialData={dataAsesmen?.edukasi_discharge} />
             </Accordion>
           </TabsContent>
 
-          <TabsContent value="perawat" className="pt-4">
-            <AsesmenPerawat editable={editMode} />
+          {/* TAB PERAWAT */}
+          <TabsContent value="perawat" className="pt-4 space-y-4">
+            <Accordion type="multiple" className="w-full space-y-4">
+              <DiagnosisKeperawatan editable={editMode} />
+              <FaktorSosioKulturalSpiritual editable={editMode} />
+              <AsesmenRisikoJatuh editable={editMode} />
+              <RiwayatPenyakitSekarang editable={editMode} />
+              <SkriningGizi editable={editMode} />
+              <StatusFungsional editable={editMode} />
+            </Accordion>
           </TabsContent>
 
+          {/* TAB TRIASE */}
           <TabsContent value="triase" className="pt-4">
-            <AsesmenTriase editable={editMode} />
+            {/* Keterangan: 
+              - initialData: Berisi data 'penilaian_triage' dari API Get List Triage.
+              - editable: Status mode edit dari parent.
+            */}
+            <TriageAssessmentTable
+              editable={editMode}
+              initialData={dataTriage}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>
