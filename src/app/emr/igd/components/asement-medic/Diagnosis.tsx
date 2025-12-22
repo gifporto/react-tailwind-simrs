@@ -32,18 +32,15 @@ interface Props {
   editable?: boolean;
 }
 
-/**
- * 1. PINDAHKAN IcdSearchSection ke luar agar tidak re-mount saat mengetik
- */
-const IcdSearchSection = ({ 
-  type, 
-  form, 
-  setForm, 
-  editable, 
-  loading 
-}: { 
-  type: 'utama' | 'sekunder', 
-  form: any, 
+const IcdSearchSection = ({
+  type,
+  form,
+  setForm,
+  editable,
+  loading
+}: {
+  type: 'utama' | 'sekunder',
+  form: any,
   setForm: React.Dispatch<React.SetStateAction<any>>,
   editable: boolean,
   loading: boolean
@@ -52,22 +49,39 @@ const IcdSearchSection = ({
   const [results, setResults] = React.useState<any[]>([]);
   const [isSearching, setIsSearching] = React.useState(false);
 
-  const onSearch = async () => {
-    if (tempSearch.length < 2) {
-      toast.error("Ketik minimal 2 karakter");
+  // Fungsi pencarian utama
+  const onSearch = React.useCallback(async (query: string) => {
+    if (query.length < 3) {
+      setResults([]);
       return;
     }
     try {
       setIsSearching(true);
-      // Sesuaikan parameter API Anda (biasanya: limit, query)
-      const res = await IcdAPI.getListIcd10("10", tempSearch);
+      const res = await IcdAPI.getListIcd10("10", query);
       setResults(res.data || []);
     } catch (error) {
-      toast.error("Gagal mengambil data");
+      console.error("Gagal mengambil data ICD:", error);
+      // toast.error("Gagal mengambil data");
     } finally {
       setIsSearching(false);
     }
-  };
+  }, []);
+
+  // Efek untuk Auto Search (Debounce)
+  React.useEffect(() => {
+    // Jika kurang dari 3 huruf, jangan cari dan bersihkan hasil
+    if (tempSearch.length < 3) {
+      setResults([]);
+      return;
+    }
+
+    // Tunggu user berhenti mengetik selama 500ms
+    const delayDebounceFn = setTimeout(() => {
+      onSearch(tempSearch);
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [tempSearch, onSearch]);
 
   const currentCode = type === 'utama' ? form.diagnosis_utama_code : form.diagnosis_sekunder_code;
   const currentDesc = type === 'utama' ? form.diagnosis_utama_description : form.diagnosis_sekunder_description;
@@ -76,17 +90,22 @@ const IcdSearchSection = ({
     <div className="space-y-3">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          {/* Tampilan icon berubah jadi loader jika sedang mencari otomatis */}
+          {isSearching ? (
+            <Loader2 className="absolute left-2.5 top-2.5 h-4 w-4 text-primary animate-spin" />
+          ) : (
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          )}
+
           <input
             className="flex h-9 w-full rounded-md border border-input bg-background px-9 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder="Cari kode/nama ICD-10..."
+            placeholder="Ketik min. 3 huruf untuk cari..."
             value={tempSearch}
             onChange={(e) => setTempSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
             disabled={!editable}
           />
           {tempSearch && (
-            <button 
+            <button
               onClick={() => { setTempSearch(""); setResults([]); }}
               className="absolute right-2.5 top-2.5"
             >
@@ -94,19 +113,11 @@ const IcdSearchSection = ({
             </button>
           )}
         </div>
-        <Button 
-          type="button"
-          size="sm" 
-          onClick={onSearch}
-          disabled={isSearching || !editable}
-          className="h-9 px-4 text-xs font-bold"
-        >
-          {isSearching ? <Loader2 className="h-3 w-3 animate-spin" /> : <SearchIcon/>}
-        </Button>
       </div>
 
+      {/* Hasil pencarian tetap sama */}
       {results.length > 0 && (
-        <div className="border rounded-md overflow-hidden bg-slate-50/50">
+        <div className="border rounded-md overflow-hidden bg-slate-50/50 shadow-lg">
           <div className="max-h-[160px] overflow-y-auto divide-y divide-slate-100">
             {results.map((item: any) => {
               const isSelected = currentCode === item.kd_icd;
@@ -120,7 +131,8 @@ const IcdSearchSection = ({
                       [type === 'utama' ? 'diagnosis_utama_code' : 'diagnosis_sekunder_code']: item.kd_icd,
                       [type === 'utama' ? 'diagnosis_utama_description' : 'diagnosis_sekunder_description']: item.desk_icd_indo
                     }));
-                    setResults([]); 
+                    setResults([]);
+                    setTempSearch(""); // Opsional: bersihkan search setelah pilih
                   }}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors",
@@ -135,6 +147,7 @@ const IcdSearchSection = ({
                   </div>
                   <div className="min-w-0">
                     <span className="text-[11px] font-bold text-primary mr-2">{item.kd_icd}</span>
+                    <span className="text-[11px] text-slate-600 line-clamp-1">{item.desk_icd}</span>
                     <span className="text-[11px] text-slate-600 line-clamp-1">{item.desk_icd_indo}</span>
                   </div>
                 </div>
@@ -150,7 +163,7 @@ const IcdSearchSection = ({
             Deskripsi {type === 'utama' ? 'Utama' : 'Sekunder'}
           </label>
           {currentCode && (
-            <Badge variant="outline" className="text-[9px] h-4 bg-primary/5 text-primary border-primary/20">
+            <Badge variant="outline" className=" h-4 bg-primary/5 text-primary border-primary/20">
               Kode: {currentCode}
             </Badge>
           )}
@@ -250,34 +263,34 @@ const Diagnosis: React.FC<Props> = ({ initialData, editable = false }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-none border-muted">
-              <CardHeader className="pb-2 bg-slate-50/50 border-b">
-                <CardTitle className="text-[11px] uppercase font-bold text-slate-500">
+              <CardHeader>
+                <CardTitle>
                   Diagnosis Utama (ICD-10)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
-                <IcdSearchSection 
-                  type="utama" 
-                  form={form} 
-                  setForm={setForm} 
-                  editable={editable} 
+              <CardContent>
+                <IcdSearchSection
+                  type="utama"
+                  form={form}
+                  setForm={setForm}
+                  editable={editable}
                   loading={loading}
                 />
               </CardContent>
             </Card>
 
             <Card className="shadow-none border-muted">
-              <CardHeader className="pb-2 bg-slate-50/50 border-b">
-                <CardTitle className="text-[11px] uppercase font-bold text-slate-500">
+              <CardHeader>
+                <CardTitle>
                   Diagnosis Sekunder
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
-                <IcdSearchSection 
-                  type="sekunder" 
-                  form={form} 
-                  setForm={setForm} 
-                  editable={editable} 
+              <CardContent>
+                <IcdSearchSection
+                  type="sekunder"
+                  form={form}
+                  setForm={setForm}
+                  editable={editable}
                   loading={loading}
                 />
               </CardContent>

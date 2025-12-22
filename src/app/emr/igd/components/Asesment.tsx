@@ -50,6 +50,8 @@ import TriageAssessmentTable from "./asesment-tringe/triage";
 // Tab components lainnya
 import KondisiMeninggalkanIGD from "./asement-medic/KondisiMeniggalkanIgd";
 import Prescription from "./asement-medic/ResepObat";
+import OrderRadiologi from "@/components/orderRadiologi";
+import OrderLab from "@/components/orderLab";
 
 export default function Asesment() {
   const { id } = useParams<{ id: string }>();
@@ -187,6 +189,8 @@ export default function Asesment() {
               <FlaccPainAssessment editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
               <PhysicalExam editable={editMode} initialData={dataAsesmen?.pemeriksaan_fisik} />
               <PemeriksaanPenunjang editable={editMode} initialData={dataAsesmen?.pemeriksaan_penunjang} />
+              <OrderLab/>
+              <OrderRadiologi/>
               <Diagnosis editable={editMode} initialData={dataAsesmen?.diagnosis} />
               <Prescription editable={editMode} initialData={dataAsesmen?.reseps} />
               <TindakanTerapi editable={editMode} initialData={dataAsesmen?.perencanaan_tindakan} />

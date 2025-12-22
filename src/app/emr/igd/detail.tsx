@@ -21,8 +21,8 @@ const EmrIgdIndexPage: React.FC = () => {
       <MainContent />
       <KunjunganUnit />
       <KunjunganLayanan />
-      <OrderLab />
-      <OrderRadiologi/>
+      {/* <OrderLab />
+      <OrderRadiologi/> */}
       <Asesment/>
     </div>
   )

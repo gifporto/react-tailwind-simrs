@@ -53,7 +53,7 @@ interface Props {
 export default function Kesadaran({ initialData, editable = false }: Props) {
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
-    
+
     const [kesadaran, setKesadaran] = useState<KesadaranLevel>("Compos Mentis");
     const [interpretation, setInterpretation] = useState("Compos Mentis (Normal)");
     const [gcs, setGcs] = useState({
@@ -94,6 +94,39 @@ export default function Kesadaran({ initialData, editable = false }: Props) {
         setInterpretation(text);
     }, [totalGcs]);
 
+    useEffect(() => {
+        let text = "";
+        let autoKesadaran: KesadaranLevel = "Compos Mentis";
+
+        // Logika Penentuan Interpretasi dan Tingkat Kesadaran Otomatis
+        if (totalGcs >= 14) {
+            text = "Compos Mentis (Normal)";
+            autoKesadaran = "Compos Mentis";
+        } else if (totalGcs >= 12) {
+            text = "Cedera Kepala Ringan (Apatis)";
+            autoKesadaran = "Apatis";
+        } else if (totalGcs >= 10) {
+            text = "Cedera Kepala Ringan (Somnolen)";
+            autoKesadaran = "Somnolen";
+        } else if (totalGcs >= 7) {
+            text = "Cedera Kepala Sedang (Sopor)";
+            autoKesadaran = "Sopor";
+        } else if (totalGcs >= 3) {
+            text = "Cedera Kepala Berat (Coma)";
+            autoKesadaran = "Coma";
+        } else {
+            text = "Tidak terdefinisi";
+        }
+
+        setInterpretation(text);
+
+        // Hanya update otomatis jika sedang dalam mode editable 
+        // agar tidak menimpa data awal dari API saat pertama kali load
+        if (editable) {
+            setKesadaran(autoKesadaran);
+        }
+    }, [totalGcs, editable]);
+
     const handleSave = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -103,7 +136,7 @@ export default function Kesadaran({ initialData, editable = false }: Props) {
         try {
             setLoading(true);
             const now = new Date();
-            
+
             const payload = {
                 kesadaran: kesadaran.toLowerCase().replace(" ", "_"),
                 gcs_eye: Number(gcs.eye),
@@ -143,9 +176,9 @@ export default function Kesadaran({ initialData, editable = false }: Props) {
                             <Label className="text-xs font-semibold flex items-center gap-1">
                                 <Badge variant="outline" className="h-5 w-5 p-0 flex justify-center">E</Badge> Eye Response
                             </Label>
-                            <Select 
+                            <Select
                                 disabled={!editable || loading}
-                                value={gcs.eye} 
+                                value={gcs.eye}
                                 onValueChange={(val) => setGcs({ ...gcs, eye: val })}
                             >
                                 <SelectTrigger className="w-full bg-background">
@@ -163,9 +196,9 @@ export default function Kesadaran({ initialData, editable = false }: Props) {
                             <Label className="text-xs font-semibold flex items-center gap-1">
                                 <Badge variant="outline" className="h-5 w-5 p-0 flex justify-center text-green-600 border-green-600">V</Badge> Verbal Response
                             </Label>
-                            <Select 
+                            <Select
                                 disabled={!editable || loading}
-                                value={gcs.verbal} 
+                                value={gcs.verbal}
                                 onValueChange={(val) => setGcs({ ...gcs, verbal: val })}
                             >
                                 <SelectTrigger className="w-full bg-background">
@@ -183,9 +216,9 @@ export default function Kesadaran({ initialData, editable = false }: Props) {
                             <Label className="text-xs font-semibold flex items-center gap-1">
                                 <Badge variant="outline" className="h-5 w-5 p-0 flex justify-center text-amber-600 border-amber-600">M</Badge> Motor Response
                             </Label>
-                            <Select 
+                            <Select
                                 disabled={!editable || loading}
-                                value={gcs.motor} 
+                                value={gcs.motor}
                                 onValueChange={(val) => setGcs({ ...gcs, motor: val })}
                             >
                                 <SelectTrigger className="w-full bg-background">
@@ -242,9 +275,9 @@ export default function Kesadaran({ initialData, editable = false }: Props) {
                 {/* Action Button */}
                 {editable && (
                     <div className="text-right mt-4 border-t pt-3">
-                        <Button 
-                            onClick={handleSave} 
-                            disabled={loading} 
+                        <Button
+                            onClick={handleSave}
+                            disabled={loading}
                             size="sm"
                             className="min-w-[150px]"
                         >
