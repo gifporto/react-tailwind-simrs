@@ -110,7 +110,7 @@ export default function PemeriksaanPenunjang({ initialData, editable = false }: 
       <AccordionContent className="p-4 space-y-6">
         <Alert variant="info">
           <Info className="h-4 w-4 text-sky-600" />
-          <AlertDescription className="text-[11px] text-sky-800 font-medium">
+          <AlertDescription>
             Dokumentasikan seluruh hasil pemeriksaan penunjang (Laboratorium, Radiologi, EKG, dll) secara detail.
           </AlertDescription>
         </Alert>

@@ -45,9 +45,9 @@ export default function WongBakerScale({ initialData, editable = false }: { init
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4 space-y-4">
-        <Alert className="bg-sky-50 border-sky-200">
+        <Alert variant="info">
           <Info className="w-4 h-4 text-sky-600" />
-          <AlertDescription className="text-sky-800 text-xs">Untuk anak usia 3+ atau pasien kendala verbal.</AlertDescription>
+          <AlertDescription>Untuk anak usia 3+ atau pasien kendala verbal.</AlertDescription>
         </Alert>
         <RadioGroup value={score} onValueChange={setScore} disabled={!editable || loading} className="grid grid-cols-3 md:grid-cols-6 gap-2">
           {["0", "2", "4", "6", "8", "10"].map((v) => (

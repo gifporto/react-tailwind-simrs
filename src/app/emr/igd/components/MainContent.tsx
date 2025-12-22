@@ -168,7 +168,7 @@ export default function EmrIgdDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full gap-2">
+            {/* <Button className="w-full gap-2">
               <Bed className="w-4 h-4" />
               Transfer Rawat Inap
             </Button>
@@ -176,7 +176,7 @@ export default function EmrIgdDetailPage() {
             <Button variant="outline" className="w-full gap-2">
               <Edit className="w-4 h-4" />
               Edit Registrasi
-            </Button>
+            </Button> */}
 
             <Button
               variant="secondary"
@@ -189,10 +189,10 @@ export default function EmrIgdDetailPage() {
 
             <Separator />
 
-            <Button variant="destructive" className="w-full gap-2">
+            {/* <Button variant="destructive" className="w-full gap-2">
               <Trash2 className="w-4 h-4" />
               Hapus Registrasi
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
 

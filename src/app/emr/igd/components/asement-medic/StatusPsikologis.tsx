@@ -154,10 +154,10 @@ export default function StatusPsikologis({ initialData, editable = false }: Prop
 
           {/* Section: Penilaian Risiko */}
           <div className="space-y-3">
-            <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+            <Alert variant="destructive">
               <AlertCircle className="w-4 h-4" />
-              <AlertTitle className="text-xs font-bold uppercase">Prioritas Tinggi</AlertTitle>
-              <AlertDescription className="text-xs">
+              <AlertTitle>Prioritas Tinggi</AlertTitle>
+              <AlertDescription>
                 Segera laporkan jika ditemukan indikasi bahaya.
               </AlertDescription>
             </Alert>

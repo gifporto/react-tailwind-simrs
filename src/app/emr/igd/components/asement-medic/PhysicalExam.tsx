@@ -124,9 +124,9 @@ export default function PhysicalExam({ initialData, editable = false }: { initia
             </AccordionTrigger>
 
             <AccordionContent className="p-4 space-y-6">
-                <Alert variant="info" className="bg-blue-50 border-none shadow-none">
+                <Alert variant="info">
                     <Info className="h-4 w-4 text-blue-600" />
-                    <AlertDescription className="text-xs text-blue-800 font-medium">
+                    <AlertDescription>
                         Lakukan pemeriksaan fisik secara sistematis (ABCDE & Head-to-Toe).
                     </AlertDescription>
                 </Alert>

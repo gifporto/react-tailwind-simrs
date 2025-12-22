@@ -29,7 +29,6 @@ import Kesadaran from "./asement-medic/Kesadaran";
 import NumericPainScale from "./asement-medic/NumericPainScale";
 import PemeriksaanPenunjang from "./asement-medic/PemeriksaanPenunjang";
 import PhysicalExam from "./asement-medic/PhysicalExam";
-import { Prescription } from "./asement-medic/Prescription";
 import StatusPsikologis from "./asement-medic/StatusPsikologis";
 import RencanaTindakLanjut from "./asement-medic/RencanaTindakLanjut";
 import SkriningNyeri from "./asement-medic/SkriningNyeri";
@@ -41,6 +40,7 @@ import WongBakerScale from "./asement-medic/WongBakerScale";
 import AsesmenPerawat from "./asement-perawat/Index";
 import AsesmenTriase from "./asesment-tringe/index";
 import KondisiMeninggalkanIGD from "./asement-medic/KondisiMeniggalkanIgd";
+import Prescription from "./asement-medic/ResepObat";
 
 export default function Asesment() {
   const { id } = useParams<{ id: string }>();
@@ -196,7 +196,10 @@ export default function Asesment() {
                 initialData={dataAsesmen?.diagnosis}
               />
 
-              <Prescription />
+              <Prescription
+                editable={editMode}
+                initialData={dataAsesmen?.reseps}
+              />
 
               <TindakanTerapi
                 editable={editMode}

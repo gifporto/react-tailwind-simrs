@@ -234,6 +234,11 @@ export const AsesmentMedicAPI = {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/discharge-planning`, payload);
         return res.data;
     },
+    
+    updateResepObat: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/resep-obat`, payload);
+        return res.data;
+    },
 };
 
 export const RadiologyAPI = {
