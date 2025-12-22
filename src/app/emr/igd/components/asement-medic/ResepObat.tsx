@@ -30,6 +30,17 @@ import {
     Check,
     SearchIcon,
 } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import { AsesmentMedicAPI, ObatAPI } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -452,9 +463,36 @@ export default function Prescription({ initialData = [], editable = false }: Pro
                                             {resep.is_terima === "Y" ? "Diterima" : "Pending"}
                                         </Badge>
                                         {editable && (
-                                            <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteResep(resep.id)}>
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        disabled={loading}
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Hapus Resep ini?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Apakah Anda yakin ingin menghapus resep <span className="font-bold text-foreground">{resep.no_resep}</span>?
+                                                            Tindakan ini tidak dapat dibatalkan dan data akan terhapus dari sistem.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => handleDeleteResep(resep.id)}
+                                                            className="bg-destructive hover:bg-destructive/90"
+                                                        >
+                                                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ya, Hapus"}
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         )}
                                     </div>
                                 </div>

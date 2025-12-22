@@ -123,18 +123,18 @@ export default function Asesment() {
         <div className="flex items-center gap-2">
           {!editMode ? (
             <Button size="sm" variant="outline" onClick={() => setEditMode(true)} className="bg-white">
-              <Pencil className="w-4 h-4 mr-2" />
+              <Pencil className="w-4 h-4 mr-1" />
               Mode Edit
             </Button>
           ) : (
             <Button size="sm" variant="destructive" onClick={() => setEditMode(false)}>
-              <X className="w-4 h-4 mr-2" />
+              <X className="w-4 h-4 mr-1" />
               Batal Edit
             </Button>
           )}
 
           <Button size="sm" variant="secondary" onClick={() => window.print()}>
-            <Printer className="w-4 h-4 mr-2" />
+            <Printer className="w-4 h-4 mr-1" />
             Cetak Asesmen
           </Button>
         </div>
@@ -142,7 +142,7 @@ export default function Asesment() {
 
       <CardContent className="space-y-6 pt-6">
         {/* Info Bar */}
-        <div className="flex items-center justify-between rounded-lg border bg-slate-50 px-4 py-3">
+        {/* <div className="flex items-center justify-between rounded-lg border bg-slate-50 px-4 py-3">
           <div className="flex gap-6 text-sm">
             <span className="text-slate-600">
               <span className="font-semibold">Dokter Jaga:</span> {dataAsesmen?.dokter_jaga || dataTriage?.petugas_triage || "-"}
@@ -154,16 +154,23 @@ export default function Asesment() {
           <Badge variant={dataAsesmen?.status === "draft" ? "outline" : "default"} className="px-3">
             {dataAsesmen?.status?.toUpperCase() || "NEW"}
           </Badge>
-        </div>
+        </div> */}
 
         {/* Tabs Utama */}
         <Tabs value={activeTab}
           onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-slate-100 p-1">
+            <TabsTrigger value="triase" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Triase</TabsTrigger>
             <TabsTrigger value="medis" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Medis</TabsTrigger>
             <TabsTrigger value="perawat" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Perawat</TabsTrigger>
-            <TabsTrigger value="triase" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Triase</TabsTrigger>
           </TabsList>
+          {/* TAB TRIASE */}
+          <TabsContent value="triase" className="pt-4">
+            <TriageAssessmentTable
+              editable={editMode}
+              initialData={dataTriage}
+            />
+          </TabsContent>
 
           {/* TAB MEDIS */}
           <TabsContent value="medis" className="pt-4 space-y-4">
@@ -201,17 +208,6 @@ export default function Asesment() {
             </Accordion>
           </TabsContent>
 
-          {/* TAB TRIASE */}
-          <TabsContent value="triase" className="pt-4">
-            {/* Keterangan: 
-              - initialData: Berisi data 'penilaian_triage' dari API Get List Triage.
-              - editable: Status mode edit dari parent.
-            */}
-            <TriageAssessmentTable
-              editable={editMode}
-              initialData={dataTriage}
-            />
-          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
