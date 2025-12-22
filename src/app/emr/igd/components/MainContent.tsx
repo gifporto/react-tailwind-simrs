@@ -29,7 +29,10 @@ import {
   X,
   InfoIcon,
   AlertCircle,
+  Mars,
+  Venus,
 } from "lucide-react"
+import { Label } from "@/components/ui/label"
 
 export default function EmrIgdDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -122,35 +125,76 @@ export default function EmrIgdDetailPage() {
               Data Pasien
             </CardTitle>
             <CardDescription>
-              Informasi identitas pasien
+              Informasi identitas lengkap pasien
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
+              {/* Baris 1 */}
               <Info label="No. Rekam Medis">
-                <Badge variant="default">{kunjungan.norm}</Badge>
+                <Badge variant="default">{kunjungan.pasien?.norm || "-"}</Badge>
               </Info>
-              <Info label="Nama">{kunjungan.pasien?.nama || "-"}</Info>
+              <Info label="Nama Lengkap">
+                <p className="uppercase font-bold">{kunjungan.pasien?.nama || "-"}</p>
+              </Info>
+
+              {/* Baris 2 */}
               <Info label="NIK">{kunjungan.pasien?.nik || "-"}</Info>
-              <Info label="BPJS">
-                {kunjungan.pasien?.no_bpjs || "Tidak ada"}
+              <Info label="No. BPJS">{kunjungan.pasien?.no_bpjs || "Tidak Ada"}</Info>
+
+              {/* Baris 3 */}
+              <Info label="IHS Number (SatuSehat)">
+                <Badge variant="outline" className="font-mono">{kunjungan.pasien?.ihs_number || "-"}</Badge>
               </Info>
-              <Info label="TTL">
-                {kunjungan.pasien?.tmp_lahir || "-"},{" "}
-                {formatDate(kunjungan.pasien?.tgl_lahir)}
+              <Info label="Jenis Kelamin">
+                {kunjungan.pasien?.sex === "L" ? (
+                  <span className="flex items-center gap-2">
+                    <Mars className="w-4 h-4 text-blue-500" /> Laki-laki
+                  </span>
+                ) : kunjungan.pasien?.sex === "P" ? (
+                  <span className="flex items-center gap-2">
+                    <Venus className="w-4 h-4 text-pink-500" /> Perempuan
+                  </span>
+                ) : (
+                  "-"
+                )}
+              </Info>
+
+              {/* Baris 4 */}
+              <Info label="Tempat, Tanggal Lahir">
+                {kunjungan.pasien?.tmp_lahir || "-"}, {formatDate(kunjungan.pasien?.tgl_lahir)}
               </Info>
               <Info label="No. HP">
                 <a
                   href={`tel:${kunjungan.pasien?.hp}`}
-                  className="text-green-600 underline flex items-center gap-1"
+                  className="text-green-600 hover:underline flex items-center gap-1"
                 >
                   <Phone className="w-4 h-4" />
                   {kunjungan.pasien?.hp || "-"}
                 </a>
               </Info>
-              <Info label="Alamat" className="md:col-span-2">
-                {kunjungan.pasien?.alamat_ktp || "-"}
+
+              {/* Baris 5 (Data Tambahan dari JSON) */}
+              <Info label="Agama">{kunjungan.pasien?.agama?.desk_agama || "-"}</Info>
+              <Info label="Status Pernikahan">{kunjungan.pasien?.status_menikah?.desk_sts_menikah || "-"}</Info>
+
+              {/* Baris 6 */}
+              <Info label="Pendidikan">{kunjungan.pasien?.pendidikan?.desk_pendidikan || "-"}</Info>
+              <Info label="Pekerjaan">{kunjungan.pasien?.pekerjaan?.desk_pekerjaan || "-"}</Info>
+
+              {/* Baris 7 - Alamat Full Width */}
+              <Info label="Alamat KTP" className="md:col-span-2">
+                <p className="text-sm leading-relaxed">
+                  {kunjungan.pasien?.alamat_ktp || "-"}
+                  {kunjungan.pasien?.kelurahan_ktp && `, Kel. ${kunjungan.pasien.kelurahan_ktp}`}
+                </p>
+              </Info>
+
+              <Info label="Alamat Domisili" className="md:col-span-2">
+                <p className="text-sm leading-relaxed">
+                  {kunjungan.pasien?.alamat_domisili || "Sama dengan KTP"}
+                </p>
               </Info>
             </div>
           </CardContent>
@@ -247,7 +291,7 @@ export default function EmrIgdDetailPage() {
 function Info({
   label,
   children,
-  className = "",
+  className = "flex flex-col space-y-1",
 }: {
   label: string
   children: React.ReactNode
@@ -255,7 +299,7 @@ function Info({
 }) {
   return (
     <div className={className}>
-      <p className="text-sm text-muted-foreground mb-1">{label}</p>
+      <Label>{label}</Label>
       <div className="font-medium">{children}</div>
     </div>
   )

@@ -239,6 +239,11 @@ export const AsesmentMedicAPI = {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/resep-obat`, payload);
         return res.data;
     },
+
+    deleteResepObat: async (id: string, idResepObat: string) => {
+        const res = await api.delete(`/inspections/igd/${id}/asesmen-medis/resep-obat/${idResepObat}`);
+        return res.data;
+    },
 };
 
 export const RadiologyAPI = {
@@ -306,6 +311,15 @@ export const IcdAPI = {
 export const HakKelasAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/hak-kelas", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const ObatAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/drugs", {
             params: { page, limit, search },
         });
         return res.data;
