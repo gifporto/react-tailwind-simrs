@@ -246,6 +246,18 @@ export const AsesmentMedicAPI = {
     },
 };
 
+export const AsesmentTriageAPI = {
+    getList: async (id: string) => {
+        const res = await api.get(`/inspections/igd/${id}/triage`);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/igd/${id}/triage`, payload);
+        return res.data;
+    },
+};
+
 export const RadiologyAPI = {
     getCategory: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/radiologies/categories", {
@@ -320,6 +332,15 @@ export const HakKelasAPI = {
 export const ObatAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/master/drugs", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const TriageAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/triage", {
             params: { page, limit, search },
         });
         return res.data;
