@@ -68,9 +68,6 @@ interface Props {
     editable?: boolean;
 }
 
-/**
- * Komponen Pencarian Obat (Mengikuti pola Diagnosis)
- */
 const DrugSearchSection = ({
     entry,
     index,
@@ -86,38 +83,51 @@ const DrugSearchSection = ({
     const [results, setResults] = React.useState<any[]>([]);
     const [isSearching, setIsSearching] = React.useState(false);
 
-    const onSearch = async () => {
-        if (tempSearch.length < 2) {
-            toast.error("Ketik minimal 2 karakter");
+    // Fungsi Pencarian Utama
+    const onSearch = React.useCallback(async (query: string) => {
+        if (query.length < 3) {
+            setResults([]);
             return;
         }
         try {
             setIsSearching(true);
-            const res = await ObatAPI.getList(1, 30, tempSearch);
+            const res = await ObatAPI.getList(1, 30, query);
             setResults(res.data || []);
         } catch (error) {
-            toast.error("Gagal mengambil data obat");
+            console.error("Gagal mengambil data obat:", error);
+            // toast.error("Gagal mengambil data obat");
         } finally {
             setIsSearching(false);
         }
-    };
+    }, []);
+
+    // Efek Auto Search (Debounce 500ms)
+    useEffect(() => {
+        if (tempSearch.length < 3) {
+            setResults([]);
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(() => {
+            onSearch(tempSearch);
+        }, 500);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [tempSearch, onSearch]);
 
     const handleSelect = (item: any) => {
         if (!editable) return;
-
-        // Periksa apakah item yang diklik sudah terpilih sebelumnya
         const isCurrentlySelected = entry.id_obat === item.id;
 
         if (isCurrentlySelected) {
-            // Jika di-klik ulang (Uncheck), kosongkan data
             updateField(index, "id_obat", 0);
             updateField(index, "nama_obat", "");
         } else {
-            // Jika dipilih (Check), isi data obat
             updateField(index, "id_obat", item.id);
             updateField(index, "nama_obat", item.desk_brg);
-            // Opsi: Sembunyikan list setelah memilih
-            // setResults([]); 
+            // Bersihkan hasil setelah memilih untuk merapikan UI
+            setResults([]);
+            setTempSearch("");
         }
     };
 
@@ -125,13 +135,18 @@ const DrugSearchSection = ({
         <div className="space-y-3">
             <div className="flex gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    {/* Icon berubah jadi loading jika sedang mencari */}
+                    {isSearching ? (
+                        <Loader2 className="absolute left-2.5 top-2.5 h-4 w-4 text-primary animate-spin" />
+                    ) : (
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    )}
+
                     <input
                         className="flex h-9 w-full rounded-md border border-input bg-background px-9 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        placeholder="Cari nama obat..."
+                        placeholder="Ketik nama obat (min. 3 huruf)..."
                         value={tempSearch}
                         onChange={(e) => setTempSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && onSearch()}
                         disabled={!editable}
                     />
                     {tempSearch && (
@@ -147,29 +162,30 @@ const DrugSearchSection = ({
                         </button>
                     )}
                 </div>
+                {/* Tombol cari manual tetap ada sebagai alternatif */}
                 <Button
                     type="button"
                     size="sm"
-                    onClick={onSearch}
-                    disabled={isSearching || !editable}
+                    onClick={() => onSearch(tempSearch)}
+                    disabled={isSearching || !editable || tempSearch.length < 3}
                     className="h-9 px-4 text-xs font-bold"
                 >
                     {isSearching ? <Loader2 className="h-3 w-3 animate-spin" /> : <SearchIcon className="h-4 w-4" />}
                 </Button>
             </div>
 
-            {/* HASIL PENCARIAN (INLINE LIST DENGAN CHECKBOX) */}
+            {/* HASIL PENCARIAN */}
             {results.length > 0 && (
-                <div className="border rounded-md overflow-hidden bg-slate-50/50 animate-in fade-in duration-200">
+                <div className="border rounded-md overflow-hidden bg-slate-50/50 animate-in fade-in slide-in-from-top-1 duration-200 shadow-sm">
                     <div className="flex items-center justify-between px-3 py-1 bg-slate-100/50 border-b">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">Hasil Pencarian</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Ditemukan {results.length} Obat</span>
                         <button onClick={() => setResults([])} className="text-slate-400 hover:text-slate-600">
                             <X className="h-3 w-3" />
                         </button>
                     </div>
                     <div className="max-h-[200px] overflow-y-auto divide-y divide-slate-100">
                         {results.map((item: any) => {
-                            const isChecked = entry.id_obat === item.id; // Ini kunci agar checklist STAY
+                            const isChecked = entry.id_obat === item.id;
                             return (
                                 <div
                                     key={item.id}
@@ -180,7 +196,7 @@ const DrugSearchSection = ({
                                     )}
                                 >
                                     <Checkbox
-                                        checked={isChecked} // State checklist dikontrol oleh entry.id_obat
+                                        checked={isChecked}
                                         onCheckedChange={() => handleSelect(item)}
                                     />
                                     <div className="min-w-0 flex-1">
@@ -194,7 +210,7 @@ const DrugSearchSection = ({
                                             {isChecked && <Badge className="h-3 px-1 text-[8px]">Terpilih</Badge>}
                                         </div>
                                         <p className="text-[10px] text-muted-foreground mt-0.5">
-                                            {item.spesifikasi} | Stok: {item.brg_stok}
+                                            {item.spesifikasi} | <span className="font-semibold">Stok: {item.brg_stok}</span>
                                         </p>
                                     </div>
                                 </div>
