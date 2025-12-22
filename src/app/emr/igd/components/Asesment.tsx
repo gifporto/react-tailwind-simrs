@@ -172,6 +172,7 @@ export default function Asesment() {
                 editable={editMode}
                 initialData={dataAsesmen?.skrining_nyeri}
               />
+
               <FlaccPainAssessment
                 editable={editMode}
                 initialData={dataAsesmen?.skrining_nyeri}
@@ -180,11 +181,6 @@ export default function Asesment() {
               <PhysicalExam
                 editable={editMode}
                 initialData={dataAsesmen?.pemeriksaan_fisik} />
-
-              <EdukasiDischarge
-                editable={editMode}
-                initialData={dataAsesmen?.edukasi_discharge}
-              />
 
               <PemeriksaanPenunjang
                 editable={editMode}
@@ -214,6 +210,11 @@ export default function Asesment() {
               <KondisiMeninggalkanIGD
                 editable={editMode}
                 initialData={dataAsesmen?.kondisi_keluar_igd}
+              />
+              
+               <EdukasiDischarge
+                editable={editMode}
+                initialData={dataAsesmen?.edukasi_discharge}
               />
             </Accordion>
           </TabsContent>

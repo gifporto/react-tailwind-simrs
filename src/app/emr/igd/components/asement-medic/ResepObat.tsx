@@ -25,10 +25,15 @@ import {
     Clock,
     AlertCircle,
     Stethoscope,
-    Info
+    Search,
+    X,
+    Check,
+    SearchIcon,
 } from "lucide-react";
 
-import { AsesmentMedicAPI } from "@/lib/api";
+import { AsesmentMedicAPI, ObatAPI } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface DrugEntry {
     id?: string | number;
@@ -51,6 +56,175 @@ interface Props {
     initialData?: any[];
     editable?: boolean;
 }
+
+/**
+ * Komponen Pencarian Obat (Mengikuti pola Diagnosis)
+ */
+const DrugSearchSection = ({
+    entry,
+    index,
+    updateField,
+    editable,
+}: {
+    entry: DrugEntry;
+    index: number;
+    updateField: (index: number, field: keyof DrugEntry, value: any) => void;
+    editable: boolean;
+}) => {
+    const [tempSearch, setTempSearch] = React.useState("");
+    const [results, setResults] = React.useState<any[]>([]);
+    const [isSearching, setIsSearching] = React.useState(false);
+
+    const onSearch = async () => {
+        if (tempSearch.length < 2) {
+            toast.error("Ketik minimal 2 karakter");
+            return;
+        }
+        try {
+            setIsSearching(true);
+            const res = await ObatAPI.getList(1, 30, tempSearch);
+            setResults(res.data || []);
+        } catch (error) {
+            toast.error("Gagal mengambil data obat");
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleSelect = (item: any) => {
+        if (!editable) return;
+
+        // Periksa apakah item yang diklik sudah terpilih sebelumnya
+        const isCurrentlySelected = entry.id_obat === item.id;
+
+        if (isCurrentlySelected) {
+            // Jika di-klik ulang (Uncheck), kosongkan data
+            updateField(index, "id_obat", 0);
+            updateField(index, "nama_obat", "");
+        } else {
+            // Jika dipilih (Check), isi data obat
+            updateField(index, "id_obat", item.id);
+            updateField(index, "nama_obat", item.desk_brg);
+            // Opsi: Sembunyikan list setelah memilih
+            // setResults([]); 
+        }
+    };
+
+    return (
+        <div className="space-y-3">
+            <div className="flex gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <input
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-9 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        placeholder="Cari nama obat..."
+                        value={tempSearch}
+                        onChange={(e) => setTempSearch(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && onSearch()}
+                        disabled={!editable}
+                    />
+                    {tempSearch && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setTempSearch("");
+                                setResults([]);
+                            }}
+                            className="absolute right-2.5 top-2.5"
+                        >
+                            <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                    )}
+                </div>
+                <Button
+                    type="button"
+                    size="sm"
+                    onClick={onSearch}
+                    disabled={isSearching || !editable}
+                    className="h-9 px-4 text-xs font-bold"
+                >
+                    {isSearching ? <Loader2 className="h-3 w-3 animate-spin" /> : <SearchIcon className="h-4 w-4" />}
+                </Button>
+            </div>
+
+            {/* HASIL PENCARIAN (INLINE LIST DENGAN CHECKBOX) */}
+            {results.length > 0 && (
+                <div className="border rounded-md overflow-hidden bg-slate-50/50 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between px-3 py-1 bg-slate-100/50 border-b">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Hasil Pencarian</span>
+                        <button onClick={() => setResults([])} className="text-slate-400 hover:text-slate-600">
+                            <X className="h-3 w-3" />
+                        </button>
+                    </div>
+                    <div className="max-h-[200px] overflow-y-auto divide-y divide-slate-100">
+                        {results.map((item: any) => {
+                            const isChecked = entry.id_obat === item.id; // Ini kunci agar checklist STAY
+                            return (
+                                <div
+                                    key={item.id}
+                                    onClick={() => handleSelect(item)}
+                                    className={cn(
+                                        "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors",
+                                        isChecked ? "bg-primary/10" : "hover:bg-white"
+                                    )}
+                                >
+                                    <Checkbox
+                                        checked={isChecked} // State checklist dikontrol oleh entry.id_obat
+                                        onCheckedChange={() => handleSelect(item)}
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn(
+                                                "text-[11px] font-bold uppercase truncate",
+                                                isChecked ? "text-primary" : "text-slate-700"
+                                            )}>
+                                                {item.desk_brg}
+                                            </span>
+                                            {isChecked && <Badge className="h-3 px-1 text-[8px]">Terpilih</Badge>}
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                                            {item.spesifikasi} | Stok: {item.brg_stok}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* DATA TERPILIH (STAY PERMANEN DIBAWAH SEARCH) */}
+            {entry.id_obat !== 0 && (
+                <div className="flex items-start gap-3 p-3 bg-white border-2 border-primary/30 rounded-lg shadow-sm animate-in zoom-in-95">
+                    <div className="bg-primary/10 p-2 rounded-full shrink-0">
+                        <Pill className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-primary leading-none uppercase tracking-tight">
+                            {entry.nama_obat}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                            <Badge variant="outline" className="text-[9px] h-4 font-mono bg-slate-50">ID: {entry.id_obat}</Badge>
+                            <span className="text-[10px] text-muted-foreground italic">Siap untuk diresepkan</span>
+                        </div>
+                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-slate-400 hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                            updateField(index, "id_obat", 0);
+                            updateField(index, "nama_obat", "");
+                        }}
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default function Prescription({ initialData = [], editable = false }: Props) {
     const { id } = useParams<{ id: string }>();
@@ -79,32 +253,40 @@ export default function Prescription({ initialData = [], editable = false }: Pro
             indikasi: "",
             instruksi_khusus: "",
             catatan: "",
-            isNew: true
+            isNew: true,
         };
         setNewEntries([newEntry, ...newEntries]);
     };
 
     const removeEntry = (targetId: string | number) => {
-        setNewEntries(newEntries.filter(e => e.id !== targetId));
+        setNewEntries(newEntries.filter((e) => e.id !== targetId));
     };
 
-    const updateField = (index: number, field: keyof DrugEntry, value: string | number) => {
-        const updatedEntries = [...newEntries];
-        updatedEntries[index] = { ...updatedEntries[index], [field]: value } as DrugEntry;
-        setNewEntries(updatedEntries);
+    const updateField = (index: number, field: keyof DrugEntry, value: any) => {
+        setNewEntries((prev) => {
+            const next = [...prev]; // Salin array
+            next[index] = { ...next[index], [field]: value }; // Salin objek di dalam array
+            return next;
+        });
     };
 
     const handleSave = async () => {
         if (newEntries.length === 0) return;
+        if (newEntries.some((e) => e.id_obat === 0)) {
+            toast.error("Pastikan semua obat sudah dipilih");
+            return;
+        }
+
         try {
             setLoading(true);
             const payload = {
-                kunjungan_id: "2",
+                kunjungan_id: "1", // Sesuaikan Kunjungan ID
                 drugs: newEntries.map(({ isNew, id, nama_obat, ...rest }) => ({
                     ...rest,
-                    qty: Number(rest.qty)
-                }))
+                    qty: Number(rest.qty),
+                })),
             };
+
             await AsesmentMedicAPI.updateResepObat(id!, payload);
             toast.success("Resep baru berhasil disimpan");
             setNewEntries([]);
@@ -115,18 +297,31 @@ export default function Prescription({ initialData = [], editable = false }: Pro
         }
     };
 
+    const handleDeleteResep = async (resepId: number) => {
+        if (!id) return;
+        try {
+            setLoading(true);
+            await AsesmentMedicAPI.deleteResepObat(id, resepId.toString());
+            setHistoryList(historyList.filter(r => r.id !== resepId));
+            toast.success("Resep berhasil dihapus");
+        } catch (error) {
+            toast.error("Gagal menghapus resep");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
-        <AccordionItem value="prescription" className="border rounded-lg">
+        <AccordionItem value="prescription" className="border rounded-md">
             <AccordionTrigger className="px-4 py-3 text-sm font-semibold hover:no-underline">
-                <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="font-mono">15</Badge>
-                    Peresepan Dokter
+                <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-bold">15</Badge>
+                    <span>Peresepan Dokter</span>
                 </div>
             </AccordionTrigger>
 
             <AccordionContent className="p-4 space-y-6">
-                {/* HEADER INPUT */}
-                <div className="flex items-center justify-between border-b pb-4">
+                <div className="flex items-center justify-between pb-4">
                     <div className="space-y-1">
                         <h4 className="text-sm font-medium flex items-center gap-2">
                             <ShoppingCart className="w-4 h-4 text-primary" /> Input Obat Baru
@@ -139,54 +334,82 @@ export default function Prescription({ initialData = [], editable = false }: Pro
                     )}
                 </div>
 
-                {/* --- LIST CARD UNTUK INPUT BARU --- */}
+                {/* LIST CARD UNTUK INPUT BARU */}
                 <div className="space-y-3">
                     {newEntries.map((entry, index) => (
-                        <Card key={entry.id} className="border-primary/30 bg-primary/[0.01] shadow-none animate-in slide-in-from-top-2">
-                            <CardContent>
-                                <div className="flex justify-between items-center border-b pb-2 mb-4">
-                                    <Badge>Data Baru</Badge>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeEntry(entry.id!)}>
+                        <Card key={entry.id} className="border-primary/40 bg-primary/[0.01] shadow-none">
+                            <CardContent className="p-4 space-y-4">
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <Badge>Obat Baru</Badge>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive"
+                                        onClick={() => removeEntry(entry.id!)}
+                                    >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <div className="space-y-1">
-                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Nama Obat</Label>
-                                            <Input placeholder="Cari obat..." className="h-8 text-xs bg-background" value={entry.nama_obat} onChange={(e) => updateField(index, "nama_obat", e.target.value)} />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {/* KOLOM PENCARIAN OBAT */}
+                                    <div className="space-y-1">
+                                        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Cari & Pilih Obat</Label>
+                                        <DrugSearchSection
+                                            entry={entry}
+                                            index={index}
+                                            updateField={updateField}
+                                            editable={editable}
+                                        />
+
+                                        {/* INPUT QTY & SIGNA DIBAWAH SEARCH */}
+                                        <div className="grid grid-cols-2 gap-2 pt-2">
                                             <div className="space-y-1">
-                                                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Qty</Label>
-                                                <Input type="number" className="h-8 text-xs bg-background text-center" value={entry.qty} onChange={(e) => updateField(index, "qty", e.target.value)} />
+                                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Qty</Label>
+                                                <Input type="number" className="h-8 text-xs bg-background" value={entry.qty} onChange={(e) => updateField(index, "qty", e.target.value)} />
                                             </div>
                                             <div className="space-y-1">
-                                                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Signa</Label>
-                                                <Input placeholder="3x1" className="h-8 text-xs bg-background text-center font-mono" value={entry.signa} onChange={(e) => updateField(index, "signa", e.target.value)} />
+                                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Signa</Label>
+                                                <Input placeholder="3x1" className="h-8 text-xs font-mono bg-background" value={entry.signa} onChange={(e) => updateField(index, "signa", e.target.value)} />
                                             </div>
                                         </div>
                                     </div>
 
+                                    {/* JADWAL DOSIS */}
                                     <div className="space-y-1">
                                         <Label className="text-[10px] font-bold uppercase text-muted-foreground">Jadwal Pakai (P/S/S/M)</Label>
                                         <div className="flex gap-2 bg-muted/30 p-2 rounded-md border border-dashed">
-                                            {['pagi', 'siang', 'sore', 'malam'].map((t) => (
+                                            {["pagi", "siang", "sore", "malam"].map((t) => (
                                                 <div key={t} className="flex-1 text-center space-y-1">
-                                                    <Input className="h-8 text-center text-xs p-0 bg-background uppercase font-bold" maxLength={1} value={(entry as any)[t]} onChange={(e) => updateField(index, t as any, e.target.value)} />
+                                                    <Input
+                                                        className="h-8 text-center text-xs p-0 bg-background uppercase font-bold"
+                                                        value={(entry as any)[t]}
+                                                        onChange={(e) => updateField(index, t as any, e.target.value)}
+                                                    />
                                                     <p className="text-[9px] font-bold text-muted-foreground uppercase">{t[0]}</p>
                                                 </div>
                                             ))}
                                         </div>
+                                        <div className="pt-2">
+                                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Indikasi</Label>
+                                            <Input placeholder="Contoh: Demam" className="h-8 text-xs bg-background" value={entry.indikasi} onChange={(e) => updateField(index, "indikasi", e.target.value)} />
+                                        </div>
                                     </div>
 
+                                    {/* KETERANGAN & CATATAN */}
                                     <div className="space-y-2">
                                         <div className="space-y-1">
-                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Cara Pakai / Instruksi</Label>
-                                            <Input placeholder="Sesudah makan..." className="h-8 text-xs bg-background" value={entry.cara_pakai} onChange={(e) => updateField(index, "cara_pakai", e.target.value)} />
+                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Instruksi Khusus</Label>
+                                            <Input placeholder="Jangan dikunyah..." className="h-8 text-xs bg-background" value={entry.instruksi_khusus} onChange={(e) => updateField(index, "instruksi_khusus", e.target.value)} />
                                         </div>
-                                        <Input placeholder="Instruksi khusus / Catatan..." className="h-8 text-xs bg-background italic" value={entry.catatan} onChange={(e) => updateField(index, "catatan", e.target.value)} />
+                                        <div className="space-y-1">
+                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Cara Pakai</Label>
+                                            <Input placeholder="Sesudah makan" className="h-8 text-xs bg-background" value={entry.cara_pakai} onChange={(e) => updateField(index, "cara_pakai", e.target.value)} />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground text-destructive">Catatan Penting</Label>
+                                            <Input placeholder="Hentikan jika gatal" className="h-8 text-xs bg-background italic" value={entry.catatan} onChange={(e) => updateField(index, "catatan", e.target.value)} />
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -195,15 +418,15 @@ export default function Prescription({ initialData = [], editable = false }: Pro
                 </div>
 
                 {editable && newEntries.length > 0 && (
-                    <div className="flex justify-end pt-2">
-                        <Button onClick={handleSave} disabled={loading} className="gap-2 px-8 shadow-md">
+                    <div className="flex justify-end pt-2 border-t">
+                        <Button onClick={handleSave} disabled={loading} className="gap-2 px-8">
                             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                            Simpan Resep
+                            Kirim ke Farmasi
                         </Button>
                     </div>
                 )}
 
-                {/* --- RIWAYAT RESEP (OLD VALUE CARD LIST LENGKAP) --- */}
+                {/* RIWAYAT RESEP (Sesuai Struktur JSON) */}
                 <div className="space-y-4 pt-4 border-t">
                     <div className="flex items-center gap-2">
                         <History className="w-4 h-4 text-muted-foreground" />
@@ -212,113 +435,84 @@ export default function Prescription({ initialData = [], editable = false }: Pro
 
                     {historyList.length > 0 ? (
                         historyList.map((resep) => (
-                            <div key={resep.id}>
-                                {/* Header Card Riwayat */}
-                                <div className="mb-4 px-3 flex justify-between items-center">
+                            <div key={resep.id} className="rounded-lg border bg-background shadow-sm overflow-hidden mb-4">
+                                <div className="bg-muted/40 p-3 border-b flex justify-between items-center">
                                     <div className="space-y-0.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[11px] font-bold font-mono uppercase tracking-tighter text-muted-foreground">No Resep:</span>
-                                            <span className="text-[11px] font-bold font-mono text-primary">{resep.no_resep}</span>
-                                            <Badge variant="outline" className="text-[9px] h-4 leading-none bg-background px-1 uppercase">{resep.kd_sts_resep}</Badge>
+                                            <span className="text-[11px] font-bold font-mono text-primary uppercase leading-none">No: {resep.no_resep}</span>
+                                            <Badge variant="outline" className="text-[9px] h-4 bg-white px-1 uppercase">{resep.kd_sts_resep}</Badge>
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1">
                                             <Clock className="w-3 h-3" />
                                             {resep.tgl_resep ? format(new Date(resep.tgl_resep), "dd/MM/yyyy HH:mm") : "-"}
-                                            <span className="mx-1">•</span>
-                                            <Stethoscope className="w-3 h-3" />
-                                            Dokter ID: {resep.id_dokter || '-'}
                                         </div>
                                     </div>
-                                    <Badge variant={resep.is_terima === "Y" ? "success" : "warning"}>
-                                        {resep.is_terima === "Y" ? "Diterima Farmasi" : "Belum Verifikasi"}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant={resep.is_terima === "Y" ? "success" : "warning"}>
+                                            {resep.is_terima === "Y" ? "Diterima" : "Pending"}
+                                        </Badge>
+                                        {editable && (
+                                            <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteResep(resep.id)}>
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Body Details Obat */}
-                                <div className="flex flex-col gap-2">
+                                <div className="divide-y divide-dashed">
                                     {resep.details?.map((detail: any, i: number) => (
-                                        <Card key={i}>
-                                            <CardContent className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                                                {/* Info Nama Obat */}
-                                                <div className="md:col-span-4 flex gap-3">
-                                                    <div className="bg-primary/5 p-2 rounded-lg border border-primary/10">
-                                                        <Pill className="w-4 h-4 text-primary" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs font-bold text-primary leading-tight">{detail.obat?.desk_brg}</p>
-                                                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                                                            <Badge variant="secondary" className="text-[8px] h-3.5 px-1 uppercase tracking-tight">{detail.obat?.spesifikasi}</Badge>
-                                                            <span className="italic">KFA: {detail.obat?.kd_kfa || '-'}</span>
-                                                        </p>
-                                                    </div>
+                                        <div key={i} className="p-3 grid grid-cols-1 md:grid-cols-3 gap-3 items-center hover:bg-muted/5">
+                                            <div className="md:col-span-1">
+                                                <p className="text-xs font-bold text-primary leading-tight uppercase">{detail.obat?.desk_brg}</p>
+                                                <p className="text-[9px] text-muted-foreground italic mt-0.5 uppercase">{detail.obat?.spesifikasi}</p>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-xs">
+                                                <div className="text-center">
+                                                    <p className="text-[8px] font-bold text-muted-foreground uppercase">Qty</p>
+                                                    <p className="font-semibold">{detail.qty}</p>
                                                 </div>
-
-                                                {/* Aturan Pakai */}
-                                                <div className="md:col-span-3 flex flex-col gap-2">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[9px] font-bold text-muted-foreground uppercase">Qty</span>
-                                                            <span className="text-xs font-semibold">{detail.qty}</span>
-                                                        </div>
-                                                        <div className="flex flex-col border-l pl-4">
-                                                            <span className="text-[9px] font-bold text-muted-foreground uppercase">Signa</span>
-                                                            <span className="text-xs font-mono font-bold text-blue-600">{detail.signa}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-1.5 mt-1">
-                                                        {['pagi', 'siang', 'sore', 'malam'].map(t => (
-                                                            detail[t] === "1" && (
-                                                                <Badge key={t} variant="outline" className="h-5 px-1.5 text-[9px] uppercase border-primary/20 text-primary bg-primary/5 font-bold">
-                                                                    {t[0]}
+                                                <div className="border-l pl-4 font-bold">
+                                                    <p className="text-[8px] font-bold text-muted-foreground uppercase">Signa</p>
+                                                    <p className="text-primary">{detail.signa}</p>
+                                                </div>
+                                                <div className="flex gap-1.5">
+                                                    {["pagi", "siang", "sore", "malam"].map((t) => (
+                                                        detail[t] && detail[t] !== "0" && (
+                                                            <div key={t} className="flex flex-col items-center">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="h-5 px-2 text-[9px] bg-primary/5 text-primary font-bold border-primary/20 uppercase"
+                                                                >
+                                                                    {t}
                                                                 </Badge>
-                                                            )
-                                                        ))}
-                                                    </div>
+                                                                <span className="text-[8px] font-bold">Dosis: {detail[t]}x</span>
+                                                            </div>
+                                                        )
+                                                    ))}
                                                 </div>
-
-                                                {/* Keterangan & Instruksi */}
-                                                <div className="md:col-span-5 text-[11px] space-y-1.5 bg-muted/20 p-2 rounded border border-muted-foreground/10">
-                                                    <div className="flex gap-2">
-                                                        <span className="font-bold text-muted-foreground min-w-[70px] uppercase text-[9px]">Cara Pakai:</span>
-                                                        <span className="italic">"{detail.cara_pakai || '-'}"</span>
-                                                    </div>
-                                                    {detail.indikasi && (
-                                                        <div className="flex gap-2">
-                                                            <span className="font-bold text-muted-foreground min-w-[70px] uppercase text-[9px]">Indikasi:</span>
-                                                            <span>{detail.indikasi}</span>
-                                                        </div>
-                                                    )}
-                                                    {detail.instruksi_khusus && (
-                                                        <div className="flex gap-2 text-amber-700 bg-amber-50 p-1 rounded">
-                                                            <Info className="w-3 h-3 mt-0.5 shrink-0" />
-                                                            <span>{detail.instruksi_khusus}</span>
-                                                        </div>
-                                                    )}
-                                                    {detail.catatan && (
-                                                        <div className="flex gap-2 text-destructive font-bold border-t border-dashed mt-1 pt-1">
-                                                            <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-                                                            <span className="text-[10px]">NB: {detail.catatan}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
+                                            </div>
+                                            <div className="text-[10px] border-l pl-3 space-y-0.5">
+                                                <p className="italic text-muted-foreground leading-tight">"{detail.cara_pakai || "-"}"</p>
+                                                {detail.catatan && <p className="text-destructive font-bold text-[9px]">Nb: {detail.catatan}</p>}
+                                            </div>
+                                            <div className="text-[10px] border-l pl-3 space-y-0.5">
+                                                {detail.indikasi || "-"}
+                                                <p className="text-destructive"> ({detail.instruksi_khusus || "-"})</p>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-
-                                {/* Status Alergi Footer */}
                                 {resep.alergi === "Y" && (
-                                    <div className="bg-destructive/[0.05] p-2 flex items-center gap-2 border-t border-destructive/20">
-                                        <AlertCircle className="w-3.5 h-3.5 text-destructive animate-pulse" />
-                                        <span className="text-[10px] font-bold text-destructive uppercase tracking-tight">Perhatian Alergi: {resep.ket_alergi || "Cek Riwayat Alergi Pasien"}</span>
+                                    <div className="bg-destructive/5 p-2 flex items-center gap-2 border-t">
+                                        <AlertCircle className="w-3 h-3 text-destructive" />
+                                        <span className="text-[10px] font-bold text-destructive uppercase">Pasien Alergi: {resep.ket_alergi || "Riwayat Alergi"}</span>
                                     </div>
                                 )}
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-12 bg-muted/10 border-2 border-dashed rounded-lg">
-                            <History className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
-                            <p className="text-xs text-muted-foreground italic">Belum ada riwayat peresepan ditemukan.</p>
+                        <div className="text-center py-10 bg-muted/5 border-2 border-dashed rounded-lg">
+                            <p className="text-xs text-muted-foreground">Belum ada riwayat peresepan.</p>
                         </div>
                     )}
                 </div>
