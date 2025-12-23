@@ -15,6 +15,10 @@ import { ProtectedRoute, PublicRoute } from "@/lib/route-guard";
 import EmrIgdIndexPage from "@/app/emr/igd";
 import EmrIgdDetailPage from "@/app/emr/igd/detail";
 import EmrIgdCreatePage from "@/app/emr/igd/create";
+import EmrRadiologiIndexPage from "@/app/emr/radiologi";
+import EmrRadiologiDetailPage from "@/app/emr/radiologi/detail";
+import EmrLabDetailPage from "@/app/emr/lab/detail";
+import EmrLabIndexPage from "@/app/emr/lab";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -65,7 +69,7 @@ export const router = createBrowserRouter([
           {
             path: "emr/igd",
             element: <EmrIgdIndexPage />,
-            handle: { breadcrumb: "Pasien" },
+            handle: { breadcrumb: "EMR IGD" },
           },
           {
             path: "emr/igd/create",
@@ -77,6 +81,29 @@ export const router = createBrowserRouter([
             element: <EmrIgdDetailPage />,
             handle: { breadcrumb: "Detail EMR IGD" },
           },
+
+          {
+            path: "emr/radiology",
+            element: <EmrRadiologiIndexPage />,
+            handle: { breadcrumb: "EMR Radiologi" },
+          },
+          {
+            path: "emr/radiology/detail/:id",
+            element: <EmrRadiologiDetailPage />,
+            handle: { breadcrumb: "Detail EMR Radiologi" },
+          },
+
+          {
+            path: "emr/lab",
+            element: <EmrLabIndexPage />,
+            handle: { breadcrumb: "EMR Lab" },
+          },
+          {
+            path: "emr/lab/detail/:id",
+            element: <EmrLabDetailPage />,
+            handle: { breadcrumb: "Detail EMR Lab" },
+          },
+
 
           // Theme showcase for reference
           { path: "theme-showcase", element: <ThemeShowcase /> },
