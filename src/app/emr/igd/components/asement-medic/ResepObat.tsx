@@ -67,6 +67,7 @@ interface DrugEntry {
 interface Props {
     initialData?: any[];
     editable?: boolean;
+    onSuccess?: () => void;
 }
 
 const DrugSearchSection = ({
@@ -254,7 +255,7 @@ const DrugSearchSection = ({
     );
 };
 
-export default function Prescription({ initialData = [], editable = false }: Props) {
+export default function Prescription({ initialData = [], editable = false, onSuccess }: Props) {
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
     const [newEntries, setNewEntries] = useState<DrugEntry[]>([]);
@@ -318,6 +319,10 @@ export default function Prescription({ initialData = [], editable = false }: Pro
             await AsesmentMedicAPI.updateResepObat(id!, payload);
             toast.success("Resep baru berhasil disimpan");
             setNewEntries([]);
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             toast.error("Gagal menyimpan resep");
         } finally {
@@ -332,6 +337,10 @@ export default function Prescription({ initialData = [], editable = false }: Pro
             await AsesmentMedicAPI.deleteResepObat(id, resepId.toString());
             setHistoryList(historyList.filter(r => r.id !== resepId));
             toast.success("Resep berhasil dihapus");
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             toast.error("Gagal menghapus resep");
         } finally {
@@ -572,7 +581,7 @@ export default function Prescription({ initialData = [], editable = false }: Pro
                     )}
                 </div>
 
-                <KunjunganLayanan />
+                <KunjunganLayanan api="EmrIgdAPI" />
 
             </AccordionContent>
         </AccordionItem>

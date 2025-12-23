@@ -31,7 +31,13 @@ const SURVEY_FIELDS = [
     { key: "ekstremitas", label: "Ekstremitas" },
 ];
 
-export default function PhysicalExam({ initialData, editable = false }: { initialData?: any, editable?: boolean }) {
+interface Props {
+    initialData?: any;
+    editable?: boolean;
+    onSuccess?: () => void;
+}
+
+export default function PhysicalExam({ initialData, editable = false, onSuccess }: Props) {
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -107,6 +113,10 @@ export default function PhysicalExam({ initialData, editable = false }: { initia
             setLoading(true);
             await AsesmentMedicAPI.updatePemeriksaanFisik(id, form);
             toast.success("Pemeriksaan Fisik berhasil disimpan");
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             toast.error("Gagal menyimpan data");
         } finally {

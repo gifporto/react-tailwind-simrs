@@ -30,9 +30,10 @@ interface AnamnesaData {
 interface Props {
   initialData?: AnamnesaData; 
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function Anamnesa({ initialData, editable = false }: Props) {
+export default function Anamnesa({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   
@@ -78,6 +79,10 @@ export default function Anamnesa({ initialData, editable = false }: Props) {
       setLoading(true);
       await AsesmentMedicAPI.updateAnamnesa(id, form);
       toast.success("Anamnesa berhasil diperbarui");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Update Error:", error);
       toast.error("Gagal menyimpan perubahan");

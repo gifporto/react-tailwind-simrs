@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, ServiceAPI, DoctorAPI } from "@/lib/api"
+import { EmrIgdAPI, RanapAPI, ServiceAPI, DoctorAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -51,14 +51,11 @@ import {
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import {
   Stethoscope,
   Plus,
-  CheckCircle,
-  Clock,
   Loader2,
   ChevronsUpDown,
   Check,
@@ -67,7 +64,32 @@ import {
   User,
 } from "lucide-react"
 
-export default function KunjunganLayanan() {
+/* =====================
+   Configurations & Types
+===================== */
+
+const API_MAP = {
+  EmrIgdAPI: { service: EmrIgdAPI, label: "IGD" },
+  RanapAPI: { service: RanapAPI, label: "Rawat Inap" },
+}
+
+interface ServiceApiInterface {
+  getService: (id: string) => Promise<any>;
+  createService: (id: string, data: any) => Promise<any>;
+  deleteService: (id: string, serviceId: string) => Promise<any>;
+}
+
+interface KunjunganLayananProps {
+  api: keyof typeof API_MAP;
+}
+
+/* =====================
+   Component
+===================== */
+export default function KunjunganLayanan({ api }: KunjunganLayananProps) {
+  const activeApi = API_MAP[api].service as ServiceApiInterface;
+  const moduleLabel = API_MAP[api].label;
+
   const { id } = useParams<{ id: string }>()
 
   // --- States ---
@@ -100,14 +122,14 @@ export default function KunjunganLayanan() {
     if (!id) return
     setLoading(true)
     try {
-      const res = await EmrIgdAPI.getService(id)
+      const res = await activeApi.getService(id)
       setServices(res.data || [])
     } catch (e) {
-      toast.error("Gagal memuat data layanan")
+      toast.error(`Gagal memuat data layanan ${moduleLabel}`)
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, activeApi, moduleLabel])
 
   useEffect(() => { fetchServices() }, [fetchServices])
 
@@ -143,7 +165,7 @@ export default function KunjunganLayanan() {
         qty: formData.qty,
         notes: formData.notes
       }
-      await EmrIgdAPI.createService(id, payload)
+      await activeApi.createService(id, payload)
       toast.success("Layanan berhasil ditambahkan")
       setIsCreateOpen(false)
       setFormData({ id_tarif: "", id_dokter: "", qty: 1, notes: "" })
@@ -159,7 +181,7 @@ export default function KunjunganLayanan() {
     if (!id || !selectedIdToDelete) return
     setActionLoading(true)
     try {
-      await EmrIgdAPI.deleteService(id, selectedIdToDelete)
+      await activeApi.deleteService(id, selectedIdToDelete)
       toast.success("Layanan berhasil dihapus")
       fetchServices()
       setIsDeleteAlertOpen(false)
@@ -179,7 +201,7 @@ export default function KunjunganLayanan() {
       <CardHeader className="flex flex-row items-center justify-between py-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Stethoscope className="w-5 h-5 text-primary" />
-          Tindakan
+          Tindakan ({moduleLabel})
         </CardTitle>
         <Button size="sm" onClick={() => setIsCreateOpen(true)} className="gap-2">
           <Plus className="w-4 h-4" /> Tambah Tindakan
@@ -248,7 +270,7 @@ export default function KunjunganLayanan() {
         ) : (
           <div className="py-10 text-center text-muted-foreground">
             <Stethoscope className="mx-auto mb-2 h-10 w-10 opacity-20" />
-            <p>Belum ada layanan yang ditambahkan.</p>
+            <p>Belum ada layanan {moduleLabel} yang ditambahkan.</p>
           </div>
         )}
       </CardContent>
@@ -256,7 +278,7 @@ export default function KunjunganLayanan() {
       {/* --- DIALOG TAMBAH LAYANAN --- */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Tambah Layanan Baru</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Tambah Layanan {moduleLabel}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-4">
             {/* Pilih Tarif */}
             <div className="space-y-2">
@@ -264,7 +286,9 @@ export default function KunjunganLayanan() {
               <Popover open={openTarifCombo} onOpenChange={setOpenTarifCombo}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-between h-auto py-2 text-left">
-                    {formData.id_tarif ? masterTarif.find(t => t.id.toString() === formData.id_tarif)?.nama : "Cari layanan..."}
+                    <span className="truncate">
+                        {formData.id_tarif ? masterTarif.find(t => t.id.toString() === formData.id_tarif)?.nama : "Cari layanan..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>

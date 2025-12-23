@@ -19,6 +19,8 @@ import EmrRadiologiIndexPage from "@/app/emr/radiologi";
 import EmrRadiologiDetailPage from "@/app/emr/radiologi/detail";
 import EmrLabDetailPage from "@/app/emr/lab/detail";
 import EmrLabIndexPage from "@/app/emr/lab";
+import RanapIndexPage from "@/app/emr/ranap";
+import RanapDetailPage from "@/app/emr/ranap/detail";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -102,6 +104,17 @@ export const router = createBrowserRouter([
             path: "emr/lab/detail/:id",
             element: <EmrLabDetailPage />,
             handle: { breadcrumb: "Detail EMR Lab" },
+          },
+
+          {
+            path: "emr/ranap",
+            element: <RanapIndexPage />,
+            handle: { breadcrumb: "Rawat Inap" },
+          },
+          {
+            path: "emr/ranap/detail/:id",
+            element: <RanapDetailPage />,
+            handle: { breadcrumb: "Rawat Inap" },
           },
 
 

@@ -48,9 +48,10 @@ interface PsikologiData {
 interface Props {
   initialData?: PsikologiData;
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function StatusPsikologis({ initialData, editable = false }: Props) {
+export default function StatusPsikologis({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
 
@@ -103,6 +104,10 @@ export default function StatusPsikologis({ initialData, editable = false }: Prop
       setLoading(true);
       await AsesmentMedicAPI.updatePsikologi(id, form);
       toast.success("Status Psikologis berhasil diperbarui");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Update Psikologi Error:", error);
       toast.error("Gagal menyimpan status psikologis");

@@ -48,6 +48,7 @@ import { AsesmentMedicAPI } from "@/lib/api";
 interface Props {
     initialData?: any;
     editable?: boolean;
+    onSuccess?: () => void;
 }
 
 const JENIS_PERENCANAAN = [
@@ -65,7 +66,7 @@ const DISPOSISI = [
     { id: "Meninggal", title: "Meninggal", icon: <Cross className="w-5 h-5" />, color: "text-destructive" },
 ];
 
-export default function RencanaTindakLanjut({ initialData, editable = false }: Props) {
+export default function RencanaTindakLanjut({ initialData, editable = false, onSuccess }: Props) {
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
 
@@ -100,6 +101,10 @@ export default function RencanaTindakLanjut({ initialData, editable = false }: P
                 rs_tujuan_rujukan: formData.rs_tujuan_rujukan || null
             });
             toast.success("Rencana tindak lanjut berhasil disimpan");
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             toast.error("Gagal menyimpan data");
         } finally {

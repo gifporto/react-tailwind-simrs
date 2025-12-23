@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, DoctorAPI, LabAPI } from "@/lib/api"
+import { EmrIgdAPI, RanapAPI, DoctorAPI, LabAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -40,17 +40,15 @@ import { cn } from "@/lib/utils"
 import {
   FlaskConical,
   Plus,
-  Eye,
   Check,
   X,
   Calendar,
   Loader2,
   ChevronsUpDown,
-  ClipboardList,
   User,
-  Trash2,
   AlertTriangle,
 } from "lucide-react"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,8 +61,24 @@ import {
 } from "@/components/ui/alert-dialog"
 
 /* =====================
-   Helpers
+   Configurations & Types
 ===================== */
+
+const API_MAP = {
+  EmrIgdAPI: { service: EmrIgdAPI, label: "IGD" },
+  RanapAPI: { service: RanapAPI, label: "Rawat Inap" },
+}
+
+interface LabApiInterface {
+  getLab: (id: string) => Promise<any>;
+  createLab: (id: string, data: any) => Promise<any>;
+  deleteLab: (id: string, orderId: string) => Promise<any>;
+}
+
+interface OrderLabProps {
+  api: keyof typeof API_MAP;
+}
+
 const statusBadge = (status: string) => {
   const s = status?.toLowerCase()
   if (s === "ordered") return "secondary"
@@ -86,7 +100,10 @@ const rupiah = (val: string | number) => {
 /* =====================
    Component
 ===================== */
-const OrderLab: React.FC = () => {
+const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
+  const activeApi = API_MAP[api].service as LabApiInterface;
+  const moduleLabel = API_MAP[api].label;
+
   const { id } = useParams<{ id: string }>()
 
   const [loading, setLoading] = useState(true)
@@ -119,14 +136,14 @@ const OrderLab: React.FC = () => {
     if (!id) return
     setLoading(true)
     try {
-      const response = await EmrIgdAPI.getLab(id)
+      const response = await activeApi.getLab(id)
       setOrders(response.data || [])
     } catch (error) {
-      toast.error("Gagal memuat data lab")
+      toast.error(`Gagal memuat data lab ${moduleLabel}`)
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, activeApi, moduleLabel])
 
   useEffect(() => {
     fetchLabOrders()
@@ -173,7 +190,7 @@ const OrderLab: React.FC = () => {
         selected_services: formData.selected_services
       }
 
-      await EmrIgdAPI.createLab(id, payload)
+      await activeApi.createLab(id, payload)
       toast.success("Order laboratorium berhasil dikirim")
       setIsCreateOpen(false)
       setFormData({ dokter_id: "", catatan: "", selected_services: [] })
@@ -190,10 +207,10 @@ const OrderLab: React.FC = () => {
 
     setActionLoading(true)
     try {
-      await EmrIgdAPI.deleteLab(id, idLab)
+      await activeApi.deleteLab(id, idLab)
       toast.success("Order berhasil dibatalkan")
       fetchLabOrders()
-      setIsDeleteAlertOpen(false) // Tutup dialog setelah sukses
+      setIsDeleteAlertOpen(false)
     } catch (error) {
       toast.error("Gagal membatalkan order")
     } finally {
@@ -207,7 +224,7 @@ const OrderLab: React.FC = () => {
       <CardHeader className="flex flex-row items-center justify-between py-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <FlaskConical className="w-5 h-5 text-primary" />
-          Order Laboratorium
+          Order Laboratorium ({moduleLabel})
         </CardTitle>
         <Button size="sm" className="h-8 gap-1" onClick={() => setIsCreateOpen(true)}>
           <Plus className="w-4 h-4" />
@@ -258,8 +275,6 @@ const OrderLab: React.FC = () => {
                         <X className="w-4 h-4" />
                       </Button>
                     )}
-
-
                   </div>
                 </div>
 
@@ -291,7 +306,7 @@ const OrderLab: React.FC = () => {
             )
           })
         ) : (
-          <div className="text-center py-10 text-muted-foreground text-sm">Belum ada order lab.</div>
+          <div className="text-center py-10 text-muted-foreground text-sm">Belum ada order lab {moduleLabel}.</div>
         )}
       </CardContent>
 
@@ -299,10 +314,9 @@ const OrderLab: React.FC = () => {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>Buat Order Lab</DialogTitle>
+            <DialogTitle>Buat Order Lab {moduleLabel}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* Dokter */}
             <div className="space-y-2">
               <Label>Dokter Pengirim</Label>
               <Popover open={openDoctorCombo} onOpenChange={setOpenDoctorCombo}>
@@ -334,7 +348,6 @@ const OrderLab: React.FC = () => {
               </Popover>
             </div>
 
-            {/* Services */}
             <div className="space-y-2">
               <Label>Layanan Lab ({formData.selected_services.length} terpilih)</Label>
               <Popover open={openServiceCombo} onOpenChange={setOpenServiceCombo}>
@@ -368,7 +381,6 @@ const OrderLab: React.FC = () => {
               </Popover>
             </div>
 
-            {/* Catatan */}
             <div className="space-y-2">
               <Label>Catatan Tambahan</Label>
               <Textarea
@@ -397,14 +409,14 @@ const OrderLab: React.FC = () => {
               Batalkan Order Lab
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin membatalkan order ini? Tindakan ini tidak dapat dibatalkan.
+              Apakah Anda yakin ingin membatalkan order ini?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={actionLoading}>Kembali</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
-                e.preventDefault() // Mencegah dialog menutup sebelum API selesai
+                e.preventDefault()
                 if (selectedIdToDelete) handleDelete(selectedIdToDelete)
               }}
               className="bg-destructive hover:bg-destructive/90"
@@ -420,4 +432,4 @@ const OrderLab: React.FC = () => {
   )
 }
 
-export default OrderLab
+export default OrderLab;

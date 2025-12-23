@@ -43,9 +43,10 @@ import { AsesmentMedicAPI } from "@/lib/api";
 interface Props {
   initialData?: any;
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function EdukasiDischarge({ initialData, editable = false }: Props) {
+export default function EdukasiDischarge({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [openDate, setOpenDate] = useState(false);
@@ -115,6 +116,10 @@ export default function EdukasiDischarge({ initialData, editable = false }: Prop
 
       await AsesmentMedicAPI.updateDischargePlan(id, payload);
       toast.success("Edukasi & Discharge Planning berhasil disimpan");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan data");
     } finally {

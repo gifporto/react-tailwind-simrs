@@ -43,9 +43,10 @@ import { AsesmentMedicAPI } from "@/lib/api";
 interface Props {
   initialData?: any;
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function TindakanTerapi({ initialData, editable = false }: Props) {
+export default function TindakanTerapi({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
 
@@ -105,6 +106,10 @@ export default function TindakanTerapi({ initialData, editable = false }: Props)
 
       await AsesmentMedicAPI.updatePerencanaanTindakan(id, payload);
       toast.success("Tindakan & Terapi berhasil disimpan");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan data");
     } finally {
