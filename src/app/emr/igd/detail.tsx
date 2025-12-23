@@ -20,7 +20,6 @@ const EmrIgdIndexPage: React.FC = () => {
 
       <MainContent />
       <KunjunganUnit />
-      <KunjunganLayanan />
       {/* <OrderLab />
       <OrderRadiologi/> */}
       <Asesment/>
