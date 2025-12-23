@@ -42,24 +42,6 @@ export const PatientsAPI = {
     },
 };
 
-export const DoctorAPI = {
-    getList: async (page = 1, limit = 30, search = "") => {
-        const res = await api.get("/master/doctors", {
-            params: { page, limit, search },
-        });
-        return res.data;
-    },
-};
-
-export const PoliAPI = {
-    getList: async (page = 1, limit = 30, search = "") => {
-        const res = await api.get("/master/polis", {
-            params: { page, limit, search },
-        });
-        return res.data;
-    },
-};
-
 export const EmrIgdAPI = {
     getService: async (id: string) => {
         const res = await api.get(`/inspections/igd/${id}/services`);
@@ -154,6 +136,63 @@ export const EmrIgdAPI = {
     },
 };
 
+export const EmrRadiologyAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inspections/radiologies", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    getDetail: async (id: string) => {
+        const res = await api.get(`/inspections/radiologies/${id}`);
+        return res.data;
+    },
+
+    process: async (id: string) => {
+        const res = await api.post(`/inspections/radiologies/${id}/process`);
+        return res.data;
+    },
+
+    complete: async (id: string, payload: FormData, config?: any) => {
+        const res = await api.post(`/inspections/radiologies/${id}/complete`, payload, config);
+        return res.data;
+    },
+
+    abort: async (id: string) => {
+        const res = await api.delete(`/inspections/radiologies/${id}`);
+        return res.data;
+    },
+};
+export const EmrLabAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inspections/laboratories", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    getDetail: async (id: string) => {
+        const res = await api.get(`/inspections/laboratories/${id}`);
+        return res.data;
+    },
+
+    process: async (id: string) => {
+        const res = await api.post(`/inspections/laboratories/${id}/process`);
+        return res.data;
+    },
+
+    complete: async (id: string) => {
+        const res = await api.post(`/inspections/laboratories/${id}/complete`);
+        return res.data;
+    },
+
+    abort: async (id: string) => {
+        const res = await api.delete(`/inspections/laboratories/${id}`);
+        return res.data;
+    },
+};
+
 export const AsesmentMedicAPI = {
     getAsesment: async (id: string) => {
         const res = await api.get(`/inspections/igd/${id}/asesmen-medis`);
@@ -234,7 +273,7 @@ export const AsesmentMedicAPI = {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/discharge-planning`, payload);
         return res.data;
     },
-    
+
     updateResepObat: async (id: string, payload: any) => {
         const res = await api.post(`/inspections/igd/${id}/asesmen-medis/resep-obat`, payload);
         return res.data;
@@ -275,6 +314,25 @@ export const RadiologyAPI = {
 
     getDetail: async (id: string) => {
         const res = await api.get(`/master/radiologies/${id}`);
+        return res.data;
+    },
+};
+
+// Master
+export const DoctorAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/doctors", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+
+export const PoliAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/polis", {
+            params: { page, limit, search },
+        });
         return res.data;
     },
 };
