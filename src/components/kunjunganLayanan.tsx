@@ -179,10 +179,10 @@ export default function KunjunganLayanan() {
       <CardHeader className="flex flex-row items-center justify-between py-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Stethoscope className="w-5 h-5 text-primary" />
-          Layanan Kunjungan
+          Tindakan
         </CardTitle>
         <Button size="sm" onClick={() => setIsCreateOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" /> Tambah Layanan
+          <Plus className="w-4 h-4" /> Tambah Tindakan
         </Button>
       </CardHeader>
 

@@ -45,6 +45,7 @@ import {
 import { AsesmentMedicAPI, ObatAPI } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import KunjunganLayanan from "@/components/kunjunganLayanan";
 
 interface DrugEntry {
     id?: string | number;
@@ -570,6 +571,9 @@ export default function Prescription({ initialData = [], editable = false }: Pro
                         </div>
                     )}
                 </div>
+
+                <KunjunganLayanan />
+
             </AccordionContent>
         </AccordionItem>
     );

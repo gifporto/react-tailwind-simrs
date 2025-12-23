@@ -189,8 +189,7 @@ export default function Asesment() {
               <FlaccPainAssessment editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
               <PhysicalExam editable={editMode} initialData={dataAsesmen?.pemeriksaan_fisik} />
               <PemeriksaanPenunjang editable={editMode} initialData={dataAsesmen?.pemeriksaan_penunjang} />
-              <OrderLab/>
-              <OrderRadiologi/>
+              
               <Diagnosis editable={editMode} initialData={dataAsesmen?.diagnosis} />
               <Prescription editable={editMode} initialData={dataAsesmen?.reseps} />
               <TindakanTerapi editable={editMode} initialData={dataAsesmen?.perencanaan_tindakan} />

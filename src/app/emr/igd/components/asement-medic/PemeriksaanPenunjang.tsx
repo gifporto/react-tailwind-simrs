@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 
 import { AsesmentMedicAPI } from "@/lib/api";
+import OrderLab from "@/components/orderLab";
+import OrderRadiologi from "@/components/orderRadiologi";
 
 interface Props {
   initialData?: any;
@@ -142,8 +144,8 @@ export default function PemeriksaanPenunjang({ initialData, editable = false }: 
 
         {editable && (
           <div className="pt-4 border-t flex justify-end">
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={loading}
               className="min-w-[160px] h-9 text-xs"
             >
@@ -156,6 +158,10 @@ export default function PemeriksaanPenunjang({ initialData, editable = false }: 
             </Button>
           </div>
         )}
+
+        <OrderLab />
+        <OrderRadiologi />
+        
       </AccordionContent>
     </AccordionItem>
   );
