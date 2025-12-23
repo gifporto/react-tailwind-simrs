@@ -29,6 +29,7 @@ import { AsesmentMedicAPI } from "@/lib/api";
 interface Props {
     initialData?: { keadaan: string };
     editable?: boolean;
+    onSuccess?: () => void;
 }
 
 // Mapping antara value radio (internal) dan label payload (API)
@@ -45,7 +46,7 @@ const REVERSE_MAP: Record<string, string> = {
     "Sakit Berat": "berat",
 };
 
-export default function KeadaanUmum({ initialData, editable = false }: Props) {
+export default function KeadaanUmum({ initialData, editable = false, onSuccess }: Props) {
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
     const [keadaan, setKeadaan] = useState<string>("ringan");
@@ -74,6 +75,10 @@ export default function KeadaanUmum({ initialData, editable = false }: Props) {
 
             await AsesmentMedicAPI.updateKeadaanUmum(id, payload);
             toast.success("Keadaan umum berhasil diperbarui");
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             console.error("Update Keadaan Umum Error:", error);
             toast.error("Gagal menyimpan keadaan umum");
@@ -174,9 +179,9 @@ export default function KeadaanUmum({ initialData, editable = false }: Props) {
 
                 {editable && (
                     <div className="pt-3 border-t flex justify-end">
-                        <Button 
-                            size="sm" 
-                            onClick={handleSave} 
+                        <Button
+                            size="sm"
+                            onClick={handleSave}
                             disabled={loading || !id}
                         >
                             {loading ? (

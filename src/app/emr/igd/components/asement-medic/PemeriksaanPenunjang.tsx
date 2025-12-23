@@ -30,9 +30,10 @@ import OrderRadiologi from "@/components/orderRadiologi";
 interface Props {
   initialData?: any;
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function PemeriksaanPenunjang({ initialData, editable = false }: Props) {
+export default function PemeriksaanPenunjang({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
 
@@ -62,6 +63,10 @@ export default function PemeriksaanPenunjang({ initialData, editable = false }: 
       setLoading(true);
       await AsesmentMedicAPI.updatePenunjang(id, form);
       toast.success("Pemeriksaan penunjang berhasil disimpan");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan data pemeriksaan penunjang");
     } finally {
@@ -159,9 +164,9 @@ export default function PemeriksaanPenunjang({ initialData, editable = false }: 
           </div>
         )}
 
-        <OrderLab />
-        <OrderRadiologi />
-        
+        <OrderLab api="EmrIgdAPI" />
+        <OrderRadiologi api="EmrIgdAPI" />
+
       </AccordionContent>
     </AccordionItem>
   );

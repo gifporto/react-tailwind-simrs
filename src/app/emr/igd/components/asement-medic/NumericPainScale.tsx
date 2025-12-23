@@ -12,7 +12,13 @@ import { Info, Smile, Meh, Frown, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AsesmentMedicAPI } from "@/lib/api";
 
-export default function NumericPainScale({ initialData, editable = false }: { initialData?: any, editable?: boolean }) {
+interface Props {
+    initialData?: any;
+    editable?: boolean;
+    onSuccess?: () => void;
+}
+
+export default function NumericPainScale({ initialData, editable = false, onSuccess }: Props) {
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
     const [painValue, setPainValue] = useState<number>(0);
@@ -29,6 +35,10 @@ export default function NumericPainScale({ initialData, editable = false }: { in
             setLoading(true);
             await AsesmentMedicAPI.updateSkriningNeyri(id, { numeric_pain_scale: painValue });
             toast.success("Skala Numerik disimpan");
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             toast.error("Gagal menyimpan");
         } finally {
@@ -62,7 +72,7 @@ export default function NumericPainScale({ initialData, editable = false }: { in
 
                 <div className="space-y-6 py-4">
                     <div className="flex justify-between text-xs font-bold px-1">
-                        {[0,1,2,3,4,5,6,7,8,9,10].map(n => <span key={n} className={n <= 3 ? "text-green-600" : n <= 6 ? "text-yellow-600" : "text-red-600"}>{n}</span>)}
+                        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => <span key={n} className={n <= 3 ? "text-green-600" : n <= 6 ? "text-yellow-600" : "text-red-600"}>{n}</span>)}
                     </div>
                     <Input type="range" min={0} max={10} value={painValue} onChange={(e) => setPainValue(Number(e.target.value))} disabled={!editable || loading} className="h-2 accent-primary" />
                     <div className="bg-muted/30 p-4 rounded-lg text-center border-dashed border-2">

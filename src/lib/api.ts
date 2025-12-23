@@ -136,6 +136,100 @@ export const EmrIgdAPI = {
     },
 };
 
+export const RanapAPI = {
+    getList: async (page = 1, perPage = 10) => {
+        const res = await api.get("/inspections/ranap", {
+            params: { page, per_page: perPage },
+        });
+        return res.data;
+    },
+
+    getDetail: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}`);
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inspections/ranap", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}`);
+        return res.data;
+    },
+
+    getService: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/services`);
+        return res.data;
+    },
+
+    createService: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/services`, payload);
+        return res.data;
+    },
+
+    deleteService: async (id: string, idService: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/services/${idService}`);
+        return res.data;
+    },
+
+    getLab: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/laboratories`);
+        return res.data;
+    },
+
+    createLab: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/laboratories`, payload);
+        return res.data;
+    },
+
+    deleteLab: async (id: string, idLab: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/laboratories/${idLab}`);
+        return res.data;
+    },
+
+    getRadiologi: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/radiologies`);
+        return res.data;
+    },
+
+    createRadiologi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/radiologies`, payload);
+        return res.data;
+    },
+
+    deleteRadiologi: async (id: string, idRadiologi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/radiologies/${idRadiologi}`);
+        return res.data;
+    },
+
+    getVisit: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/visits`);
+        return res.data;
+    },
+
+    createVisit: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/visits`, payload);
+        return res.data;
+    },
+
+    updateVisit: async (id: string, idVisit: string, payload: { id_dokter: string }) => {
+        const res = await api.put(`/inspections/ranap/${id}/visits/${idVisit}`, payload);
+        return res.data;
+    },
+
+    deleteVisit: async (id: string, idVisit: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/visits/${idVisit}`);
+        return res.data;
+    },
+};
+
 export const EmrRadiologyAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/inspections/radiologies", {
@@ -192,6 +286,7 @@ export const EmrLabAPI = {
         return res.data;
     },
 };
+
 
 export const AsesmentMedicAPI = {
     getAsesment: async (id: string) => {

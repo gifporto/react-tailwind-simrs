@@ -24,6 +24,12 @@ import {
 
 import { AsesmentMedicAPI } from "@/lib/api";
 
+interface Props {
+  initialData?: any;
+  editable?: boolean;
+  onSuccess?: () => void;
+}
+
 const FLACC_SECTIONS = [
   {
     key: "face",
@@ -77,7 +83,7 @@ const FLACC_SECTIONS = [
   },
 ];
 
-export default function FlaccPainAssessment({ initialData, editable = false }: { initialData?: any, editable?: boolean }) {
+export default function FlaccPainAssessment({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
 
@@ -140,6 +146,10 @@ export default function FlaccPainAssessment({ initialData, editable = false }: {
       };
       await AsesmentMedicAPI.updateSkriningNeyri(id, payload);
       toast.success("Asesmen Nyeri FLACC berhasil disimpan");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan data");
     } finally {

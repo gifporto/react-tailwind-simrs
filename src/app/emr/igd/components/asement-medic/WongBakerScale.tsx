@@ -12,7 +12,13 @@ import { toast } from "sonner";
 import { Smile, Info, Save, Loader2 } from "lucide-react";
 import { AsesmentMedicAPI } from "@/lib/api";
 
-export default function WongBakerScale({ initialData, editable = false }: { initialData?: any, editable?: boolean }) {
+interface Props {
+  initialData?: any;
+  editable?: boolean;
+  onSuccess?: () => void;
+}
+
+export default function WongBakerScale({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState<string>("0");
@@ -29,6 +35,10 @@ export default function WongBakerScale({ initialData, editable = false }: { init
       setLoading(true);
       await AsesmentMedicAPI.updateSkriningNeyri(id, { wong_baker_scale: Number(score) });
       toast.success("Wong-Baker diperbarui");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan");
     } finally {

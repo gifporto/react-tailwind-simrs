@@ -55,9 +55,10 @@ interface VitalSignEntry {
 interface Props {
   initialData?: any[];
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function TandaVital({ initialData = [], editable = false }: Props) {
+export default function TandaVital({ initialData = [], editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [entries, setEntries] = useState<VitalSignEntry[]>([]);
@@ -107,6 +108,10 @@ export default function TandaVital({ initialData = [], editable = false }: Props
       await AsesmentMedicAPI.deleteVitalSign(id!, targetId.toString());
       setEntries(entries.filter(e => e.id !== targetId));
       toast.success("Data riwayat berhasil dihapus");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menghapus data");
     } finally {
@@ -147,6 +152,10 @@ export default function TandaVital({ initialData = [], editable = false }: Props
 
       await AsesmentMedicAPI.updateVitalSign(id!, payload);
       toast.success("Data vital sign baru berhasil disimpan");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan data");
     } finally {

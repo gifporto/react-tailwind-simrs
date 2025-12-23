@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils"
 interface Props {
   initialData?: any;
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
 const IcdSearchSection = ({
@@ -187,7 +188,7 @@ const IcdSearchSection = ({
   );
 };
 
-const Diagnosis: React.FC<Props> = ({ initialData, editable = false }) => {
+const Diagnosis: React.FC<Props> = ({ initialData, editable = false, onSuccess }) => {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = React.useState(false);
 
@@ -217,6 +218,10 @@ const Diagnosis: React.FC<Props> = ({ initialData, editable = false }) => {
       setLoading(true);
       await AsesmentMedicAPI.updateDiagnosis(id, form);
       toast.success("Diagnosis berhasil disimpan");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan diagnosis");
     } finally {

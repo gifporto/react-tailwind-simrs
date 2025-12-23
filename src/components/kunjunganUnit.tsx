@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, DoctorAPI, PoliAPI } from "@/lib/api"
+import { EmrIgdAPI, RanapAPI, DoctorAPI, PoliAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -28,7 +28,6 @@ import {
   Plus,
   Check,
   ChevronsUpDown,
-  CheckCheck,
   User,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -55,6 +54,26 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
+/* =====================
+   Configurations & Types
+===================== */
+
+const API_MAP = {
+  EmrIgdAPI: { service: EmrIgdAPI, label: "IGD" },
+  RanapAPI: { service: RanapAPI, label: "Rawat Inap" },
+}
+
+interface VisitApiInterface {
+  getVisit: (id: string) => Promise<any>;
+  createVisit: (id: string, data: any) => Promise<any>;
+  updateVisit: (id: string, visitId: string, data: any) => Promise<any>;
+  deleteVisit: (id: string, visitId: string) => Promise<any>;
+}
+
+interface KunjunganUnitProps {
+  api: keyof typeof API_MAP;
+}
+
 type VisitItem = {
   id: number
   no_reg: string
@@ -71,8 +90,13 @@ type VisitItem = {
 type DoctorItem = { id: number; nama_dokter: string }
 type PoliItem = { id: number; desk_poli: string; desk_singkatan: string }
 
-export default function KunjunganUnit() {
-  // id dari URL: /pendaftaran/:id
+/* =====================
+   Component
+===================== */
+export default function KunjunganUnit({ api }: KunjunganUnitProps) {
+  const activeApi = API_MAP[api].service as VisitApiInterface;
+  const moduleLabel = API_MAP[api].label;
+
   const { id } = useParams<{ id: string }>()
   
   const [visits, setVisits] = React.useState<VisitItem[]>([])
@@ -108,14 +132,14 @@ export default function KunjunganUnit() {
     if (!id) return
     setLoading(true)
     try {
-      const response = await EmrIgdAPI.getVisit(id)
+      const response = await activeApi.getVisit(id)
       setVisits(response.data || [])
     } catch (error) {
-      toast.error("Gagal memuat data kunjungan")
+      toast.error(`Gagal memuat data kunjungan ${moduleLabel}`)
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, activeApi, moduleLabel])
 
   const fetchDoctors = async (pageNum: number, searchKey: string, append: boolean = false) => {
     if (loadingDoctors) return
@@ -191,13 +215,12 @@ export default function KunjunganUnit() {
     
     setActionLoading(true)
     try {
-      // Mengirim ID dari URL dan payload
-      await EmrIgdAPI.createVisit(id, {
+      await activeApi.createVisit(id, {
         id_dokter: formData.id_dokter,
         id_poli: formData.id_poli
       })
       
-      toast.success("Kunjungan baru berhasil ditambahkan")
+      toast.success(`Kunjungan ${moduleLabel} berhasil ditambahkan`)
       setIsCreateDialogOpen(false)
       setFormData({ id_dokter: "", id_poli: "" })
       fetchVisits()
@@ -212,7 +235,7 @@ export default function KunjunganUnit() {
     if (!id || !selectedVisit || !formData.id_dokter) return
     setActionLoading(true)
     try {
-      await EmrIgdAPI.updateVisit(id, selectedVisit.id.toString(), {
+      await activeApi.updateVisit(id, selectedVisit.id.toString(), {
         id_dokter: formData.id_dokter,
       })
       toast.success("Dokter berhasil diperbarui")
@@ -229,7 +252,7 @@ export default function KunjunganUnit() {
     if (!id || !confirm("Apakah Anda yakin ingin menghapus kunjungan ini?")) return
     setActionLoading(true)
     try {
-      await EmrIgdAPI.deleteVisit(id, visitId.toString())
+      await activeApi.deleteVisit(id, visitId.toString())
       toast.success("Kunjungan berhasil dihapus")
       fetchVisits()
     } catch (error) {
@@ -240,11 +263,11 @@ export default function KunjunganUnit() {
   }
 
   return (
-    <Card>
+    <Card className="mt-4">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Hospital className="w-5 h-5 text-primary" />
-          Kunjungan Unit
+          Kunjungan Unit ({moduleLabel})
         </CardTitle>
         <div className="flex gap-2">
           <Button 
@@ -268,7 +291,7 @@ export default function KunjunganUnit() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-            <p className="text-sm text-muted-foreground">Menarik data kunjungan...</p>
+            <p className="text-sm text-muted-foreground">Menarik data kunjungan {moduleLabel}...</p>
           </div>
         ) : visits.length > 0 ? (
           <div className="overflow-x-auto rounded-md border">
@@ -329,7 +352,7 @@ export default function KunjunganUnit() {
             </Table>
           </div>
         ) : (
-          <div className="py-16 text-center text-muted-foreground italic">Tidak ada riwayat kunjungan.</div>
+          <div className="py-16 text-center text-muted-foreground italic">Tidak ada riwayat kunjungan {moduleLabel}.</div>
         )}
       </CardContent>
 
@@ -337,7 +360,7 @@ export default function KunjunganUnit() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>Tambah Kunjungan Baru</DialogTitle>
+            <DialogTitle>Tambah Kunjungan {moduleLabel}</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
@@ -345,9 +368,11 @@ export default function KunjunganUnit() {
               <Popover open={openPoliCombo} onOpenChange={setOpenPoliCombo}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" className="w-full justify-between">
-                    {formData.id_poli 
-                      ? polis.find((p) => p.id.toString() === formData.id_poli)?.desk_poli 
-                      : "Pilih poli..."}
+                    <span className="truncate">
+                      {formData.id_poli 
+                        ? polis.find((p) => p.id.toString() === formData.id_poli)?.desk_poli 
+                        : "Pilih poli..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -383,9 +408,11 @@ export default function KunjunganUnit() {
               <Popover open={openDoctorCombo} onOpenChange={setOpenDoctorCombo}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" className="w-full justify-between">
-                    {formData.id_dokter 
-                      ? doctors.find((d) => d.id.toString() === formData.id_dokter)?.nama_dokter 
-                      : "Pilih dokter..."}
+                    <span className="truncate">
+                      {formData.id_dokter 
+                        ? doctors.find((d) => d.id.toString() === formData.id_dokter)?.nama_dokter 
+                        : "Pilih dokter..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -426,7 +453,7 @@ export default function KunjunganUnit() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL EDIT (Ubah Dokter) */}
+      {/* MODAL EDIT */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
@@ -438,9 +465,11 @@ export default function KunjunganUnit() {
               <Popover open={openDoctorCombo} onOpenChange={setOpenDoctorCombo}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" className="w-full justify-between">
-                    {formData.id_dokter 
-                      ? doctors.find((d) => d.id.toString() === formData.id_dokter)?.nama_dokter || selectedVisit?.dokter.nama_dokter
-                      : "Pilih dokter..."}
+                    <span className="truncate">
+                      {formData.id_dokter 
+                        ? doctors.find((d) => d.id.toString() === formData.id_dokter)?.nama_dokter || selectedVisit?.dokter.nama_dokter
+                        : "Pilih dokter..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>

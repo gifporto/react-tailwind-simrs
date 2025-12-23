@@ -35,6 +35,7 @@ import { AsesmentMedicAPI } from "@/lib/api";
 interface Props {
   initialData?: any;
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
 const LIST_DOKUMEN = [
@@ -45,7 +46,7 @@ const LIST_DOKUMEN = [
   "Resep Obat"
 ];
 
-export default function KondisiMeninggalkanIGD({ initialData, editable = false }: Props) {
+export default function KondisiMeninggalkanIGD({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [openDate, setOpenDate] = useState(false);
@@ -118,6 +119,10 @@ export default function KondisiMeninggalkanIGD({ initialData, editable = false }
 
       await AsesmentMedicAPI.updateKondisiMeninggalkan(id, payload);
       toast.success("Kondisi meninggalkan IGD berhasil disimpan");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan data");
     } finally {

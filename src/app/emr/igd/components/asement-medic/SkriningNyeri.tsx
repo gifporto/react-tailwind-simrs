@@ -15,9 +15,10 @@ import { AsesmentMedicAPI } from "@/lib/api";
 interface Props {
   initialData?: any;
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function SkriningNyeri({ initialData, editable = false }: Props) {
+export default function SkriningNyeri({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [hasPain, setHasPain] = useState<string>("tidak");
@@ -34,6 +35,10 @@ export default function SkriningNyeri({ initialData, editable = false }: Props) 
       setLoading(true);
       await AsesmentMedicAPI.updateSkriningNeyri(id, { skrining_nyeri: hasPain });
       toast.success("Skrining nyeri diperbarui");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error("Gagal menyimpan");
     } finally {

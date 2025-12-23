@@ -48,9 +48,10 @@ const motorOptions = [
 interface Props {
     initialData?: any;
     editable?: boolean;
+    onSuccess?: () => void;
 }
 
-export default function Kesadaran({ initialData, editable = false }: Props) {
+export default function Kesadaran({ initialData, editable = false, onSuccess }: Props) {
     const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(false);
 
@@ -147,6 +148,10 @@ export default function Kesadaran({ initialData, editable = false }: Props) {
 
             await AsesmentMedicAPI.updateGscScore(id, payload);
             toast.success("Skor GCS & Kesadaran berhasil disimpan");
+
+            if (onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             console.error("GCS Save Error:", error);
             toast.error("Gagal menyimpan data kesadaran");

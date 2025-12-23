@@ -27,9 +27,10 @@ interface AlergiData {
 interface Props {
   initialData?: any; // Data dari getAsesment (biasanya status_alergi)
   editable?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function Alergi({ initialData, editable = false }: Props) {
+export default function Alergi({ initialData, editable = false, onSuccess }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +66,10 @@ export default function Alergi({ initialData, editable = false }: Props) {
 
       await AsesmentMedicAPI.updateAlergi(id, payload);
       toast.success("Data alergi berhasil diperbarui");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Update Alergi Error:", error);
       toast.error("Gagal menyimpan data alergi");

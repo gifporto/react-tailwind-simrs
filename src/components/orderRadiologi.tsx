@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, DoctorAPI, RadiologyAPI } from "@/lib/api"
+import { EmrIgdAPI, RanapAPI, DoctorAPI, RadiologyAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -63,8 +63,25 @@ import {
 } from "@/components/ui/alert-dialog"
 
 /* =====================
-   Helpers
+   Configurations & Types
 ===================== */
+
+// Mapping API untuk memudahkan pemilihan berdasarkan prop string
+const API_MAP = {
+  EmrIgdAPI: { service: EmrIgdAPI, label: "IGD" },
+  RanapAPI: { service: RanapAPI, label: "Rawat Inap" },
+}
+
+interface RadiologiApiInterface {
+  getRadiologi: (id: string) => Promise<any>;
+  createRadiologi: (id: string, data: any) => Promise<any>;
+  deleteRadiologi: (id: string, orderId: string) => Promise<any>;
+}
+
+interface OrderRadiologiProps {
+  api: keyof typeof API_MAP; // Hanya menerima key yang ada di API_MAP
+}
+
 const statusBadge = (status: string) => {
   const s = status?.toLowerCase()
   if (s === "ordered") return "secondary"
@@ -76,13 +93,17 @@ const statusBadge = (status: string) => {
 
 const rupiah = (val: string | number) => {
   const num = typeof val === "string" ? parseFloat(val) : val
-  return `Rp ${num}`
+  return `Rp ${num.toLocaleString('id-ID')}`
 }
 
 /* =====================
    Component
 ===================== */
-const OrderRadiologi: React.FC = () => {
+const OrderRadiologi: React.FC<OrderRadiologiProps> = ({ api }) => {
+  // Ambil service API dan label berdasarkan prop 'api'
+  const activeApi = API_MAP[api].service as RadiologiApiInterface;
+  const moduleLabel = API_MAP[api].label;
+
   const { id } = useParams<{ id: string }>()
 
   const [loading, setLoading] = useState(true)
@@ -91,7 +112,7 @@ const OrderRadiologi: React.FC = () => {
 
   // --- UI States ---
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isResultOpen, setIsResultOpen] = useState(false) // State Dialog Hasil
+  const [isResultOpen, setIsResultOpen] = useState(false)
   const [openDoctorCombo, setOpenDoctorCombo] = useState(false)
   const [openRadCombo, setOpenRadCombo] = useState(false)
 
@@ -118,14 +139,14 @@ const OrderRadiologi: React.FC = () => {
     if (!id) return
     setLoading(true)
     try {
-      const response = await EmrIgdAPI.getRadiologi(id)
+      const response = await activeApi.getRadiologi(id)
       setOrders(response.data || [])
     } catch (error) {
-      toast.error("Gagal memuat data radiologi")
+      toast.error(`Gagal memuat data radiologi ${moduleLabel}`)
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, activeApi, moduleLabel])
 
   useEffect(() => {
     fetchRadiology()
@@ -168,7 +189,7 @@ const OrderRadiologi: React.FC = () => {
         dokter_id: parseInt(formData.dokter_id),
         pemeriksaan_ids: formData.pemeriksaan_ids
       }
-      await EmrIgdAPI.createRadiologi(id, payload)
+      await activeApi.createRadiologi(id, payload)
       toast.success("Order radiologi berhasil dibuat")
       setIsCreateOpen(false)
       setFormData({ dokter_id: "", pemeriksaan_ids: [] })
@@ -182,10 +203,9 @@ const OrderRadiologi: React.FC = () => {
 
   const handleDelete = async (idRadiologi: string) => {
     if (!id) return
-
     setActionLoading(true)
     try {
-      await EmrIgdAPI.deleteRadiologi(id, idRadiologi)
+      await activeApi.deleteRadiologi(id, idRadiologi)
       toast.success("Order berhasil dibatalkan")
       fetchRadiology()
       setIsDeleteAlertOpen(false)
@@ -202,7 +222,7 @@ const OrderRadiologi: React.FC = () => {
       <CardHeader className="flex flex-row items-center justify-between py-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ScanHeart className="w-5 h-5 text-yellow-600" />
-          Order Radiologi
+          Order Radiologi ({moduleLabel})
         </CardTitle>
         <Button size="sm" className="h-8 gap-1" onClick={() => setIsCreateOpen(true)}>
           <Plus className="w-4 h-4" />
@@ -249,7 +269,6 @@ const OrderRadiologi: React.FC = () => {
                         <X className="w-4 h-4" />
                       </Button>
                     )}
-
                   </div>
                 </div>
 
@@ -266,7 +285,7 @@ const OrderRadiologi: React.FC = () => {
                   <div className="flex gap-2 items-center">
                     <Badge variant="info">
                       <User className="w-3 h-3 mr-1" />
-                      {order.dokter.nama}
+                      {order.dokter?.nama}
                     </Badge>
                     {order.result && (
                       <Button
@@ -287,15 +306,16 @@ const OrderRadiologi: React.FC = () => {
             )
           })
         ) : (
-          <div className="text-center py-10 text-muted-foreground text-sm">Belum ada order radiologi.</div>
+          <div className="text-center py-10 text-muted-foreground text-sm">Belum ada order radiologi {moduleLabel}.</div>
         )}
       </CardContent>
 
-      {/* --- DIALOG CREATE (Sama seperti sebelumnya) --- */}
+      {/* --- DIALOG CREATE --- */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-[450px]">
-          <DialogHeader><DialogTitle>Buat Order Radiologi</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Buat Order Radiologi {moduleLabel}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Combo Dokter */}
             <div className="space-y-2">
               <Label>Dokter Pengirim</Label>
               <Popover open={openDoctorCombo} onOpenChange={setOpenDoctorCombo}>
@@ -326,6 +346,7 @@ const OrderRadiologi: React.FC = () => {
                 </PopoverContent>
               </Popover>
             </div>
+            {/* Multi Select Pemeriksaan */}
             <div className="space-y-2">
               <Label>Pemeriksaan ({formData.pemeriksaan_ids.length} terpilih)</Label>
               <Popover open={openRadCombo} onOpenChange={setOpenRadCombo}>
@@ -378,7 +399,6 @@ const OrderRadiologi: React.FC = () => {
 
           {selectedResult && (
             <div className="space-y-6 py-2">
-              {/* Info Header */}
               <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
                 <div className="space-y-1">
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">No. Order</p>
@@ -388,112 +408,43 @@ const OrderRadiologi: React.FC = () => {
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Tanggal Hasil</p>
                   <p className="font-medium">{selectedResult.result?.tanggal_hasil}</p>
                 </div>
-                <div className="col-span-2 space-y-1">
-                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Dokter Pengirim</p>
-                  <div className="flex items-center gap-2">
-                    <User className="w-3 h-3" />
-                    <p className="font-medium">{selectedResult.dokter?.nama}</p>
-                  </div>
-                </div>
               </div>
 
-              {/* Daftar Pemeriksaan */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 uppercase">Item Pemeriksaan</Label>
-                <div className="flex flex-wrap gap-2">
-                  {selectedResult.details?.map((d: any) => (
-                    <Badge key={d.id} variant="secondary" className="bg-white border-slate-200 shadow-sm font-medium">
-                      {d.pemeriksaan.nama}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Konten Hasil */}
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className="text-sm font-bold flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    Temuan
-                  </Label>
-                  <div className="p-3 border rounded-md bg-white text-sm leading-relaxed text-slate-700 min-h-[60px] whitespace-pre-wrap">
+                  <Label className="text-sm font-bold">Temuan</Label>
+                  <div className="p-3 border rounded-md bg-white text-sm whitespace-pre-wrap">
                     {selectedResult.result?.temuan || "-"}
                   </div>
                 </div>
-
                 <div className="space-y-1.5">
-                  <Label className="text-sm font-bold flex items-center gap-2 text-green-600">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    Kesimpulan
-                  </Label>
-                  <div className="p-3 border border-green-100 rounded-md bg-green-50/30 text-sm leading-relaxed text-slate-700 min-h-[60px] whitespace-pre-wrap font-medium italic">
+                  <Label className="text-sm font-bold text-green-600">Kesimpulan</Label>
+                  <div className="p-3 border border-green-100 rounded-md bg-green-50/30 text-sm italic font-medium">
                     {selectedResult.result?.kesimpulan || "-"}
                   </div>
                 </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-bold flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                    Saran
-                  </Label>
-                  <div className="p-3 border rounded-md bg-white text-sm leading-relaxed text-slate-700 min-h-[40px] whitespace-pre-wrap">
-                    {selectedResult.result?.saran || "-"}
-                  </div>
-                </div>
               </div>
-
-              {/* Lampiran File */}
-              {selectedResult.result?.file_lampiran && (
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold text-slate-500 uppercase">Lampiran Gambar</Label>
-                  <div className="border rounded-lg p-2 bg-slate-50 flex items-center justify-between group">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-white rounded border">
-                        <FileImage className="w-5 h-5 text-blue-500" />
-                      </div>
-                      <div className="text-xs">
-                        <p className="font-medium truncate max-w-[200px]">{selectedResult.result.file_lampiran.split('/').pop()}</p>
-                        <p className="text-muted-foreground uppercase">Image File</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" className="gap-2" asChild>
-                      <a href={selectedResult.result.file_lampiran} target="_blank" rel="noreferrer">
-                        <Download className="w-4 h-4" />
-                        Unduh
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" className="w-full" onClick={() => setIsResultOpen(false)}>
-              Tutup
-            </Button>
+            <Button variant="outline" className="w-full" onClick={() => setIsResultOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* --- ALERT DELETE --- */}
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Batalkan Order Radiologi
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Apakah Anda yakin ingin membatalkan order ini? Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
+            <AlertDialogTitle>Batalkan Order Radiologi</AlertDialogTitle>
+            <AlertDialogDescription>Apakah Anda yakin ingin membatalkan order ini?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={actionLoading}>Kembali</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
-                e.preventDefault() // Mencegah dialog menutup sebelum API selesai
+                e.preventDefault()
                 if (selectedIdToDelete) handleDelete(selectedIdToDelete)
               }}
               className="bg-destructive hover:bg-destructive/90"

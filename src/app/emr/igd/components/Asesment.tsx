@@ -101,6 +101,17 @@ export default function Asesment() {
     fetchData();
   }, [id, activeTab]);
 
+  const refreshData = async () => {
+    if (!id) return;
+    try {
+      // Anda bisa menambahkan loading state kecil di sini jika mau
+      const resMedis = await AsesmentMedicAPI.getAsesment(id);
+      setDataAsesmen(resMedis.data);
+    } catch (error) {
+      console.error("Gagal refresh data:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -177,25 +188,24 @@ export default function Asesment() {
           {/* TAB MEDIS */}
           <TabsContent value="medis" className="pt-4 space-y-4">
             <Accordion type="multiple" className="w-full space-y-4">
-              <Anamnesa editable={editMode} initialData={dataAsesmen?.anamnesa} />
-              <Alergi editable={editMode} initialData={dataAsesmen?.status_alergi} />
-              <StatusPsikologis editable={editMode} initialData={dataAsesmen?.status_psikologis} />
-              <KeadaanUmum editable={editMode} initialData={dataAsesmen?.keadaan_umum} />
-              <Kesadaran editable={editMode} initialData={dataAsesmen?.kesadaran} />
-              <TandaVital editable={editMode} initialData={dataAsesmen?.vital_signs} />
-              <SkriningNyeri editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
-              <NumericPainScale editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
-              <WongBakerScale editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
-              <FlaccPainAssessment editable={editMode} initialData={dataAsesmen?.skrining_nyeri} />
-              <PhysicalExam editable={editMode} initialData={dataAsesmen?.pemeriksaan_fisik} />
-              <PemeriksaanPenunjang editable={editMode} initialData={dataAsesmen?.pemeriksaan_penunjang} />
-              
-              <Diagnosis editable={editMode} initialData={dataAsesmen?.diagnosis} />
-              <Prescription editable={editMode} initialData={dataAsesmen?.reseps} />
-              <TindakanTerapi editable={editMode} initialData={dataAsesmen?.perencanaan_tindakan} />
-              <RencanaTindakLanjut editable={editMode} initialData={dataAsesmen?.rencana_tindak_lanjut} />
-              <KondisiMeninggalkanIGD editable={editMode} initialData={dataAsesmen?.kondisi_keluar_igd} />
-              <EdukasiDischarge editable={editMode} initialData={dataAsesmen?.edukasi_discharge} />
+              <Anamnesa editable={editMode} initialData={dataAsesmen?.anamnesa} onSuccess={refreshData} />
+              <Alergi editable={editMode} initialData={dataAsesmen?.status_alergi} onSuccess={refreshData}/>
+              <StatusPsikologis editable={editMode} initialData={dataAsesmen?.status_psikologis} onSuccess={refreshData} />
+              <KeadaanUmum editable={editMode} initialData={dataAsesmen?.keadaan_umum} onSuccess={refreshData} />
+              <Kesadaran editable={editMode} initialData={dataAsesmen?.kesadaran} onSuccess={refreshData} />
+              <TandaVital editable={editMode} initialData={dataAsesmen?.vital_signs} onSuccess={refreshData} />
+              <SkriningNyeri editable={editMode} initialData={dataAsesmen?.skrining_nyeri} onSuccess={refreshData} />
+              <NumericPainScale editable={editMode} initialData={dataAsesmen?.skrining_nyeri} onSuccess={refreshData} />
+              <WongBakerScale editable={editMode} initialData={dataAsesmen?.skrining_nyeri} onSuccess={refreshData} />
+              <FlaccPainAssessment editable={editMode} initialData={dataAsesmen?.skrining_nyeri} onSuccess={refreshData} />
+              <PhysicalExam editable={editMode} initialData={dataAsesmen?.pemeriksaan_fisik} onSuccess={refreshData} />
+              <PemeriksaanPenunjang editable={editMode} initialData={dataAsesmen?.pemeriksaan_penunjang} onSuccess={refreshData} />
+              <Diagnosis editable={editMode} initialData={dataAsesmen?.diagnosis} onSuccess={refreshData} />
+              <Prescription editable={editMode} initialData={dataAsesmen?.reseps} onSuccess={refreshData} />
+              <TindakanTerapi editable={editMode} initialData={dataAsesmen?.perencanaan_tindakan} onSuccess={refreshData} />
+              <RencanaTindakLanjut editable={editMode} initialData={dataAsesmen?.rencana_tindak_lanjut} onSuccess={refreshData} />
+              <KondisiMeninggalkanIGD editable={editMode} initialData={dataAsesmen?.kondisi_keluar_igd} onSuccess={refreshData} />
+              <EdukasiDischarge editable={editMode} initialData={dataAsesmen?.edukasi_discharge} onSuccess={refreshData} />
             </Accordion>
           </TabsContent>
 
