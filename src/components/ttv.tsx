@@ -19,11 +19,22 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 // Icons
 import {
     Thermometer, HeartPulse, Plus, Clock,
-    User, Loader2, Activity, Wind, Brain, Ruler, Weight, Droplets, Stethoscope, Pill
+    User, Loader2, Activity, Wind, Brain, Ruler, Weight, Droplets, Stethoscope, Pill,
+    Trash2
 } from "lucide-react"
 import { toast } from "sonner"
 import LoadingSkeleton from "./LoadingSkeleton"
@@ -37,6 +48,7 @@ export default function TtvPage() {
 
     // Modal & Form States
     const [modalType, setModalType] = useState<ModalType>(null)
+    const [deleteConfig, setDeleteConfig] = useState<{ id: string, type: string } | null>(null)
     const [formValues, setFormValues] = useState({
         suhu: "",
         sistolik: "",
@@ -72,14 +84,14 @@ export default function TtvPage() {
     const { data: spoRes, isLoading: loadingSpo } = fetchQuery("ranap-spo", RanapAPI.getSpo)
     const { data: interRes, isLoading: loadingInter } = fetchQuery("ranap-intervensi", RanapAPI.getIntervensi)
 
-    // --- Mutations ---
-    const mutationConfig = (key: string) => ({
+    const mutationConfig = (key: string, message: string = "Data berhasil diproses") => ({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [key, id] })
-            toast.success("Data berhasil dicatat")
+            toast.success(message)
             closeModal()
+            setDeleteConfig(null)
         },
-        onError: () => toast.error("Gagal menyimpan data")
+        onError: () => toast.error("Terjadi kesalahan sistem")
     })
 
     const createSuhu = useMutation({ mutationFn: (val: any) => RanapAPI.createSuhu(id!, val), ...mutationConfig("ranap-suhu") })
@@ -91,6 +103,27 @@ export default function TtvPage() {
     const createBb = useMutation({ mutationFn: (val: any) => RanapAPI.createBeratBadan(id!, val), ...mutationConfig("ranap-bb") })
     const createSpo = useMutation({ mutationFn: (val: any) => RanapAPI.createSpo(id!, val), ...mutationConfig("ranap-spo") })
     const createInter = useMutation({ mutationFn: (val: any) => RanapAPI.createIntervensi(id!, val), ...mutationConfig("ranap-intervensi") })
+
+    // Delete Mutations
+    const deleteSuhu = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteSuhu(id!, sid), ...mutationConfig("ranap-suhu", "Data suhu dihapus") })
+    const deleteTensi = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteTensi(id!, sid), ...mutationConfig("ranap-tensi", "Data tensi dihapus") })
+    const deleteNadi = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteNadi(id!, sid), ...mutationConfig("ranap-nadi", "Data nadi dihapus") })
+    const deleteResp = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteRespiration(id!, sid), ...mutationConfig("ranap-respirasi", "Data respirasi dihapus") })
+    const deleteNyeri = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteNyeri(id!, sid), ...mutationConfig("ranap-nyeri", "Data nyeri dihapus") })
+    const deleteTb = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteTinggiBadan(id!, sid), ...mutationConfig("ranap-tb", "Data TB dihapus") })
+    const deleteBb = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteBeratBadan(id!, sid), ...mutationConfig("ranap-bb", "Data BB dihapus") })
+    const deleteSpo = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteSpo(id!, sid), ...mutationConfig("ranap-spo", "Data SpO2 dihapus") })
+    const deleteInter = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteIntervensi(id!, sid), ...mutationConfig("ranap-intervensi", "Intervensi dihapus") })
+
+    const handleConfirmDelete = () => {
+        if (!deleteConfig) return
+        const { id: targetId, type } = deleteConfig
+        const mapper: any = {
+            suhu: deleteSuhu, tensi: deleteTensi, nadi: deleteNadi, respirasi: deleteResp,
+            nyeri: deleteNyeri, tb: deleteTb, bb: deleteBb, spo2: deleteSpo, intervensi: deleteInter
+        }
+        mapper[type]?.mutate(targetId)
+    }
 
     const closeModal = () => {
         setModalType(null)
@@ -144,106 +177,95 @@ export default function TtvPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <TtvSection title="Suhu Tubuh" icon={<Thermometer className="text-orange-500 w-5 h-5" />} onAdd={() => setModalType("suhu")} isLoading={loadingSuhu} data={suhuRes?.data}>
-                    {suhuRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}°C`} date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) >= 37.5} />)}
+                    {suhuRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}°C`} date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) >= 37.5} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "suhu"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Tekanan Darah" icon={<HeartPulse className="text-red-500 w-5 h-5" />} onAdd={() => setModalType("tensi")} isLoading={loadingTensi} data={tensiRes?.data} isTensi>
-                    {tensiRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil_sistole}/${item.hasil_diastole}`} unit="mmHg" date={item.tgl} user={item.created_by} isWarning={item.hasil_sistole >= 140 || item.hasil_sistole <= 90} />)}
+                    {tensiRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil_sistole}/${item.hasil_diastole}`} unit="mmHg" date={item.tgl} user={item.created_by} isWarning={item.hasil_sistole >= 140} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "tensi"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Denyut Nadi" icon={<Activity className="text-emerald-500 w-5 h-5" />} onAdd={() => setModalType("nadi")} isLoading={loadingNadi} data={nadiRes?.data}>
-                    {nadiRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="bpm" date={item.tgl} user={item.created_by} isWarning={item.hasil > 100 || item.hasil < 60} />)}
+                    {nadiRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="bpm" date={item.tgl} user={item.created_by} isWarning={item.hasil > 100} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "nadi"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Laju Napas" icon={<Wind className="text-blue-500 w-5 h-5" />} onAdd={() => setModalType("respirasi")} isLoading={loadingResp} data={respRes?.data}>
-                    {respRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="x/mnt" date={item.tgl} user={item.created_by} isWarning={item.hasil > 24} />)}
+                    {respRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="x/mnt" date={item.tgl} user={item.created_by} isWarning={item.hasil > 24} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "respirasi"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Skala Nyeri" icon={<Brain className="text-purple-500 w-5 h-5" />} onAdd={() => setModalType("nyeri")} isLoading={loadingNyeri} data={nyeriRes?.data}>
-                    {nyeriRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="/10" date={item.tgl} user={item.created_by} isWarning={item.hasil >= 7} />)}
+                    {nyeriRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="/10" date={item.tgl} user={item.created_by} isWarning={item.hasil >= 7} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "nyeri"})} />)}
                 </TtvSection>
 
                 <TtvSection title="SpO2" icon={<Droplets className="text-cyan-500 w-5 h-5" />} onAdd={() => setModalType("spo2")} isLoading={loadingSpo} data={spoRes?.data}>
-                    {spoRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}%`} date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) < 95} />)}
+                    {spoRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}%`} date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) < 95} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "spo2"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Tinggi Badan" icon={<Ruler className="text-slate-500 w-5 h-5" />} onAdd={() => setModalType("tb")} isLoading={loadingTb} data={tbRes?.data}>
-                    {tbRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="cm" date={item.tgl} user={item.created_by} isWarning={false} />)}
+                    {tbRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="cm" date={item.tgl} user={item.created_by} isWarning={false} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "tb"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Berat Badan" icon={<Weight className="text-slate-500 w-5 h-5" />} onAdd={() => setModalType("bb")} isLoading={loadingBb} data={bbRes?.data}>
-                    {bbRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="kg" date={item.tgl} user={item.created_by} isWarning={false} />)}
+                    {bbRes?.data?.map((item: any) => <LogCard key={item.id} value={item.hasil} unit="kg" date={item.tgl} user={item.created_by} isWarning={false} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "bb"})} />)}
                 </TtvSection>
             </div>
 
-            {/* SECTION INTERVENSI NYERI */}
+            {/* Intervensi Nyeri Section */}
             <div className="pt-4">
-                <div className="border rounded-md overflow-hidden bg-white">
-                    <div className="flex items-center justify-between p-3 bg-slate-50 border-b">
-                        <div className="flex items-center gap-2 font-semibold text-sm">
-                            <Stethoscope className="text-primary w-5 h-5" /> 
-                            Intervensi Pengkajian Ulang Nyeri
-                        </div>
-                        <Button variant="outline" size="sm" onClick={() => setModalType("intervensi")} className="h-8 gap-1 rounded-full">
-                            <Plus className="w-4 h-4" /> Tambah Intervensi
-                        </Button>
+                <div className="border rounded-md overflow-hidden bg-white shadow-sm">
+                    <div className="flex items-center justify-between p-3 bg-slate-50 border-b font-semibold text-sm">
+                        <div className="flex items-center gap-2"><Stethoscope className="text-primary w-5 h-5" /> Intervensi Nyeri</div>
+                        <Button variant="outline" size="sm" onClick={() => setModalType("intervensi")} className="h-8 rounded-full shadow-sm"><Plus className="w-4 h-4" /> Tambah Intervensi</Button>
                     </div>
                     <CardContent className="p-0">
-                        {loadingInter ? (
-                            <div className="p-6"><LoadingSkeleton lines={4} /></div>
-                        ) : (
-                            <div className="divide-y max-h-[500px] overflow-y-auto custom-scrollbar">
+                        {loadingInter ? <div className="p-6"><LoadingSkeleton lines={4} /></div> : (
+                            <div className="divide-y max-h-[600px] overflow-y-auto">
                                 {interRes?.data?.length > 0 ? interRes.data.map((item: any) => (
-                                    <div key={item.id} className="p-4 hover:bg-slate-50/50 transition-colors">
-                                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                                            <div className="lg:col-span-3 space-y-2 border-r pr-4">
-                                                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
-                                                    <Clock className="w-3 h-3" />
-                                                    {new Date(item.tgl).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                                <div className="p-1.5 bg-muted rounded text-[9px] font-bold uppercase inline-flex items-center gap-1.5">
-                                                    <User className="w-3 h-3" /> {item.created_by}
-                                                </div>
+                                    <div key={item.id} className={`p-4 relative group transition-colors ${item.deleted_by ? 'bg-slate-50/50' : 'hover:bg-slate-50/30'}`}>
+                                        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-4 ${item.deleted_by ? 'line-through opacity-40 select-none' : ''}`}>
+                                            <div className="lg:col-span-3 space-y-1 border-r pr-4">
+                                                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase"><Clock className="w-3 h-3" /> {new Date(item.tgl).toLocaleString('id-ID')}</div>
+                                                <div className="text-[9px] font-bold uppercase text-primary border px-2 py-0.5 rounded-md inline-block">Input: {item.created_by}</div>
                                             </div>
-
-                                            <div className="lg:col-span-4 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] border-r pr-4">
-                                                <Label className="col-span-2 text-[9px] uppercase text-primary font-black mb-1">Vital Signs</Label>
-                                                <div className="flex justify-between border-b border-dotted"><span>TD:</span> <b>{item.vital_signs.sistole}/{item.vital_signs.diastole}</b></div>
-                                                <div className="flex justify-between border-b border-dotted"><span>Nadi:</span> <b>{item.vital_signs.nadi}</b></div>
-                                                <div className="flex justify-between border-b border-dotted"><span>Suhu:</span> <b>{item.vital_signs.suhu}°C</b></div>
-                                                <div className="flex justify-between border-b border-dotted"><span>RR:</span> <b>{item.vital_signs.respiration_rate}</b></div>
-                                                <div className="flex justify-between border-b border-dotted"><span>Nyeri:</span> <b>{item.vital_signs.skala_nyeri}/10</b></div>
-                                                <div className="flex justify-between border-b border-dotted"><span>Sedasi:</span> <b>{item.vital_signs.skor_sedasi}</b></div>
+                                            <div className="lg:col-span-4 grid grid-cols-2 gap-x-3 text-[11px] border-r pr-4">
+                                                <Label className="col-span-2 text-[9px] uppercase font-black text-primary mb-1">Vital Signs</Label>
+                                                <div className="flex justify-between border-b border-dotted py-0.5"><span>TD:</span> <b>{item.vital_signs.sistole}/{item.vital_signs.diastole}</b></div>
+                                                <div className="flex justify-between border-b border-dotted py-0.5"><span>Suhu:</span> <b>{item.vital_signs.suhu}°C</b></div>
+                                                <div className="flex justify-between border-b border-dotted py-0.5"><span>Nadi:</span> <b>{item.vital_signs.nadi}</b></div>
+                                                <div className="flex justify-between border-b border-dotted py-0.5"><span>Nyeri:</span> <b>{item.vital_signs.skala_nyeri}/10</b></div>
                                             </div>
-
-                                            <div className="lg:col-span-5 space-y-3">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <Label className="text-[9px] uppercase font-bold text-emerald-600 flex items-center gap-1">
-                                                            <Pill className="w-2.5 h-2.5" /> Farmakologi
-                                                        </Label>
-                                                        <p className="text-xs font-semibold">{item.farmakologi.nama_obat} <span className="text-muted-foreground">({item.farmakologi.dosis})</span></p>
-                                                    </div>
-                                                    <div>
-                                                        <Label className="text-[9px] uppercase font-bold text-blue-600">Non-Farmakologi</Label>
-                                                        <p className="text-xs italic text-muted-foreground">{item.intervensi_non_farmakologi || "-"}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="p-2 bg-amber-50 rounded border border-amber-100">
-                                                    <Label className="text-[9px] uppercase font-bold text-amber-700">Pengkajian Ulang</Label>
-                                                    <p className="text-xs mt-1 text-slate-700 leading-relaxed">{item.pengkajian_ulang}</p>
-                                                </div>
+                                            <div className="lg:col-span-5 space-y-2">
+                                                <div><Label className="text-[9px] font-bold text-emerald-600 uppercase">Farmakologi</Label><p className="text-xs font-semibold">{item.farmakologi.nama_obat} <span className="text-muted-foreground text-[10px]">({item.farmakologi.dosis})</span></p></div>
+                                                <div className="bg-amber-50 p-2 rounded border border-amber-100"><Label className="text-[9px] font-bold text-amber-700 uppercase">Evaluasi</Label><p className="text-xs text-slate-700">{item.pengkajian_ulang}</p></div>
                                             </div>
                                         </div>
+                                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                                            {item.deleted_by ? (
+                                                <div className="text-[8px] font-black bg-destructive/10 text-destructive border border-destructive/20 px-2 py-1 rounded uppercase italic shadow-sm">Deleted By: {item.deleted_by}</div>
+                                            ) : (
+                                                <Button size="icon" variant="destructive" onClick={() => setDeleteConfig({id: item.id, type: "intervensi"})} className="opacity-0 group-hover:opacity-100 w-6 h-6 transition-all cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></Button>
+                                            )}
+                                        </div>
                                     </div>
-                                )) : (
-                                    <div className="p-10 text-center text-xs text-muted-foreground">Belum ada data intervensi nyeri.</div>
-                                )}
+                                )) : <div className="p-10 text-center text-xs text-muted-foreground italic">Belum ada data intervensi.</div>}
                             </div>
                         )}
                     </CardContent>
                 </div>
             </div>
+
+            {/* AlertDialog for Delete */}
+            <AlertDialog open={!!deleteConfig} onOpenChange={() => setDeleteConfig(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2"><Trash2 className="text-destructive w-5 h-5"/> Konfirmasi Penghapusan</AlertDialogTitle>
+                        <AlertDialogDescription>Apakah Anda yakin ingin menghapus data ini? Data yang dihapus akan tetap tampil di riwayat namun ditandai sebagai data tidak valid.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90 text-white shadow-md">Ya, Hapus Data</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <Dialog open={!!modalType} onOpenChange={(open) => !open && closeModal()}>
                 <DialogContent className={modalType === 'intervensi' ? "sm:max-w-[650px]" : "sm:max-w-[400px]"}>
@@ -259,7 +281,7 @@ export default function TtvPage() {
                                         <div className="space-y-1"><Label className="text-[10px] uppercase">Nadi</Label><Input type="number" value={formValues.nadi} onChange={(e) => updateForm("nadi", e.target.value)} required /></div>
                                         <div className="space-y-1"><Label className="text-[10px] uppercase">Suhu</Label><Input type="number" step="0.1" value={formValues.suhu} onChange={(e) => updateForm("suhu", e.target.value)} required /></div>
                                         <div className="space-y-1"><Label className="text-[10px] uppercase">RR</Label><Input type="number" value={formValues.respirasi} onChange={(e) => updateForm("respirasi", e.target.value)} required /></div>
-                                        <div className="space-y-1"><Label className="text-[10px] uppercase">Nyeri</Label><Input type="number" value={formValues.nyeri} onChange={(e) => updateForm("nyeri", e.target.value)} required /></div>
+                                        <div className="space-y-1"><Label className="text-[10px] uppercase">Nyeri</Label><Input type="number" min="0" max="10" value={formValues.nyeri} onChange={(e) => updateForm("nyeri", e.target.value)} required /></div>
                                         <div className="space-y-1 col-span-2"><Label className="text-[10px] uppercase">Skor Sedasi</Label><Input type="number" value={formValues.sedasi} onChange={(e) => updateForm("sedasi", e.target.value)} required /></div>
                                     </div>
                                 </div>
@@ -300,116 +322,60 @@ export default function TtvPage() {
     )
 }
 
-// --- Internal Components ---
-interface TtvSectionProps { title: string; icon: React.ReactNode; onAdd: () => void; isLoading: boolean; children: React.ReactNode; data?: any[]; isTensi?: boolean }
-
-function TtvSection({ title, icon, onAdd, isLoading, children, data, isTensi }: TtvSectionProps) {
+// --- Internal Component: LogCard ---
+function LogCard({ value, unit, date, user, isWarning, deletedBy, onDelete }: any) {
     return (
-        <div className=" border rounded-md overflow-hidden bg-white flex flex-col h-full">
+        <div className={`relative group px-4 py-3 transition-all border-b last:border-0 ${deletedBy ? 'bg-slate-50/50' : 'hover:bg-accent/10'}`}>
+            <div className={`space-y-1 ${deletedBy ? 'line-through opacity-30 select-none grayscale' : ''}`}>
+                <div className="flex items-baseline justify-between">
+                    <div className="flex items-baseline gap-1">
+                        <span className={`text-xl font-black tracking-tighter ${isWarning && !deletedBy ? 'text-destructive' : 'text-foreground'}`}>{value}</span>
+                        {unit && <span className="text-[10px] text-muted-foreground font-bold uppercase">{unit}</span>}
+                    </div>
+                    <div className="text-[9px] text-muted-foreground font-medium flex items-center gap-1 uppercase bg-muted px-1.5 py-0.5 rounded shadow-sm"><User className="w-2.5 h-2.5" /> {user}</div>
+                </div>
+                <div className="flex items-center gap-2 text-[9px] text-muted-foreground font-bold uppercase tracking-wide">
+                    <Clock className="w-2.5 h-2.5" /> {new Date(date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} • {new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                </div>
+            </div>
+            <div className="absolute bottom-3 right-4 flex items-center gap-1.5">
+                {deletedBy ? (
+                    <div className="text-[8px] font-black bg-destructive/5 text-destructive border border-destructive/10 px-1 rounded uppercase italic">Deleted: {deletedBy}</div>
+                ) : (
+                    <Button size="icon" variant="destructive" onClick={onDelete} className="opacity-0 group-hover:opacity-100 w-6 h-6 transition-all cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></Button>
+                )}
+            </div>
+        </div>
+    )
+}
+
+// --- Internal Component: TtvSection ---
+function TtvSection({ title, icon, onAdd, isLoading, children, data, isTensi }: any) {
+    return (
+        <div className="border rounded-md overflow-hidden bg-white flex flex-col h-full shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between p-3 shrink-0 bg-slate-50 border-b">
-                <div className="flex items-center gap-2 font-semibold text-sm">{icon} {title}</div>
-                <Button variant="ghost" size="icon" onClick={onAdd} className="h-7 w-7 rounded-full bg-white shadow-sm border"><Plus className="w-4 h-4" /></Button>
+                <div className="flex items-center gap-2 font-bold text-[11px] uppercase tracking-wider text-slate-600">{icon} {title}</div>
+                <Button variant="ghost" size="icon" onClick={onAdd} className="h-6 w-6 rounded-full bg-white shadow-sm border hover:bg-primary hover:text-white transition-colors"><Plus className="w-3.5 h-3.5" /></Button>
             </div>
-
-            {/* CHART AREA */}
             {!isLoading && data && data.length > 0 && (
-                <div className="border-b bg-slate-50/50">
-                    <TtvChart data={data} isTensi={isTensi} />
-                </div>
+                <div className="border-b bg-slate-50/20 h-[85px]"><TtvChart data={data.filter((d: any) => !d.deleted_by)} isTensi={isTensi} /></div>
             )}
-
-            <div className="relative flex-1 overflow-hidden">
-                <div className="space-y-0 max-h-[300px] overflow-y-auto custom-scrollbar">
-                    {isLoading ? (
-                        <div className="p-4"><LoadingSkeleton lines={3} /></div>
-                    ) : (
-                        <div className="divide-y">
-                            {children}
-                        </div>
-                    )}
-                </div>
-            </div>
+            <div className="flex-1 overflow-y-auto max-h-[250px] custom-scrollbar divide-y">{isLoading ? <div className="p-4"><LoadingSkeleton lines={2} /></div> : children}</div>
         </div>
     )
 }
 
 function TtvChart({ data, isTensi }: { data: any[], isTensi?: boolean }) {
-    const sortedData = [...data].reverse();
-
-    const categories = sortedData.map(item => {
-        const date = new Date(item.tgl);
-        const dmy = date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' });
-        const time = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        return `${dmy} ${time}`;
-    });
-
-    const series = isTensi
-        ? [
-            { name: "Sistolik", data: sortedData.map(item => item.hasil_sistole) },
-            { name: "Diastolik", data: sortedData.map(item => item.hasil_diastole) }
-        ]
-        : [
-            { name: "Nilai", data: sortedData.map(item => parseFloat(item.hasil)) }
-        ];
-
+    const sortedData = [...data].reverse()
     const options: any = {
-        chart: {
-            id: "ttv-chart",
-            toolbar: { show: false },
-            sparkline: { enabled: true },
-            fontFamily: "Inter, system-ui, sans-serif",
-        },
+        chart: { toolbar: { show: false }, sparkline: { enabled: true } },
         stroke: { curve: "smooth", width: 2 },
-        grid: {
-            show: isTensi,
-            xaxis: {
-                lines: { show: true } // Ini akan menarik garis vertikal di setiap titik waktu
-            },
-            yaxis: {
-                lines: { show: false } // Ini akan menarik garis vertikal di setiap titik waktu
-            },
-        },
         colors: isTensi ? ["#005EFF", "#FF9000"] : ["#005EFF"],
-        tooltip: {
-            fixed: { enabled: false },
-            x: { show: true },
-            y: { title: { formatter: (name: string) => name } },
-            marker: { show: false }
-        },
-        xaxis: { categories: categories },
-        markers: {
-            size: 2,
-            hover: { size: 5 }
-        },
-        fill: {
-            type: "gradient",
-            gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.0 },
-        },
-    };
-
-    return <Chart options={options} series={series} type="area" height={80} />
-}
-
-interface LogCardProps { value: string | number; unit?: string; date: string; user: string; isWarning: boolean }
-function LogCard({ value, unit, date, user, isWarning }: LogCardProps) {
-    return (
-        <div className="shadow-none bg-card transition-colors hover:bg-accent/20 px-4 py-3 text-left">
-            <div className="space-y-1">
-                <div className="flex items-baseline justify-between">
-                    <div className="flex items-baseline gap-1">
-                        <span className={`text-xl font-black tracking-tighter ${isWarning ? 'text-destructive' : 'text-foreground'}`}>{value}</span>
-                        {unit && <span className="text-[10px] text-muted-foreground font-bold uppercase">{unit}</span>}
-                    </div>
-                    <div className="text-[9px] text-muted-foreground font-medium flex items-center gap-1 uppercase bg-muted px-1.5 py-0.5 rounded">
-                        <User className="w-2.5 h-2.5" /> {user}
-                    </div>
-                </div>
-                <div className="flex items-center gap-2 text-[9px] text-muted-foreground uppercase tracking-wider font-bold">
-                    <span className="flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" /> {new Date(date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span>•</span>
-                    <span>{new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                </div>
-            </div>
-        </div>
-    )
+        xaxis: { categories: sortedData.map(d => d.tgl) },
+        fill: { type: "gradient", gradient: { shadeIntensity: 1, opacityFrom: 0.2, opacityTo: 0 } },
+    }
+    const series = isTensi 
+        ? [{ name: "Sistolik", data: sortedData.map(d => d.hasil_sistole) }, { name: "Diastolik", data: sortedData.map(d => d.hasil_diastole) }] 
+        : [{ name: "Nilai", data: sortedData.map(d => parseFloat(d.hasil)) }]
+    return <Chart options={options} series={series} type="area" height={85} />
 }

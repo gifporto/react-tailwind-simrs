@@ -145,6 +145,10 @@ export const RanapAPI = {
         const res = await api.post(`/inspections/ranap/${id}/ttv/suhu`, payload);
         return res.data;
     },
+    deleteSuhu: async (id: string, idSuhu: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/suhu/${idSuhu}`);
+        return res.data;
+    },
 
     getTensi: async (id: string) => {
         const res = await api.get(`/inspections/ranap/${id}/ttv/tensi`);
@@ -152,6 +156,10 @@ export const RanapAPI = {
     },
     createTensi: async (id: string, payload: any) => {
         const res = await api.post(`/inspections/ranap/${id}/ttv/tensi`, payload);
+        return res.data;
+    },
+    deleteTensi: async (id: string, idTensi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/tensi/${idTensi}`);
         return res.data;
     },
 
@@ -163,6 +171,10 @@ export const RanapAPI = {
         const res = await api.post(`/inspections/ranap/${id}/ttv/nadi`, payload);
         return res.data;
     },
+    deleteNadi: async (id: string, idNadi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/nadi/${idNadi}`);
+        return res.data;
+    },
     
     getRespiration: async (id: string) => {
         const res = await api.get(`/inspections/ranap/${id}/ttv/respiration-rate`);
@@ -170,6 +182,10 @@ export const RanapAPI = {
     },
     createRespiration: async (id: string, payload: any) => {
         const res = await api.post(`/inspections/ranap/${id}/ttv/respiration-rate`, payload);
+        return res.data;
+    },
+    deleteRespiration: async (id: string, idRespiration: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/respiration-rate/${idRespiration}`);
         return res.data;
     },
     
@@ -181,6 +197,10 @@ export const RanapAPI = {
         const res = await api.post(`/inspections/ranap/${id}/ttv/skala-nyeri`, payload);
         return res.data;
     },
+    deleteNyeri: async (id: string, idNyeri: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/skala-nyeri/${idNyeri}`);
+        return res.data;
+    },
 
     getTinggiBadan: async (id: string) => {
         const res = await api.get(`/inspections/ranap/${id}/ttv/tinggi-badan`);
@@ -188,6 +208,10 @@ export const RanapAPI = {
     },
     createTinggiBadan: async (id: string, payload: any) => {
         const res = await api.post(`/inspections/ranap/${id}/ttv/tinggi-badan`, payload);
+        return res.data;
+    },
+    deleteTinggiBadan: async (id: string, idTinggi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/tinggi-badan/${idTinggi}`);
         return res.data;
     },
 
@@ -199,6 +223,10 @@ export const RanapAPI = {
         const res = await api.post(`/inspections/ranap/${id}/ttv/berat-badan`, payload);
         return res.data;
     },
+    deleteBeratBadan: async (id: string, idBerat: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/berat-badan/${idBerat}`);
+        return res.data;
+    },
 
     getSpo: async (id: string) => {
         const res = await api.get(`/inspections/ranap/${id}/ttv/spo2`);
@@ -208,6 +236,10 @@ export const RanapAPI = {
         const res = await api.post(`/inspections/ranap/${id}/ttv/spo2`, payload);
         return res.data;
     },
+    deleteSpo: async (id: string, idSpo: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/spo2/${idSpo}`);
+        return res.data;
+    },
 
     getIntervensi: async (id: string) => {
         const res = await api.get(`/inspections/ranap/${id}/ttv/intervensi-nyeri`);
@@ -215,6 +247,10 @@ export const RanapAPI = {
     },
     createIntervensi: async (id: string, payload: any) => {
         const res = await api.post(`/inspections/ranap/${id}/ttv/intervensi-nyeri`, payload);
+        return res.data;
+    },
+    deleteIntervensi: async (id: string, idIntervensi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/intervensi-nyeri/${idIntervensi}`);
         return res.data;
     },
 
