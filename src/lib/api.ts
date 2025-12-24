@@ -137,6 +137,87 @@ export const EmrIgdAPI = {
 };
 
 export const RanapAPI = {
+    getSuhu: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/suhu`);
+        return res.data;
+    },
+    createSuhu: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/suhu`, payload);
+        return res.data;
+    },
+
+    getTensi: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/tensi`);
+        return res.data;
+    },
+    createTensi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/tensi`, payload);
+        return res.data;
+    },
+
+    getNadi: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/nadi`);
+        return res.data;
+    },
+    createNadi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/nadi`, payload);
+        return res.data;
+    },
+    
+    getRespiration: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/respiration-rate`);
+        return res.data;
+    },
+    createRespiration: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/respiration-rate`, payload);
+        return res.data;
+    },
+    
+    getNyeri: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/skala-nyeri`);
+        return res.data;
+    },
+    createNyeri: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/skala-nyeri`, payload);
+        return res.data;
+    },
+
+    getTinggiBadan: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/tinggi-badan`);
+        return res.data;
+    },
+    createTinggiBadan: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/tinggi-badan`, payload);
+        return res.data;
+    },
+
+    getBeratBadan: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/berat-badan`);
+        return res.data;
+    },
+    createBeratBadan: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/berat-badan`, payload);
+        return res.data;
+    },
+
+    getSpo: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/spo2`);
+        return res.data;
+    },
+    createSpo: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/spo2`, payload);
+        return res.data;
+    },
+
+    getIntervensi: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/intervensi-nyeri`);
+        return res.data;
+    },
+    createIntervensi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/intervensi-nyeri`, payload);
+        return res.data;
+    },
+
     getList: async (page = 1, perPage = 10) => {
         const res = await api.get("/inspections/ranap", {
             params: { page, per_page: perPage },
@@ -228,6 +309,8 @@ export const RanapAPI = {
         const res = await api.delete(`/inspections/ranap/${id}/visits/${idVisit}`);
         return res.data;
     },
+
+   
 };
 
 export const EmrRadiologyAPI = {
@@ -286,7 +369,6 @@ export const EmrLabAPI = {
         return res.data;
     },
 };
-
 
 export const AsesmentMedicAPI = {
     getAsesment: async (id: string) => {
