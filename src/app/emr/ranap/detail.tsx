@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect, Activity } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { RanapAPI } from "@/lib/api"
@@ -16,12 +16,20 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import {
-    Bed, User, Phone, Clock, ArrowLeft, InfoIcon, AlertCircle, Mars, Venus, Check, X, MapPin
+    Bed, User, Phone, Clock, ArrowLeft, InfoIcon, AlertCircle, Mars, Venus, Check, X, MapPin,
+    Stethoscope,
+    Radio,
+    FlaskConical,
+    ActivityIcon,
+    HeartCrack
 } from "lucide-react"
 import OrderRadiologi from "@/components/orderRadiologi"
 import OrderLab from "@/components/orderLab"
 import KunjunganLayanan from "@/components/kunjunganLayanan"
 import KunjunganUnit from "@/components/kunjunganUnit"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import LoadingSkeleton from "@/components/LoadingSkeleton"
+import TtvPage from "@/components/ttv"
 
 export default function RanapDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -44,7 +52,27 @@ export default function RanapDetailPage() {
         })
     }
 
-    if (isLoading) return <div className="p-10 text-center">Memuat Data...</div>
+    // State untuk menyimpan tab yang aktif
+    const [activeTab, setActiveTab] = useState("layanan")
+
+    // Load tab aktif dari localStorage saat komponen pertama kali dimuat
+    useEffect(() => {
+        const savedTab = localStorage.getItem(`ranap_tab_${id}`)
+        if (savedTab) {
+            setActiveTab(savedTab)
+        }
+    }, [id])
+
+    // Fungsi untuk mengubah tab dan menyimpannya ke localStorage
+    const handleTabChange = (value: string) => {
+        setActiveTab(value)
+        localStorage.setItem(`ranap_tab_${id}`, value)
+    }
+
+    if (isLoading) return 
+    <div>
+        <LoadingSkeleton lines={6}/>
+    </div>
 
     if (isError || !data) {
         return (
@@ -148,11 +176,43 @@ export default function RanapDetailPage() {
                     </CardContent>
                 </Card>
             </div>
+            {/* BAGIAN FITUR TABS */}
             <div className="col-span-12">
-                <KunjunganLayanan api="RanapAPI"/>
-                <KunjunganUnit api="RanapAPI"/>
-                <OrderRadiologi api="RanapAPI" />
-                <OrderLab api="RanapAPI" />
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto">
+                        <TabsTrigger value="layanan" className="gap-2 py-2">
+                            <ActivityIcon className="w-4 h-4" /> Kunjungan Layanan
+                        </TabsTrigger>
+                        <TabsTrigger value="unit" className="gap-2 py-2">
+                            <Stethoscope className="w-4 h-4" /> Kunjungan Unit
+                        </TabsTrigger>
+                        <TabsTrigger value="radiologi" className="gap-2 py-2">
+                            <Radio className="w-4 h-4" /> Order Radiologi
+                        </TabsTrigger>
+                        <TabsTrigger value="lab" className="gap-2 py-2">
+                            <FlaskConical className="w-4 h-4" /> Order Lab
+                        </TabsTrigger>
+                        <TabsTrigger value="ttv" className="gap-2 py-2">
+                            <HeartCrack className="w-4 h-4" /> TTV
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="layanan">
+                        <KunjunganLayanan api="RanapAPI" />
+                    </TabsContent>
+                    <TabsContent value="unit">
+                        <KunjunganUnit api="RanapAPI" />
+                    </TabsContent>
+                    <TabsContent value="radiologi">
+                        <OrderRadiologi api="RanapAPI" />
+                    </TabsContent>
+                    <TabsContent value="lab">
+                        <OrderLab api="RanapAPI" />
+                    </TabsContent>
+                    <TabsContent value="ttv">
+                        <TtvPage />
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     )
