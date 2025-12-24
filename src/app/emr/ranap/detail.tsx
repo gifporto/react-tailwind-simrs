@@ -21,7 +21,8 @@ import {
     Radio,
     FlaskConical,
     ActivityIcon,
-    HeartCrack
+    HeartCrack,
+    CopyPlus
 } from "lucide-react"
 import OrderRadiologi from "@/components/orderRadiologi"
 import OrderLab from "@/components/orderLab"
@@ -30,6 +31,7 @@ import KunjunganUnit from "@/components/kunjunganUnit"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import LoadingSkeleton from "@/components/LoadingSkeleton"
 import TtvPage from "@/components/ttv"
+import CpptPage from "@/components/cppt"
 
 export default function RanapDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -179,7 +181,7 @@ export default function RanapDetailPage() {
             {/* BAGIAN FITUR TABS */}
             <div className="col-span-12">
                 <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto">
+                    <TabsList className="w-fit flex flex-wrap md:flex-row h-auto">
                         <TabsTrigger value="layanan" className="gap-2 py-2">
                             <ActivityIcon className="w-4 h-4" /> Kunjungan Layanan
                         </TabsTrigger>
@@ -194,6 +196,9 @@ export default function RanapDetailPage() {
                         </TabsTrigger>
                         <TabsTrigger value="ttv" className="gap-2 py-2">
                             <HeartCrack className="w-4 h-4" /> TTV
+                        </TabsTrigger>
+                        <TabsTrigger value="cppt" className="gap-2 py-2">
+                            <CopyPlus className="w-4 h-4" /> CPPT
                         </TabsTrigger>
                     </TabsList>
 
@@ -211,6 +216,9 @@ export default function RanapDetailPage() {
                     </TabsContent>
                     <TabsContent value="ttv">
                         <TtvPage />
+                    </TabsContent>
+                    <TabsContent value="cppt">
+                        <CpptPage />
                     </TabsContent>
                 </Tabs>
             </div>

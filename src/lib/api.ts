@@ -137,122 +137,31 @@ export const EmrIgdAPI = {
 };
 
 export const RanapAPI = {
-    getSuhu: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/suhu`);
+    getCppt: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/cppt`);
         return res.data;
     },
-    createSuhu: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/suhu`, payload);
+    createCppt: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/cppt`, payload);
         return res.data;
     },
-    deleteSuhu: async (id: string, idSuhu: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/suhu/${idSuhu}`);
+    updateCppt: async (id: string, idCppt: string, payload: any) => {
+        const res = await api.put(`/inspections/ranap/${id}/cppt/${idCppt}`, payload);
         return res.data;
     },
-
-    getTensi: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/tensi`);
+    deleteCppt: async (id: string, idCppt: string, payload: any) => {
+        const res = await api.delete(`/inspections/ranap/${id}/cppt/${idCppt}`, payload);
         return res.data;
     },
-    createTensi: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/tensi`, payload);
+    patchCppt: async (id: string, idCppt: string, payload: any) => {
+        const res = await api.patch(`/inspections/ranap/${id}/cppt/${idCppt}/notes`, payload);
         return res.data;
     },
-    deleteTensi: async (id: string, idTensi: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/tensi/${idTensi}`);
-        return res.data;
-    },
-
-    getNadi: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/nadi`);
-        return res.data;
-    },
-    createNadi: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/nadi`, payload);
-        return res.data;
-    },
-    deleteNadi: async (id: string, idNadi: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/nadi/${idNadi}`);
-        return res.data;
-    },
-    
-    getRespiration: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/respiration-rate`);
-        return res.data;
-    },
-    createRespiration: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/respiration-rate`, payload);
-        return res.data;
-    },
-    deleteRespiration: async (id: string, idRespiration: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/respiration-rate/${idRespiration}`);
-        return res.data;
-    },
-    
-    getNyeri: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/skala-nyeri`);
-        return res.data;
-    },
-    createNyeri: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/skala-nyeri`, payload);
-        return res.data;
-    },
-    deleteNyeri: async (id: string, idNyeri: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/skala-nyeri/${idNyeri}`);
+    verifyCppt: async (id: string, idCppt: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/cppt/${idCppt}/verify`, payload);
         return res.data;
     },
 
-    getTinggiBadan: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/tinggi-badan`);
-        return res.data;
-    },
-    createTinggiBadan: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/tinggi-badan`, payload);
-        return res.data;
-    },
-    deleteTinggiBadan: async (id: string, idTinggi: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/tinggi-badan/${idTinggi}`);
-        return res.data;
-    },
-
-    getBeratBadan: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/berat-badan`);
-        return res.data;
-    },
-    createBeratBadan: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/berat-badan`, payload);
-        return res.data;
-    },
-    deleteBeratBadan: async (id: string, idBerat: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/berat-badan/${idBerat}`);
-        return res.data;
-    },
-
-    getSpo: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/spo2`);
-        return res.data;
-    },
-    createSpo: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/spo2`, payload);
-        return res.data;
-    },
-    deleteSpo: async (id: string, idSpo: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/spo2/${idSpo}`);
-        return res.data;
-    },
-
-    getIntervensi: async (id: string) => {
-        const res = await api.get(`/inspections/ranap/${id}/ttv/intervensi-nyeri`);
-        return res.data;
-    },
-    createIntervensi: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/ranap/${id}/ttv/intervensi-nyeri`, payload);
-        return res.data;
-    },
-    deleteIntervensi: async (id: string, idIntervensi: string) => {
-        const res = await api.delete(`/inspections/ranap/${id}/ttv/intervensi-nyeri/${idIntervensi}`);
-        return res.data;
-    },
 
     getList: async (page = 1, perPage = 10) => {
         const res = await api.get("/inspections/ranap", {
@@ -346,7 +255,122 @@ export const RanapAPI = {
         return res.data;
     },
 
-   
+    getSuhu: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/suhu`);
+        return res.data;
+    },
+    createSuhu: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/suhu`, payload);
+        return res.data;
+    },
+    deleteSuhu: async (id: string, idSuhu: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/suhu/${idSuhu}`);
+        return res.data;
+    },
+
+    getTensi: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/tensi`);
+        return res.data;
+    },
+    createTensi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/tensi`, payload);
+        return res.data;
+    },
+    deleteTensi: async (id: string, idTensi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/tensi/${idTensi}`);
+        return res.data;
+    },
+
+    getNadi: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/nadi`);
+        return res.data;
+    },
+    createNadi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/nadi`, payload);
+        return res.data;
+    },
+    deleteNadi: async (id: string, idNadi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/nadi/${idNadi}`);
+        return res.data;
+    },
+
+    getRespiration: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/respiration-rate`);
+        return res.data;
+    },
+    createRespiration: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/respiration-rate`, payload);
+        return res.data;
+    },
+    deleteRespiration: async (id: string, idRespiration: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/respiration-rate/${idRespiration}`);
+        return res.data;
+    },
+
+    getNyeri: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/skala-nyeri`);
+        return res.data;
+    },
+    createNyeri: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/skala-nyeri`, payload);
+        return res.data;
+    },
+    deleteNyeri: async (id: string, idNyeri: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/skala-nyeri/${idNyeri}`);
+        return res.data;
+    },
+
+    getTinggiBadan: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/tinggi-badan`);
+        return res.data;
+    },
+    createTinggiBadan: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/tinggi-badan`, payload);
+        return res.data;
+    },
+    deleteTinggiBadan: async (id: string, idTinggi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/tinggi-badan/${idTinggi}`);
+        return res.data;
+    },
+
+    getBeratBadan: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/berat-badan`);
+        return res.data;
+    },
+    createBeratBadan: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/berat-badan`, payload);
+        return res.data;
+    },
+    deleteBeratBadan: async (id: string, idBerat: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/berat-badan/${idBerat}`);
+        return res.data;
+    },
+
+    getSpo: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/spo2`);
+        return res.data;
+    },
+    createSpo: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/spo2`, payload);
+        return res.data;
+    },
+    deleteSpo: async (id: string, idSpo: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/spo2/${idSpo}`);
+        return res.data;
+    },
+
+    getIntervensi: async (id: string) => {
+        const res = await api.get(`/inspections/ranap/${id}/ttv/intervensi-nyeri`);
+        return res.data;
+    },
+    createIntervensi: async (id: string, payload: any) => {
+        const res = await api.post(`/inspections/ranap/${id}/ttv/intervensi-nyeri`, payload);
+        return res.data;
+    },
+    deleteIntervensi: async (id: string, idIntervensi: string) => {
+        const res = await api.delete(`/inspections/ranap/${id}/ttv/intervensi-nyeri/${idIntervensi}`);
+        return res.data;
+    },
 };
 
 export const EmrRadiologyAPI = {
