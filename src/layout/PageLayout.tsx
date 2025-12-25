@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react" // 1. Import hooks
 import { useMatches, useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -20,9 +21,24 @@ import {
 import { Toaster } from "@/components/ui/sonner"
 
 export default function PageLayout({ children }: { children: React.ReactNode }) {
+  const [isScrolled, setIsScrolled] = useState(false) // 2. State untuk scroll
   const matches = useMatches()
   const navigate = useNavigate()
   const location = useLocation()
+
+  // 3. Logic untuk mendeteksi posisi scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const breadcrumbs = matches
     .filter((match) => (match.handle as any)?.breadcrumb)
@@ -30,7 +46,6 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
       label: (match.handle as any).breadcrumb as string,
       href: match.pathname,
     }))
-
 
   return (
     <SidebarProvider>
@@ -44,8 +59,14 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
           theme="light"
         />
 
-        {/* HEADER */}
-        <header className="flex h-16 shrink-0 items-center gap-2">
+        {/* HEADER DENGAN KONDISI SCROLL */}
+        <header 
+          className={`sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 transition-all duration-300 ease-in-out ${
+            isScrolled 
+              ? "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" 
+              : "bg-transparent border-transparent"
+          }`}
+        >
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
