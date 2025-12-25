@@ -7,11 +7,11 @@ import { AppProvider } from "@/providers/AppProvider"
 import "@/index.css"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <AppProvider>
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>
     </AppProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 )

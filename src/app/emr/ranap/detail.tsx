@@ -181,7 +181,7 @@ export default function RanapDetailPage() {
             {/* BAGIAN FITUR TABS */}
             <div className="col-span-12">
                 <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                    <TabsList className="w-fit flex flex-wrap md:flex-row h-auto">
+                    <TabsList className="w-full flex flex-wrap md:flex-row h-auto">
                         <TabsTrigger value="layanan" className="gap-2 py-2">
                             <ActivityIcon className="w-4 h-4" /> Kunjungan Layanan
                         </TabsTrigger>
