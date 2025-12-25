@@ -346,7 +346,7 @@ export default function EmrRadiologiDetailPage() {
                                 value={formData.dokter_radiologi_id}
                                 onValueChange={(v) => setFormData({ ...formData, dokter_radiologi_id: v })}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Pilih Dokter" />
                                 </SelectTrigger>
                                 <SelectContent>

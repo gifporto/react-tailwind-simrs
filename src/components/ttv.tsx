@@ -177,7 +177,7 @@ export default function TtvPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <TtvSection title="Suhu Tubuh" icon={<Thermometer className="text-orange-500 w-5 h-5" />} onAdd={() => setModalType("suhu")} isLoading={loadingSuhu} data={suhuRes?.data}>
-                    {suhuRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}°C`} date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) >= 37.5} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "suhu"})} />)}
+                    {suhuRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}`} unit="°C" date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) >= 37.5} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "suhu"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Tekanan Darah" icon={<HeartPulse className="text-red-500 w-5 h-5" />} onAdd={() => setModalType("tensi")} isLoading={loadingTensi} data={tensiRes?.data} isTensi>
@@ -197,7 +197,7 @@ export default function TtvPage() {
                 </TtvSection>
 
                 <TtvSection title="SpO2" icon={<Droplets className="text-cyan-500 w-5 h-5" />} onAdd={() => setModalType("spo2")} isLoading={loadingSpo} data={spoRes?.data}>
-                    {spoRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}%`} date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) < 95} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "spo2"})} />)}
+                    {spoRes?.data?.map((item: any) => <LogCard key={item.id} value={`${item.hasil}`} unit="%"  date={item.tgl} user={item.created_by} isWarning={parseFloat(item.hasil) < 95} deletedBy={item.deleted_by} onDelete={() => setDeleteConfig({id: item.id, type: "spo2"})} />)}
                 </TtvSection>
 
                 <TtvSection title="Tinggi Badan" icon={<Ruler className="text-slate-500 w-5 h-5" />} onAdd={() => setModalType("tb")} isLoading={loadingTb} data={tbRes?.data}>
@@ -366,16 +366,79 @@ function TtvSection({ title, icon, onAdd, isLoading, children, data, isTensi }: 
 }
 
 function TtvChart({ data, isTensi }: { data: any[], isTensi?: boolean }) {
-    const sortedData = [...data].reverse()
+    const sortedData = [...data].reverse();
+
+    const categories = sortedData.map(item => {
+        const date = new Date(item.tgl);
+        const dmy = date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        const time = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        return `${dmy} ${time}`;
+    });
+
+    const series = isTensi
+        ? [
+            { name: "Sistolik", data: sortedData.map(item => item.hasil_sistole) },
+            { name: "Diastolik", data: sortedData.map(item => item.hasil_diastole) }
+        ]
+        : [
+            { name: "Nilai", data: sortedData.map(item => parseFloat(item.hasil)) }
+        ];
+
     const options: any = {
-        chart: { toolbar: { show: false }, sparkline: { enabled: true } },
+        chart: {
+            id: "ttv-chart",
+            toolbar: { show: false },
+            sparkline: { enabled: true },
+            fontFamily: "Inter, system-ui, sans-serif",
+        },
         stroke: { curve: "smooth", width: 2 },
-        colors: isTensi ? ["#005EFF", "#FF9000"] : ["#005EFF"],
-        xaxis: { categories: sortedData.map(d => d.tgl) },
-        fill: { type: "gradient", gradient: { shadeIntensity: 1, opacityFrom: 0.2, opacityTo: 0 } },
-    }
-    const series = isTensi 
-        ? [{ name: "Sistolik", data: sortedData.map(d => d.hasil_sistole) }, { name: "Diastolik", data: sortedData.map(d => d.hasil_diastole) }] 
-        : [{ name: "Nilai", data: sortedData.map(d => parseFloat(d.hasil)) }]
-    return <Chart options={options} series={series} type="area" height={85} />
+        // --- HILANGKAN BORDER DAN ATUR GARIS VERTIKAL ---
+        grid: {
+            show: isTensi, 
+            xaxis: {
+                lines: { show: true } 
+            },
+            yaxis: {
+                lines: { show: false } // Pastikan garis horizontal tidak muncul
+            },
+            strokeDashArray: 2, 
+        },
+        xaxis: {
+            categories: categories,
+            axisBorder: { show: false }, // Hilangkan garis bawah (X-axis line)
+            axisTicks: { show: false },  // Hilangkan tanda centang sumbu
+            crosshairs: {
+                show: true,
+                width: 1,
+                stroke: {
+                    color: '#cbd5e1',
+                    dashArray: 0
+                }
+            }
+        },
+        yaxis: {
+            show: false,
+            axisBorder: { show: false }, // Hilangkan garis samping (Y-axis line)
+            axisTicks: { show: true }
+        },
+        // ----------------------------------------------
+        markers: {
+            size: 3,
+            strokeWidth: 0,
+            hover: { size: 5 }
+        },
+        colors: isTensi ? ["#FF9D00", "#0D4FB8"] : ["#0D4FB8"],
+        tooltip: {
+            fixed: { enabled: false },
+            x: { show: true },
+            y: { title: { formatter: (name: string) => name } },
+            marker: { show: true }
+        },
+        fill: {
+            type: "gradient",
+            gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.0 },
+        },
+    };
+
+    return <Chart options={options} series={series} type="area" height={80} />
 }
