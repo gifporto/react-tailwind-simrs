@@ -312,13 +312,13 @@ export default function EmrLabDetailPage() {
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                             <Label>Petugas Verifikator / Dokter Lab</Label>
                             <Select
                                 value={formData.dokter_lab_id}
                                 onValueChange={(v) => setFormData({ ...formData, dokter_lab_id: v })}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Pilih Dokter/Analis" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -327,7 +327,7 @@ export default function EmrLabDetailPage() {
                                     ))}
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </div> */}
 
                         <div className="p-4 bg-amber-50 border border-amber-200 rounded-md flex gap-3 text-amber-800 text-sm">
                             <AlertCircle className="w-5 h-5 shrink-0" />
