@@ -18,7 +18,15 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar, // Hook untuk cek status sidebar
 } from "@/components/ui/sidebar"
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function NavMain({
   items,
@@ -37,22 +45,29 @@ export function NavMain({
 }) {
   const location = useLocation()
   const currentPath = location.pathname
+  
+  // Ambil state dan isMobile dari hook useSidebar
+  const { state, isMobile } = useSidebar()
+  const isCollapsed = state === "collapsed"
+
+  const isPathActive = (url: string) => {
+    if (url === "/") return currentPath === "/"
+    return currentPath === url || currentPath.startsWith(`${url}/`) || currentPath.startsWith(url)
+  }
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Menu</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          // Check if this is a single menu (no children) or a parent menu
           const hasChildren = item.items && item.items.length > 0
-
-          // Check if parent or any child is active
+          
           const isParentActive =
             item.isActive ||
-            currentPath === item.url ||
-            item.items?.some((sub) => sub.isActive || currentPath.startsWith(sub.url))
+            isPathActive(item.url) ||
+            item.items?.some((sub) => sub.isActive || isPathActive(sub.url))
 
-          // Single menu without children
+          // 1. Single Menu (Tanpa Sub-menu)
           if (!hasChildren) {
             return (
               <SidebarMenuItem key={item.title}>
@@ -70,7 +85,46 @@ export function NavMain({
             )
           }
 
-          // Menu with children
+          /**
+           * 2. Menu dengan Sub-menu saat Desktop COLLAPSED
+           * Logika: Jika sedang collapsed DAN bukan mobile, tampilkan Dropdown (Hover/Click side)
+           */
+          if (isCollapsed && !isMobile) {
+            return (
+              <SidebarMenuItem key={item.title}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      className={isParentActive ? "text-white bg-primary font-medium" : ""}
+                    >
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                      <ChevronRight className="ml-auto transition-transform" />
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="right" align="start" className="w-48 ml-4">
+                    <div className="p-2 text-xs font-bold border-b bg-muted/50">{item.title}</div>
+                    {item.items?.map((subItem) => (
+                      <DropdownMenuItem key={subItem.title} asChild>
+                        <Link 
+                          to={subItem.url}
+                          className={isPathActive(subItem.url) ? "bg-primary text-white focus:bg-primary focus:text-white" : "cursor-pointer"}
+                        >
+                          {subItem.title}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            )
+          }
+
+          /**
+           * 3. Menu dengan Sub-menu saat Sidebar EXPANDED atau TAMPILAN MOBILE
+           * Logika: Kembali ke tampilan Collapsible (Accordion) standar
+           */
           return (
             <Collapsible
               key={item.title}
@@ -89,32 +143,20 @@ export function NavMain({
                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
-
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {item.items?.map((subItem) => {
-                      const isSubActive = 
-                        subItem.isActive || 
-                        currentPath === subItem.url || 
-                        currentPath.startsWith(subItem.url)
-
-                      return (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton
-                            asChild
-                            className={
-                              isSubActive 
-                                ? "bg-sidebar-primary text-primary-foreground font-medium" 
-                                : ""
-                            }
-                          >
-                            <Link to={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      )
-                    })}
+                    {item.items?.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton
+                          asChild
+                          className={isPathActive(subItem.url) ? "bg-sidebar-primary text-primary-foreground font-medium" : ""}
+                        >
+                          <Link to={subItem.url}>
+                            <span>{subItem.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
