@@ -59,6 +59,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 /* =====================
    Configurations & Types
@@ -97,41 +109,32 @@ const rupiah = (val: string | number) => {
   }).format(num)
 }
 
-/* =====================
-   Component
-===================== */
 const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
   const activeApi = API_MAP[api].service as LabApiInterface;
   const moduleLabel = API_MAP[api].label;
-
   const { id } = useParams<{ id: string }>()
 
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<any[]>([])
   const [actionLoading, setActionLoading] = useState(false)
 
-  // --- UI States ---
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [openDoctorCombo, setOpenDoctorCombo] = useState(false)
-  const [openServiceCombo, setOpenServiceCombo] = useState(false)
 
-  // --- Master Data States ---
   const [doctors, setDoctors] = useState<any[]>([])
-  const [masterServices, setMasterServices] = useState<any[]>([])
+  const [masterServices, setMasterServices] = useState<any[]>([]) // Ini sekarang berisi data tree kategori
   const [doctorSearch, setDoctorSearch] = useState("")
   const [serviceSearch, setServiceSearch] = useState("")
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false)
   const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(null)
 
-  // --- Form State ---
   const [formData, setFormData] = useState({
     dokter_id: "",
     catatan: "",
     selected_services: [] as number[],
   })
 
-  // --- Fetch List Order ---
   const fetchLabOrders = useCallback(async () => {
     if (!id) return
     setLoading(true)
@@ -149,22 +152,22 @@ const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
     fetchLabOrders()
   }, [fetchLabOrders])
 
-  // --- Fetch Master Data ---
+  // --- Update Fetch Master Data menggunakan getService ---
   useEffect(() => {
     if (isCreateOpen) {
       const fetchMaster = async () => {
         try {
           const [resDoc, resLab] = await Promise.all([
             DoctorAPI.getList(1, 50, doctorSearch),
-            LabAPI.getList(1, 50, serviceSearch)
+            LabAPI.getService() // Menggunakan getService yang baru
           ])
           setDoctors(resDoc.data || [])
-          setMasterServices(resLab.data || [])
+          setMasterServices(resLab.data || []) // Menyimpan array kategori
         } catch (e) { console.error(e) }
       }
       fetchMaster()
     }
-  }, [isCreateOpen, doctorSearch, serviceSearch])
+  }, [isCreateOpen, doctorSearch])
 
   const toggleService = (serviceId: number) => {
     setFormData(prev => ({
@@ -175,12 +178,20 @@ const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
     }))
   }
 
+  // Filter data berdasarkan search input
+  const filteredServices = masterServices.map(category => ({
+    ...category,
+    lab_services: category.lab_services.filter((s: any) =>
+      s.nama_layanan.toLowerCase().includes(serviceSearch.toLowerCase()) ||
+      s.kode_layanan.toLowerCase().includes(serviceSearch.toLowerCase())
+    )
+  })).filter(category => category.lab_services.length > 0)
+
   const handleCreateOrder = async () => {
     if (!id) return
     if (!formData.dokter_id || formData.selected_services.length === 0) {
       return toast.error("Pilih dokter dan minimal satu layanan lab")
     }
-
     setActionLoading(true)
     try {
       const payload = {
@@ -189,7 +200,6 @@ const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
         catatan: formData.catatan,
         selected_services: formData.selected_services
       }
-
       await activeApi.createLab(id, payload)
       toast.success("Order laboratorium berhasil dikirim")
       setIsCreateOpen(false)
@@ -310,18 +320,23 @@ const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
         )}
       </CardContent>
 
-      {/* --- DIALOG CREATE --- */}
+     /* --- DIALOG CREATE DENGAN TAMPILAN GRID SESUAI FORMULIR --- */
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-[450px]">
-          <DialogHeader>
-            <DialogTitle>Buat Order Lab {moduleLabel}</DialogTitle>
+        <DialogContent className="sm:max-w-[95vw] overflow-y-auto lg:max-w-[1200px] max-h-[95vh] flex flex-col p-0">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <FlaskConical className="w-6 h-6 text-primary" />
+              Pemeriksaan Laboratorium & Rontgen
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Dokter Pengirim</Label>
+
+          <div className="flex px-6 pb-2 gap-4">
+            {/* Pilihan Dokter Tetap di Atas */}
+            <div className="flex-1 space-y-1">
+              <Label className="text-xs uppercase text-muted-foreground">Dokter Pengirim</Label>
               <Popover open={openDoctorCombo} onOpenChange={setOpenDoctorCombo}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
+                  <Button variant="outline" className="w-full justify-between h-9 text-sm">
                     {formData.dokter_id ? doctors.find(d => d.id.toString() === formData.dokter_id)?.nama_dokter : "Pilih dokter..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                   </Button>
@@ -348,56 +363,110 @@ const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
               </Popover>
             </div>
 
-            <div className="space-y-2">
-              <Label>Layanan Lab ({formData.selected_services.length} terpilih)</Label>
-              <Popover open={openServiceCombo} onOpenChange={setOpenServiceCombo}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between h-auto min-h-10 py-2">
-                    <span className="truncate">{formData.selected_services.length > 0 ? `${formData.selected_services.length} Item dipilih` : "Pilih pemeriksaan..."}</span>
-                    <Plus className="ml-2 h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Cari layanan lab..." onValueChange={setServiceSearch} />
-                    <CommandList>
-                      <CommandEmpty>Tidak ditemukan.</CommandEmpty>
-                      <CommandGroup>
-                        {masterServices.map((s) => (
-                          <CommandItem key={s.id} onSelect={() => toggleService(s.id)}>
-                            <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", formData.selected_services.includes(s.id) ? "bg-primary text-primary-foreground" : "opacity-50")}>
-                              {formData.selected_services.includes(s.id) && <Check className="h-3 w-3" />}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium">{s.nama_layanan}</span>
-                              <span className="text-[10px] text-muted-foreground">{rupiah(s.harga_total)} • {s.jenis}</span>
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Catatan Tambahan</Label>
-              <Textarea
-                placeholder="Contoh: Puasa 8 jam, Pasien Cito, dll"
-                value={formData.catatan}
-                onChange={(e) => setFormData(f => ({ ...f, catatan: e.target.value }))}
-                className="resize-none"
-              />
+            {/* Input Pencarian */}
+            <div className="flex-1 space-y-1">
+              <Label className="text-xs uppercase text-muted-foreground">Cari Layanan</Label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Ketik nama pemeriksaan..."
+                  className="pl-8 h-9 text-sm"
+                  value={serviceSearch}
+                  onChange={(e) => setServiceSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>Batal</Button>
-            <Button onClick={handleCreateOrder} disabled={actionLoading}>
-              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Proses Order
-            </Button>
-          </DialogFooter>
+
+          <Separator />
+
+          {/* AREA FORMULIR BERGAYA MASONRY GRID */}
+          <ScrollArea className="flex-1 px-6 py-4 bg-slate-50/50">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 align-start">
+              {filteredServices.map((category) => (
+                <div
+                  key={category.id}
+                  className="bg-white border rounded-lg shadow-sm flex flex-col h-fit"
+                >
+                  {/* Header Kategori Bergaya Form RS */}
+                  <div className="bg-primary text-white px-3 py-1.5 rounded-t-lg text-xs font-bold uppercase tracking-wider flex justify-between items-center">
+                    {category.nama}
+                    <Badge variant="outline" className="text-[10px] text-white border-white/30 h-4 px-1">
+                      {category.lab_services.length}
+                    </Badge>
+                  </div>
+
+                  {/* List Layanan */}
+                  <div className="p-1">
+                    {category.lab_services.map((service: any) => (
+                      <div
+                        key={service.id}
+                        className={cn(
+                          "flex items-start gap-2 p-1.5 hover:bg-slate-100 rounded cursor-pointer transition-colors group",
+                          formData.selected_services.includes(service.id) ? "bg-blue-50 hover:bg-blue-100" : ""
+                        )}
+                        onClick={() => toggleService(service.id)}
+                      >
+                        <Checkbox
+                          checked={formData.selected_services.includes(service.id)}
+                          onCheckedChange={() => toggleService(service.id)}
+                          className="mt-0.5 border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-blue-900"
+                        />
+                        <div className="flex flex-col leading-tight overflow-hidden">
+                          <span className="text-[13px] font-medium text-slate-700 truncate group-hover:text-blue-900">
+                            {service.nama_layanan}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {service.kode_layanan} • {rupiah(service.harga_total)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {filteredServices.length === 0 && (
+                <div className="col-span-full py-20 text-center text-muted-foreground flex flex-col items-center gap-2">
+                  <FlaskConical className="w-10 h-10 opacity-20" />
+                  <p>Layanan laboratorium tidak ditemukan</p>
+                </div>
+              )}
+            </div>
+
+            {/* Catatan Tambahan Bergaya Footer Form */}
+            <div className="mt-8 space-y-2 w-full">
+              <Label className="text-sm font-semibold flex items-center gap-2">
+                Catatan Tambahan / Klinis
+              </Label>
+              <Textarea
+                placeholder="Tuliskan indikasi klinis atau catatan khusus di sini..."
+                value={formData.catatan}
+                onChange={(e) => setFormData(f => ({ ...f, catatan: e.target.value }))}
+                className="min-h-[80px] bg-white border-slate-300"
+              />
+            </div>
+          </ScrollArea>
+
+          <div className="p-4 border-t bg-white flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Ringkasan Order</span>
+              <span className="text-sm font-bold text-blue-900">
+                {formData.selected_services.length} Item Pemeriksaan Terpilih
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>Batal</Button>
+              <Button
+                onClick={handleCreateOrder}
+                disabled={actionLoading || formData.selected_services.length === 0}
+                className="bg-primary hover:bg-primary/80 px-8"
+              >
+                {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Kirim ke Laboratorium
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

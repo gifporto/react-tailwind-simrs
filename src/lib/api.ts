@@ -401,6 +401,7 @@ export const EmrRadiologyAPI = {
         return res.data;
     },
 };
+
 export const EmrLabAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/inspections/laboratories", {
@@ -586,6 +587,11 @@ export const LabAPI = {
         const res = await api.get("/master/laboratories", {
             params: { page, limit, search },
         });
+        return res.data;
+    },
+
+    getService: async () => {
+        const res = await api.get("/master/laboratories?mode=tree");
         return res.data;
     },
 };

@@ -70,7 +70,7 @@ export default function EmrLabDetailPage() {
     const [showResultForm, setShowResultForm] = useState(false);
     const [formData, setFormData] = useState({
         catatan: "",
-        dokter_lab_id: "", 
+        dokter_lab_id: "",
     });
 
     /* =====================
@@ -131,6 +131,21 @@ export default function EmrLabDetailPage() {
         );
     }
 
+    const getStatusVariant = (status: string) => {
+        switch (status.toLowerCase()) {
+            case "selesai":
+                return "success";
+            case "ordered":
+                return "info";
+            case "dibatalkan":
+                return "destructive";
+            case "proses":
+                return "warning";
+            default:
+                return "outline";
+        }
+    };
+
     return (
         <div className="grid grid-cols-12 gap-6">
             {/* ================= MAIN CONTENT ================= */}
@@ -146,7 +161,7 @@ export default function EmrLabDetailPage() {
                             </CardTitle>
                             <CardDescription>No. Order: {order.no_order}</CardDescription>
                         </div>
-                        <Badge variant={order.status === 'selesai' ? 'success' : 'info'}>
+                        <Badge variant={`${getStatusVariant(order.status)}`}>
                             {order.status.toUpperCase()}
                         </Badge>
                     </CardHeader>
@@ -175,7 +190,9 @@ export default function EmrLabDetailPage() {
                                         <div className="col-span-3 text-xs">{item.rentang_normal || "-"}</div>
                                         <div className="col-span-2 text-xs">{item.satuan_test || "-"}</div>
                                         <div className="col-span-2 text-right">
-                                            <Badge variant="outline" className="text-[10px]">{item.status}</Badge>
+                                            <Badge className="text-[10px]" variant={`${getStatusVariant(item.status)}`}>
+                                                {item.status.toUpperCase()}
+                                            </Badge>
                                         </div>
                                     </div>
                                 ))}

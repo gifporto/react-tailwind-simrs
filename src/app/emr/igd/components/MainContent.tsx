@@ -111,7 +111,7 @@ export default function EmrIgdDetailPage() {
               </Info>
               <Info label="Cara Masuk">{kunjungan.cara_masuk?.desk_cara_masuk || "-"}</Info>
               <Info label="Tipe Pasien">
-                <Badge variant="outline">{kunjungan.tipe_pasien?.desk_tipe_pasien || "-"}</Badge>
+                <Badge variant="secondary">{kunjungan.tipe_pasien?.desk_tipe_pasien || "-"}</Badge>
               </Info>
             </div>
           </CardContent>

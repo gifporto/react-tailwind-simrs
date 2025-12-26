@@ -192,7 +192,7 @@ export default function EmrIgdIndexPage() {
                           </TableCell>
 
                           <TableCell>
-                            <Badge className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50">
+                            <Badge variant="secondary" className="text-[10px]">
                               {item.tipe_pasien}
                             </Badge>
                           </TableCell>

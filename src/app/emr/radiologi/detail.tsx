@@ -155,6 +155,21 @@ export default function EmrRadiologiDetailPage() {
         );
     }
 
+    const getStatusVariant = (status: string) => {
+        switch (status.toLowerCase()) {
+            case "selesai":
+                return "success";
+            case "ordered":
+                return "info";
+            case "dibatalkan":
+                return "destructive";
+            case "proses":
+                return "warning";
+            default:
+                return "outline";
+        }
+    };
+
     return (
         <div className="grid grid-cols-12 gap-6">
             {/* ================= MAIN CONTENT ================= */}
@@ -170,7 +185,7 @@ export default function EmrRadiologiDetailPage() {
                             </CardTitle>
                             <CardDescription>No. Order: {order.no_order}</CardDescription>
                         </div>
-                        <Badge variant={order.status === 'selesai' ? 'success' : 'info'}>
+                        <Badge variant={`${getStatusVariant(order.status)}`}>
                             {order.status.toUpperCase()}
                         </Badge>
                     </CardHeader>
@@ -188,7 +203,9 @@ export default function EmrRadiologiDetailPage() {
                                 {order.details?.map((item: any) => (
                                     <div key={item.id} className="p-3 flex justify-between items-center text-sm">
                                         <span>{item.pemeriksaan?.nama} ({item.pemeriksaan?.kode})</span>
-                                        <Badge variant={order.status === 'selesai' ? 'success' : 'info'}>{item.status}</Badge>
+                                        <Badge className="text-[10px]" variant={`${getStatusVariant(item.status)}`}>
+                                            {item.status.toUpperCase()}
+                                        </Badge>
                                     </div>
                                 ))}
                             </div>
