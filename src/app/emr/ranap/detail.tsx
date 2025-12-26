@@ -185,7 +185,7 @@ export default function RanapDetailPage() {
                 <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                     <TabsList className="w-full flex flex-wrap md:flex-row h-auto">
                         <TabsTrigger value="layanan" className="gap-2 py-2">
-                            <ActivityIcon className="w-4 h-4" /> Kunjungan Layanan
+                            <ActivityIcon className="w-4 h-4" /> Tindakan
                         </TabsTrigger>
                         <TabsTrigger value="unit" className="gap-2 py-2">
                             <Stethoscope className="w-4 h-4" /> Kunjungan Unit
