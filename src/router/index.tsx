@@ -21,6 +21,13 @@ import EmrLabDetailPage from "@/app/emr/lab/detail";
 import EmrLabIndexPage from "@/app/emr/lab";
 import RanapIndexPage from "@/app/emr/ranap";
 import RanapDetailPage from "@/app/emr/ranap/detail";
+import GudangIndexPage from "@/app/inventory/gudang";
+import PabrikIndexPage from "@/app/inventory/pabrik";
+import KategoriInventoryPage from "@/app/inventory/kategori";
+import BarangIndexPage from "@/app/inventory/barang";
+import BatchInventoryPage from "@/app/inventory/batch";
+import InventoriStokPage from "@/app/inventory/stock";
+import MutasiStokPage from "@/app/inventory/mutasi";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -114,7 +121,44 @@ export const router = createBrowserRouter([
           {
             path: "emr/ranap/detail/:id",
             element: <RanapDetailPage />,
-            handle: { breadcrumb: "Rawat Inap" },
+            handle: { breadcrumb: "Detail Rawat Inap" },
+          },
+
+          //inventory
+          {
+            path: "inv/gudang",
+            element: <GudangIndexPage />,
+            handle: { breadcrumb: "Gudang" },
+          },
+          {
+            path: "inv/pabrik",
+            element: <PabrikIndexPage />,
+            handle: { breadcrumb: "Pabrik" },
+          },
+          {
+            path: "inv/kategori",
+            element: <KategoriInventoryPage />,
+            handle: { breadcrumb: "Kategori" },
+          },
+          {
+            path: "inv/barang",
+            element: <BarangIndexPage />,
+            handle: { breadcrumb: "Barang" },
+          },
+          {
+            path: "inv/batch",
+            element: <BatchInventoryPage />,
+            handle: { breadcrumb: "Batch" },
+          },
+          {
+            path: "inv/stock",
+            element: <InventoriStokPage />,
+            handle: { breadcrumb: "Stock" },
+          },
+          {
+            path: "inv/mutation",
+            element: <MutasiStokPage />,
+            handle: { breadcrumb: "Mutasi" },
           },
 
 

@@ -42,6 +42,7 @@ export const PatientsAPI = {
     },
 };
 
+//emr
 export const EmrIgdAPI = {
     getService: async (id: string) => {
         const res = await api.get(`/inspections/igd/${id}/services`);
@@ -555,6 +556,205 @@ export const RadiologyAPI = {
         return res.data;
     },
 };
+
+export const PurchaseOrderAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/purchase-orders", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/purchase-orders", payload);
+        return res.data;
+    },
+};
+
+//inventory
+export const InvGudangAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/warehouses", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/warehouses", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/warehouses/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/warehouses/${id}`, payload);
+        return res.data;
+    },
+};
+export const InvPabrikAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/factories", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/factories", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/factories/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/factories/${id}`, payload);
+        return res.data;
+    },
+};
+export const InvKategoriAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/categories", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/categories", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/categories/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/categories/${id}`, payload);
+        return res.data;
+    },
+};
+export const InvBarangAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/items", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/items", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/items/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/items/${id}`, payload);
+        return res.data;
+    },
+};
+export const InvBatchAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/batches", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/batches", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/batches/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/batches/${id}`, payload);
+        return res.data;
+    },
+};
+export const InvStockAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/stok", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/stok", payload);
+        return res.data;
+    },
+
+    getSummary: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/stok/summary", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+    getSummaryWarehouse: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/stok/by-warehouse", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+    getSummaryBatch: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/stok/by-batch", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+    getAlert: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/stok/alerts", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+};
+export const InvMutasiAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/i-mutasi", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/i-mutasi", payload);
+        return res.data;
+    },
+
+    transfer: async (payload: any) => {
+        const res = await api.post("/inventory/i-mutasi", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/batches/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/batches/${id}`, payload);
+        return res.data;
+    },
+};
+
+
 
 // Master
 export const DoctorAPI = {

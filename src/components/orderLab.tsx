@@ -320,7 +320,6 @@ const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
         )}
       </CardContent>
 
-     /* --- DIALOG CREATE DENGAN TAMPILAN GRID SESUAI FORMULIR --- */
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-[95vw] overflow-y-auto lg:max-w-[1200px] max-h-[95vh] flex flex-col p-0">
           <DialogHeader className="p-6 pb-2">

@@ -144,6 +144,13 @@ export const mainMenus: MenuItem[] = [
     title: 'Inventory',
     module: 'inventory',
     children: [
+      { title: 'Gudang', url: '/inv/gudang', module: 'inv_gudang' },
+      { title: 'Pabrik', url: '/inv/pabrik', module: 'inv_pabrik' },
+      { title: 'Kategori', url: '/inv/kategori', module: 'inv_kategori' },
+      { title: 'Barang', url: '/inv/barang', module: 'inv_barang' },
+      { title: 'Batch', url: '/inv/batch', module: 'inv_batch' },
+      { title: 'Stock', url: '/inv/stock', module: 'inv_stock' },
+      { title: 'Mutasi', url: '/inv/mutation', module: 'inv_mutation' },
       { title: 'Perencanaan', url: '/inventory/perencanaan', module: 'inv_perencanaan' },
       { title: 'PO / Purchase Order', url: '/inventory/po', module: 'inv_po' },
       { title: 'Barang Masuk / Faktur', url: '/inventory/faktur', module: 'inv_faktur' },
