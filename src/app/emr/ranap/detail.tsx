@@ -109,7 +109,9 @@ export default function RanapDetailPage() {
                         </Info>
                         <Info label="Ruang / Poli">{data.poli?.desk_poli || "-"}</Info>
                         <Info label="Dokter DPJP">{data.dokter?.karyawan?.nama || "-"}</Info>
-                        <Info label="Tipe Pasien">{data.tipe_pasien?.desk_tipe_pasien || "-"}</Info>
+                        <Info label="Tipe Pasien">
+                            <Badge variant="secondary">{data.tipe_pasien?.desk_tipe_pasien || "-"}</Badge>
+                        </Info>
                         <Info label="Cara Masuk">{data.cara_masuk?.desk_cara_masuk || "-"}</Info>
                     </CardContent>
                 </Card>

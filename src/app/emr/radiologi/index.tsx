@@ -70,13 +70,15 @@ export default function EmrRadiologiIndexPage() {
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case "selesai":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "success";
       case "ordered":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "info";
       case "dibatalkan":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "destructive";
+      case "proses":
+        return "warning";
       default:
-        return "bg-slate-50 text-slate-700 border-slate-200";
+        return "outline";
     }
   };
 
@@ -199,8 +201,8 @@ export default function EmrRadiologiIndexPage() {
                           </TableCell>
 
                           <TableCell>
-                            <Badge className={`text-[10px] border shadow-none capitalize ${getStatusVariant(item.status)}`}>
-                              {item.status}
+                            <Badge className="text-[10px]" variant={`${getStatusVariant(item.status)}`}>
+                              {item.status.toUpperCase()}
                             </Badge>
                           </TableCell>
 
