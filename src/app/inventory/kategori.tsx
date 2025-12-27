@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { InvKategoriAPI } from "@/lib/api"; 
+import { InvKategoriAPI } from "@/lib/api";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -46,16 +46,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
 import { Search, Tags, Loader2, Plus, Edit, Trash2 } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function KategoriInventoryPage() {
   const queryClient = useQueryClient();
@@ -77,7 +69,7 @@ export default function KategoriInventoryPage() {
   const { data: apiResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ["inv-kategori-list", page, search],
     queryFn: () => InvKategoriAPI.getList(page, perPage, search),
-    placeholderData: (previousData) => previousData, 
+    placeholderData: (previousData) => previousData,
   });
 
   const listData = apiResponse?.data || [];
@@ -99,8 +91,8 @@ export default function KategoriInventoryPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) => 
-        InvKategoriAPI.update(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+      InvKategoriAPI.update(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inv-kategori-list"] });
       toast.success("Kategori inventori berhasil diperbarui");
@@ -202,7 +194,7 @@ export default function KategoriInventoryPage() {
                           <TableCell className="text-muted-foreground text-xs font-mono">
                             {(page - 1) * perPage + i + 1}
                           </TableCell>
-                          
+
                           <TableCell className="font-medium text-sm">
                             {item.nama}
                           </TableCell>
@@ -212,15 +204,15 @@ export default function KategoriInventoryPage() {
                               {item.jenis}
                             </Badge>
                           </TableCell>
-                          
+
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button variant="outline" size="sm" onClick={() => handleOpenDialog(item)} className="h-8 w-8 p-0">
                                 <Edit className="w-3.5 h-3.5" />
                               </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => { setSelectedItem(item); setIsDeleteDialogOpen(true); }}
                                 className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
                               >
@@ -234,29 +226,13 @@ export default function KategoriInventoryPage() {
                   </Table>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Menampilkan <span className="font-medium">{(page - 1) * perPage + 1}</span> -{" "}
-                    <span className="font-medium">{Math.min(page * perPage, total)}</span> dari {total} data
-                  </p>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious 
-                           onClick={() => setPage(p => Math.max(1, p - 1))}
-                           className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                      <PaginationItem><PaginationLink isActive>{page}</PaginationLink></PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext 
-                           onClick={() => setPage(p => Math.min(lastPage, p + 1))}
-                           className={page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -272,21 +248,21 @@ export default function KategoriInventoryPage() {
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
               <Label htmlFor="nama">Nama Kategori</Label>
-              <Input 
+              <Input
                 id="nama"
                 required
-                value={formData.nama} 
-                onChange={(e) => setFormData({ ...formData, nama: e.target.value })} 
+                value={formData.nama}
+                onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
                 placeholder="Masukkan nama kategori (e.g. Obat Umum)"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="jenis">Jenis</Label>
-              <Select 
-                value={formData.jenis} 
+              <Select
+                value={formData.jenis}
                 onValueChange={(val) => setFormData({ ...formData, jenis: val })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Pilih Jenis" />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,8 +293,8 @@ export default function KategoriInventoryPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => deleteMutation.mutate(selectedItem?.id)} 
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate(selectedItem?.id)}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
               Ya, Hapus

@@ -21,16 +21,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
 import { Search, Eye, Bed, Loader2, UserPlus } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function RanapIndexPage() {
   const navigate = useNavigate();
@@ -212,35 +204,13 @@ export default function RanapIndexPage() {
                   </Table>
                 </div>
 
-                {/* PAGINATION */}
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Menampilkan <span className="font-medium">{(page - 1) * perPage + 1}</span> -{" "}
-                    <span className="font-medium">{Math.min(page * perPage, total)}</span> dari{" "}
-                    <span className="font-medium">{total}</span> pasien
-                  </p>
-
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                      {/* ... Logic pagination sederhana ... */}
-                      <PaginationItem>
-                        <PaginationLink isActive>{page}</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                          className={page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>

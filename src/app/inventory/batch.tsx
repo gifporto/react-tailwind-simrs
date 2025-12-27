@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { InvBatchAPI, InvBarangAPI } from "@/lib/api"; 
+import { InvBatchAPI, InvBarangAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 
@@ -53,16 +53,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
 import { Search, Layers, Loader2, Plus, Edit, Trash2, CalendarIcon, Banknote, ChevronDown, CalendarCheck2, CalendarX2 } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function BatchInventoryPage() {
   const queryClient = useQueryClient();
@@ -76,7 +68,7 @@ export default function BatchInventoryPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<any>(null);
-  
+
   const [formData, setFormData] = React.useState({
     id_barang: "",
     no_batch: "",
@@ -95,9 +87,9 @@ export default function BatchInventoryPage() {
     placeholderData: (previousData) => previousData,
   });
 
-  const { data: barangList } = useQuery({ 
-    queryKey: ["barang-opt"], 
-    queryFn: () => InvBarangAPI.getList(1, 100) 
+  const { data: barangList } = useQuery({
+    queryKey: ["barang-opt"],
+    queryFn: () => InvBarangAPI.getList(1, 100)
   });
 
   const listData = apiResponse?.data || [];
@@ -154,13 +146,13 @@ export default function BatchInventoryPage() {
       });
     } else {
       setSelectedItem(null);
-      setFormData({ 
-        id_barang: "", 
-        no_batch: "", 
-        exp_date: format(new Date(), "yyyy-MM-dd"), 
-        hpp: 0, 
-        tgl_terima: format(new Date(), "yyyy-MM-dd"), 
-        is_aktif: true 
+      setFormData({
+        id_barang: "",
+        no_batch: "",
+        exp_date: format(new Date(), "yyyy-MM-dd"),
+        hpp: 0,
+        tgl_terima: format(new Date(), "yyyy-MM-dd"),
+        is_aktif: true
       });
     }
     setIsDialogOpen(true);
@@ -187,11 +179,11 @@ export default function BatchInventoryPage() {
               <div className="flex flex-wrap gap-3 items-center">
                 <div className="relative w-full max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Cari No. Batch..." 
-                    value={search} 
-                    onChange={(e) => { setSearch(e.target.value); setPage(1); }} 
-                    className="pl-10" 
+                  <Input
+                    placeholder="Cari No. Batch..."
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                    className="pl-10"
                   />
                 </div>
                 <Badge variant="outline" className="bg-primary/5">{total} Total Batch</Badge>
@@ -258,7 +250,13 @@ export default function BatchInventoryPage() {
                     </TableBody>
                   </Table>
                 </div>
-                {/* ... Pagination remains same ... */}
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -274,8 +272,8 @@ export default function BatchInventoryPage() {
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
               <Label>Pilih Barang</Label>
-              <Select value={formData.id_barang} onValueChange={(val) => setFormData({...formData, id_barang: val})}>
-                <SelectTrigger><SelectValue placeholder="Pilih Barang..." /></SelectTrigger>
+              <Select value={formData.id_barang} onValueChange={(val) => setFormData({ ...formData, id_barang: val })}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Barang..." /></SelectTrigger>
                 <SelectContent>
                   {barangList?.data?.map((b: any) => (
                     <SelectItem key={b.id} value={b.id.toString()}>[{b.kd_barang}] {b.nama}</SelectItem>
@@ -286,32 +284,32 @@ export default function BatchInventoryPage() {
 
             <div className="space-y-2">
               <Label htmlFor="no_batch">No. Batch</Label>
-              <Input id="no_batch" required value={formData.no_batch} onChange={(e) => setFormData({...formData, no_batch: e.target.value})} />
+              <Input id="no_batch" required value={formData.no_batch} onChange={(e) => setFormData({ ...formData, no_batch: e.target.value })} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               {/* TGL TERIMA - DATEPICKER */}
               <div className="space-y-2 flex flex-col">
                 <Label>Tgl. Terima</Label>
-                <DatePicker 
-                  value={formData.tgl_terima} 
-                  onChange={(date) => setFormData({...formData, tgl_terima: date})} 
+                <DatePicker
+                  value={formData.tgl_terima}
+                  onChange={(date) => setFormData({ ...formData, tgl_terima: date })}
                 />
               </div>
 
               {/* EXP DATE - DATEPICKER */}
               <div className="space-y-2 flex flex-col">
                 <Label>Tgl. Kadaluarsa</Label>
-                <DatePicker 
-                  value={formData.exp_date} 
-                  onChange={(date) => setFormData({...formData, exp_date: date})} 
+                <DatePicker
+                  value={formData.exp_date}
+                  onChange={(date) => setFormData({ ...formData, exp_date: date })}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="hpp">HPP</Label>
-                <Input id="hpp" type="number" step="0.01" value={formData.hpp} onChange={(e) => setFormData({...formData, hpp: Number(e.target.value)})} />
+              <Label htmlFor="hpp">HPP</Label>
+              <Input id="hpp" type="number" step="0.01" value={formData.hpp} onChange={(e) => setFormData({ ...formData, hpp: Number(e.target.value) })} />
             </div>
 
             <DialogFooter className="pt-4">

@@ -687,6 +687,27 @@ export const InvBatchAPI = {
         return res.data;
     },
 };
+export const InvUnitAPI = {
+    getList: async () => {
+        const res = await api.get("/inventory/units");
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/units", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/units/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/units/${id}`, payload);
+        return res.data;
+    },
+};
 export const InvStockAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/inventory/stok", {

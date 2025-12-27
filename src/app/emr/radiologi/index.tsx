@@ -21,16 +21,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
 import { Search, Eye, Radio, Loader2, FilePlus } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function EmrRadiologiIndexPage() {
   const navigate = useNavigate();
@@ -223,51 +215,13 @@ export default function EmrRadiologiIndexPage() {
                   </Table>
                 </div>
 
-                {/* PAGINATION SECTION */}
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Menampilkan <span className="font-medium">{(page - 1) * perPage + 1}</span> -{" "}
-                    <span className="font-medium">{Math.min(page * perPage, total)}</span> dari{" "}
-                    <span className="font-medium">{total}</span> order
-                  </p>
-
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-
-                      {Array.from({ length: lastPage }, (_, i) => i + 1)
-                        .filter((p) => p === 1 || p === lastPage || Math.abs(p - page) <= 1)
-                        .map((p, idx, arr) => (
-                          <React.Fragment key={p}>
-                            {idx > 0 && arr[idx - 1] !== p - 1 && (
-                              <span className="text-muted-foreground px-2">...</span>
-                            )}
-                            <PaginationItem>
-                              <PaginationLink
-                                isActive={page === p}
-                                onClick={() => setPage(p)}
-                                className="cursor-pointer"
-                              >
-                                {p}
-                              </PaginationLink>
-                            </PaginationItem>
-                          </React.Fragment>
-                        ))}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                          className={page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>
