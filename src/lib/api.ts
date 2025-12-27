@@ -774,6 +774,32 @@ export const InvMutasiAPI = {
         return res.data;
     },
 };
+export const InvOrderAPI = {
+     getList: async () => {
+        const res = await api.get("/inventory/pembelian");
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/pembelian", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/pembelian/${id}`, payload);
+        return res.data;
+    },
+
+    approve: async (id: string) => {
+        const res = await api.post(`/inventory/pembelian/${id}/approve`);
+        return res.data;
+    },
+
+    reject: async (id: string) => {
+        const res = await api.post(`/inventory/pembelian/${id}/reject`);
+        return res.data;
+    },
+};
 
 
 
