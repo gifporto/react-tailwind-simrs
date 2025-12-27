@@ -3,6 +3,12 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useBarangList,
+  useCreateBarang,
+  useUpdateBarang,
+  useDeleteBarang
+} from "@/hooks/queries/use-barang-queries";
 import { InvBarangAPI, InvKategoriAPI, InvPabrikAPI, InvUnitAPI } from "@/lib/api"; // Pastikan InvUnitAPI diimport
 import { toast } from "sonner";
 
@@ -49,6 +55,8 @@ import {
 
 import { Search, Box, Loader2, Plus, Edit, Trash2, Factory } from "lucide-react";
 import { CustomPagination } from "@/components/shared/pagination";
+import { useKategoriList, useKategoriOptions } from "@/hooks/queries/use-kategori-queries";
+import { useUnitOptions } from "@/hooks/queries/use-unit-queries";
 
 export default function BarangIndexPage() {
   const queryClient = useQueryClient();
@@ -78,29 +86,10 @@ export default function BarangIndexPage() {
   /* =======================
      FETCH DATA
   ======================= */
-  const { data: apiResponse, isLoading, isError, refetch } = useQuery({
-    queryKey: ["barang-list", page, search],
-    queryFn: () => InvBarangAPI.getList(page, perPage, search),
-    placeholderData: (previousData) => previousData,
-  });
-
-  // Fetch Kategori untuk Select
-  const { data: kategoriList } = useQuery({
-    queryKey: ["kategori-opt"],
-    queryFn: () => InvKategoriAPI.getList(1, 100)
-  });
-
-  // Fetch Pabrik untuk Select
-  const { data: pabrikList, isLoading: isLoadingPabrik } = useQuery({
-    queryKey: ["pabrik-opt"],
-    queryFn: () => InvPabrikAPI.getList(1, 100)
-  });
-
-  // --- TAMBAHAN: Fetch Satuan untuk Select ---
-  const { data: satuanList, isLoading: isLoadingSatuan } = useQuery({
-    queryKey: ["satuan-opt"],
-    queryFn: () => InvUnitAPI.getList() // Menggunakan API yang Anda berikan
-  });
+  const { data: apiResponse, isLoading } = useBarangList(page, perPage, search);
+  const { data: kategoriList } = useKategoriOptions();
+  const { data: pabrikList, isLoading: isLoadingPabrik } = useKategoriOptions();
+  const { data: satuanList, isLoading: isLoadingSatuan } = useUnitOptions();
 
   const listData = apiResponse?.data || [];
   const pagination = apiResponse?.meta?.pagination;
@@ -110,35 +99,9 @@ export default function BarangIndexPage() {
   /* =======================
      MUTATIONS
   ======================= */
-  const createMutation = useMutation({
-    mutationFn: (payload: any) => InvBarangAPI.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["barang-list"] });
-      toast.success("Barang baru berhasil disimpan");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menyimpan barang"),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) => InvBarangAPI.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["barang-list"] });
-      toast.success("Data barang berhasil diperbarui");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal memperbarui barang"),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => InvBarangAPI.delete(id, {}),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["barang-list"] });
-      toast.success("Barang berhasil dihapus");
-      setIsDeleteDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menghapus barang"),
-  });
+  const createMutation = useCreateBarang();
+  const updateMutation = useUpdateBarang();
+  const deleteMutation = useDeleteBarang();
 
   /* =======================
      HANDLERS
@@ -166,10 +129,18 @@ export default function BarangIndexPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const options = {
+      onSuccess: () => {
+        toast.success(selectedItem ? "Berhasil diperbarui" : "Berhasil disimpan");
+        setIsDialogOpen(false);
+      }
+    };
+
     if (selectedItem) {
-      updateMutation.mutate({ id: selectedItem.id, payload: formData });
+      updateMutation.mutate({ id: selectedItem.id, payload: formData }, options);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(formData, options);
     }
   };
 

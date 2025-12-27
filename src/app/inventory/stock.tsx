@@ -3,6 +3,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useStockMonitoring, useUpdateStock } from "@/hooks/queries/use-stock-queries";
+import { useBarangOptions } from "@/hooks/queries/use-barang-queries";
+import { useBatchOptions } from "@/hooks/queries/use-batch-queries";
+import { useGudangOptions } from "@/hooks/queries/use-gudang-queries";
 import { InvStockAPI, InvBarangAPI, InvBatchAPI, InvGudangAPI } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -78,25 +82,14 @@ export default function InventoriStokPage() {
     /* =======================
        FETCH DATA
     ======================= */
-    const fetchMap: Record<string, any> = {
-        list: () => InvStockAPI.getList(page, perPage, search),
-        summary: () => InvStockAPI.getSummary(page, perPage, search),
-        warehouse: () => InvStockAPI.getSummaryWarehouse(page, perPage, search),
-        batch: () => InvStockAPI.getSummaryBatch(page, perPage, search),
-        alerts: () => InvStockAPI.getAlert(page, perPage, search),
-    };
+   const { data: apiResponse, isLoading } = useStockMonitoring(activeTab, page, perPage, search);
+    
+    // Options menggunakan hooks yang sudah dibuat sebelumnya
+    const { data: barangList } = useBarangOptions();
+    const { data: batchList } = useBatchOptions();
+    const { data: gudangList } = useGudangOptions();
 
-    const { data: apiResponse, isLoading } = useQuery({
-        queryKey: ["stok", activeTab, page, search],
-        queryFn: fetchMap[activeTab],
-        placeholderData: (prev) => prev,
-    });
-
-    // Options for Selects inside Dialog
-    const { data: barangList } = useQuery({ queryKey: ["barang-opt"], queryFn: () => InvBarangAPI.getList(1, 100) });
-    const { data: batchList } = useQuery({ queryKey: ["batch-opt"], queryFn: () => InvBatchAPI.getList(1, 100) });
-    const { data: gudangList } = useQuery({ queryKey: ["inv-gudang-opt"], queryFn: () => InvGudangAPI.getList(1, 100) });
-
+    
     const listData = Array.isArray((apiResponse as any)?.data)
         ? (apiResponse as any).data
         : (apiResponse as any)?.data?.alerts || [];
@@ -108,16 +101,19 @@ export default function InventoriStokPage() {
     /* =======================
        MUTATIONS
     ======================= */
-    const createMutation = useMutation({
-        mutationFn: (payload: any) => InvStockAPI.create(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["stok"] });
-            toast.success("Stok berhasil diperbarui");
-            setIsDialogOpen(false);
-            setFormData({ id_barang: "", id_batch: "", id_gudang: "", qty: 0 });
-        },
-        onError: () => toast.error("Gagal memperbarui stok"),
-    });
+    const createMutation = useUpdateStock();
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        createMutation.mutate(formData, {
+            onSuccess: () => {
+                toast.success("Stok berhasil diperbarui");
+                setIsDialogOpen(false);
+                setFormData({ id_barang: "", id_batch: "", id_gudang: "", qty: 0 });
+            },
+            onError: () => toast.error("Gagal memperbarui stok"),
+        });
+    };
 
     const getStatusBadge = (status: string) => {
         switch (status?.toLowerCase()) {
@@ -127,11 +123,6 @@ export default function InventoriStokPage() {
             case "critical": return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 uppercase text-[10px] px-2">Kritis</Badge>;
             default: return <Badge variant="outline" className="uppercase text-[10px] px-2">{status}</Badge>;
         }
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        createMutation.mutate(formData);
     };
 
     return (
