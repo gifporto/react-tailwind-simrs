@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { InvGudangAPI } from "@/lib/api"; 
+import { InvGudangAPI } from "@/lib/api";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -46,16 +46,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
 import { Search, Warehouse, Loader2, Plus, Edit, Trash2 } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function GudangIndexPage() {
   const queryClient = useQueryClient();
@@ -77,7 +69,7 @@ export default function GudangIndexPage() {
   const { data: apiResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ["gudang-list", page, search],
     queryFn: () => InvGudangAPI.getList(page, perPage, search),
-    placeholderData: (previousData) => previousData, 
+    placeholderData: (previousData) => previousData,
   });
 
   const listData = apiResponse?.data || [];
@@ -268,36 +260,13 @@ export default function GudangIndexPage() {
                   </Table>
                 </div>
 
-                {/* PAGINATION */}
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Menampilkan <span className="font-medium">{(page - 1) * perPage + 1}</span> -{" "}
-                    <span className="font-medium">{Math.min(page * perPage, total)}</span> dari{" "}
-                    <span className="font-medium">{total}</span> data
-                  </p>
-
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink isActive className="bg-primary text-primary-foreground">
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                          className={page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -327,7 +296,7 @@ export default function GudangIndexPage() {
                 value={formData.jenis}
                 onValueChange={(value) => setFormData({ ...formData, jenis: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Pilih jenis" />
                 </SelectTrigger>
                 <SelectContent>

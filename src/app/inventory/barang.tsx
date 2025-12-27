@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { InvBarangAPI, InvKategoriAPI, InvPabrikAPI } from "@/lib/api"; 
+import { InvBarangAPI, InvKategoriAPI, InvPabrikAPI, InvUnitAPI } from "@/lib/api"; // Pastikan InvUnitAPI diimport
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -47,16 +47,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
 import { Search, Box, Loader2, Plus, Edit, Trash2, Factory } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function BarangIndexPage() {
   const queryClient = useQueryClient();
@@ -70,7 +62,7 @@ export default function BarangIndexPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<any>(null);
-  
+
   const [formData, setFormData] = React.useState({
     kd_barang: "",
     nama: "",
@@ -93,15 +85,21 @@ export default function BarangIndexPage() {
   });
 
   // Fetch Kategori untuk Select
-  const { data: kategoriList } = useQuery({ 
-    queryKey: ["kategori-opt"], 
-    queryFn: () => InvKategoriAPI.getList(1, 100) 
+  const { data: kategoriList } = useQuery({
+    queryKey: ["kategori-opt"],
+    queryFn: () => InvKategoriAPI.getList(1, 100)
   });
 
   // Fetch Pabrik untuk Select
-  const { data: pabrikList, isLoading: isLoadingPabrik } = useQuery({ 
-    queryKey: ["pabrik-opt"], 
-    queryFn: () => InvPabrikAPI.getList(1, 100) 
+  const { data: pabrikList, isLoading: isLoadingPabrik } = useQuery({
+    queryKey: ["pabrik-opt"],
+    queryFn: () => InvPabrikAPI.getList(1, 100)
+  });
+
+  // --- TAMBAHAN: Fetch Satuan untuk Select ---
+  const { data: satuanList, isLoading: isLoadingSatuan } = useQuery({
+    queryKey: ["satuan-opt"],
+    queryFn: () => InvUnitAPI.getList() // Menggunakan API yang Anda berikan
   });
 
   const listData = apiResponse?.data || [];
@@ -187,11 +185,11 @@ export default function BarangIndexPage() {
               <div className="flex flex-wrap gap-3 items-center">
                 <div className="relative w-full max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Cari kode atau nama barang..." 
-                    value={search} 
-                    onChange={(e) => { setSearch(e.target.value); setPage(1); }} 
-                    className="pl-10" 
+                  <Input
+                    placeholder="Cari kode atau nama barang..."
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                    className="pl-10"
                   />
                 </div>
                 <Badge variant="outline" className="bg-primary/5">{total} Item</Badge>
@@ -226,7 +224,7 @@ export default function BarangIndexPage() {
                           <TableCell className="text-muted-foreground text-xs font-mono">
                             {(page - 1) * perPage + i + 1}
                           </TableCell>
-                          
+
                           <TableCell>
                             <div className="flex flex-col">
                               <span className="font-mono text-[10px] text-blue-600 font-bold">{item.kd_barang}</span>
@@ -246,18 +244,18 @@ export default function BarangIndexPage() {
 
                           <TableCell>
                             <div className="text-xs">
-                                <span className="text-red-500 font-medium">Min: {Math.floor(item.min_stok)}</span> / 
-                                <span className="text-green-600 font-medium ml-1">Max: {Math.floor(item.max_stok)}</span>
-                                <div className="text-muted-foreground font-bold">{item.satuan?.nama}</div>
+                              <span className="text-red-500 font-medium">Min: {Math.floor(item.min_stok)}</span> /
+                              <span className="text-green-600 font-medium ml-1">Max: {Math.floor(item.max_stok)}</span>
+                              <div className="text-muted-foreground font-bold">{item.satuan?.nama}</div>
                             </div>
                           </TableCell>
-                          
+
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button variant="outline" size="sm" onClick={() => handleOpenDialog(item)} className="h-8 w-8 p-0"><Edit className="w-3.5 h-3.5" /></Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => { setSelectedItem(item); setIsDeleteDialogOpen(true); }}
                                 className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
                               >
@@ -271,22 +269,13 @@ export default function BarangIndexPage() {
                   </Table>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Menampilkan <span className="font-medium">{(page - 1) * perPage + 1}</span> - {Math.min(page * perPage, total)} dari {total} data
-                  </p>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious onClick={() => setPage(p => Math.max(1, p - 1))} className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} />
-                      </PaginationItem>
-                      <PaginationItem><PaginationLink isActive>{page}</PaginationLink></PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext onClick={() => setPage(p => Math.min(lastPage, p + 1))} className={page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"} />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -302,16 +291,16 @@ export default function BarangIndexPage() {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
             <div className="space-y-2">
               <Label htmlFor="kd_barang">Kode Barang</Label>
-              <Input id="kd_barang" required value={formData.kd_barang} onChange={(e) => setFormData({...formData, kd_barang: e.target.value})} placeholder="Contoh: OB0001" />
+              <Input id="kd_barang" required value={formData.kd_barang} onChange={(e) => setFormData({ ...formData, kd_barang: e.target.value })} placeholder="Contoh: OB0001" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="nama">Nama Barang</Label>
-              <Input id="nama" required value={formData.nama} onChange={(e) => setFormData({...formData, nama: e.target.value})} placeholder="Nama Obat / Alat" />
+              <Input id="nama" required value={formData.nama} onChange={(e) => setFormData({ ...formData, nama: e.target.value })} placeholder="Nama Obat / Alat" />
             </div>
-            
+
             <div className="space-y-2">
               <Label>Jenis</Label>
-              <Select value={formData.jenis} onValueChange={(val) => setFormData({...formData, jenis: val})}>
+              <Select value={formData.jenis} onValueChange={(val) => setFormData({ ...formData, jenis: val })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="OBAT">OBAT</SelectItem>
@@ -324,7 +313,7 @@ export default function BarangIndexPage() {
 
             <div className="space-y-2">
               <Label>Kategori</Label>
-              <Select value={formData.id_kategori} onValueChange={(val) => setFormData({...formData, id_kategori: val})}>
+              <Select value={formData.id_kategori} onValueChange={(val) => setFormData({ ...formData, id_kategori: val })}>
                 <SelectTrigger><SelectValue placeholder="Pilih Kategori" /></SelectTrigger>
                 <SelectContent>
                   {kategoriList?.data?.map((k: any) => (
@@ -337,9 +326,9 @@ export default function BarangIndexPage() {
             {/* SELECT PABRIK DENGAN API */}
             <div className="space-y-2">
               <Label>Pabrik / Produsen</Label>
-              <Select 
-                value={formData.id_pabrik} 
-                onValueChange={(val) => setFormData({...formData, id_pabrik: val})}
+              <Select
+                value={formData.id_pabrik}
+                onValueChange={(val) => setFormData({ ...formData, id_pabrik: val })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={isLoadingPabrik ? "Memuat..." : "Pilih Pabrik"} />
@@ -352,29 +341,56 @@ export default function BarangIndexPage() {
               </Select>
             </div>
 
-            {/* ID_SATUAN (TETAP MANUAL TEXT) */}
+            {/* --- PERUBAHAN: SELECT SATUAN MENGGUNAKAN API --- */}
             <div className="space-y-2">
-              <Label htmlFor="id_satuan">ID Satuan (Manual)</Label>
-              <Input 
-                id="id_satuan" 
-                value={formData.id_satuan} 
-                onChange={(e) => setFormData({...formData, id_satuan: e.target.value})} 
-                placeholder="Masukkan ID Satuan" 
+              <Label>Satuan</Label>
+              <Select
+                value={formData.id_satuan}
+                onValueChange={(val) => setFormData({ ...formData, id_satuan: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={isLoadingSatuan ? "Memuat..." : "Pilih Satuan"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {satuanList?.data?.map((s: any) => (
+                    <SelectItem key={s.id} value={s.id.toString()}>
+                      {s.desk_satuan} ({s.singkatan})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="min_stok">Minimum Stok</Label>
+              <Input
+                id="min_stok"
+                type="number"
+                // Mengubah 0 menjadi string kosong agar placeholder muncul/input bersih saat mulai mengetik
+                value={formData.min_stok === 0 ? "" : formData.min_stok}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Jika input kosong (dihapus semua), set ke 0. Jika ada isi, ambil angkanya.
+                  setFormData({ ...formData, min_stok: val === "" ? 0 : Number(val) });
+                }}
               />
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="min_stok">Minimum Stok</Label>
-                <Input id="min_stok" type="number" value={formData.min_stok} onChange={(e) => setFormData({...formData, min_stok: Number(e.target.value)})} />
+              <Label htmlFor="max_stok">Maximum Stok</Label>
+              <Input
+                id="max_stok"
+                type="number"
+                value={formData.max_stok === 0 ? "" : formData.max_stok}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({ ...formData, max_stok: val === "" ? 0 : Number(val) });
+                }}
+              />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="max_stok">Maximum Stok</Label>
-                <Input id="max_stok" type="number" value={formData.max_stok} onChange={(e) => setFormData({...formData, max_stok: Number(e.target.value)})} />
-            </div>
-
             <div className="col-span-full space-y-2">
               <Label htmlFor="spesifikasi">Spesifikasi / Keterangan</Label>
-              <Textarea id="spesifikasi" value={formData.spesifikasi} onChange={(e) => setFormData({...formData, spesifikasi: e.target.value})} />
+              <Textarea id="spesifikasi" value={formData.spesifikasi} onChange={(e) => setFormData({ ...formData, spesifikasi: e.target.value })} />
             </div>
 
             <div className="col-span-full flex justify-end gap-2 pt-4 border-t">

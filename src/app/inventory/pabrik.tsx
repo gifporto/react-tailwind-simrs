@@ -40,16 +40,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
 import { Search, Factory, Loader2, Plus, Edit, Trash2, Phone, MapPin } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function PabrikIndexPage() {
   const queryClient = useQueryClient();
@@ -63,10 +55,10 @@ export default function PabrikIndexPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [selectedPabrik, setSelectedPabrik] = React.useState<any>(null);
-  const [formData, setFormData] = React.useState({ 
-    nama: "", 
-    telepon: "", 
-    alamat: "" 
+  const [formData, setFormData] = React.useState({
+    nama: "",
+    telepon: "",
+    alamat: ""
   });
 
   /* =======================
@@ -75,7 +67,7 @@ export default function PabrikIndexPage() {
   const { data: apiResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ["pabrik-list", page, search],
     queryFn: () => InvPabrikAPI.getList(page, perPage, search),
-    placeholderData: (previousData) => previousData, 
+    placeholderData: (previousData) => previousData,
   });
 
   const listData = apiResponse?.data || [];
@@ -122,10 +114,10 @@ export default function PabrikIndexPage() {
   const handleOpenDialog = (pabrik?: any) => {
     if (pabrik) {
       setSelectedPabrik(pabrik);
-      setFormData({ 
-        nama: pabrik.nama, 
-        telepon: pabrik.telepon, 
-        alamat: pabrik.alamat 
+      setFormData({
+        nama: pabrik.nama,
+        telepon: pabrik.telepon,
+        alamat: pabrik.alamat
       });
     } else {
       setSelectedPabrik(null);
@@ -225,7 +217,7 @@ export default function PabrikIndexPage() {
                       {listData.map((item: any, i: number) => (
                         <TableRow key={item.id} className="hover:bg-muted/30 transition-colors">
                           <TableCell className="text-muted-foreground text-xs">{(page - 1) * perPage + i + 1}</TableCell>
-                          
+
                           <TableCell>
                             <div className="font-semibold text-sm">{item.nama}</div>
                           </TableCell>
@@ -236,7 +228,7 @@ export default function PabrikIndexPage() {
                                 <Phone className="w-3 h-3" /> {item.telepon || "-"}
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <MapPin className="w-3 h-3 shrink-0" /> 
+                                <MapPin className="w-3 h-3 shrink-0" />
                                 <span className="line-clamp-1">{item.alamat || "-"}</span>
                               </div>
                             </div>
@@ -271,36 +263,13 @@ export default function PabrikIndexPage() {
                   </Table>
                 </div>
 
-                {/* PAGINATION */}
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Menampilkan <span className="font-medium">{(page - 1) * perPage + 1}</span> -{" "}
-                    <span className="font-medium">{Math.min(page * perPage, total)}</span> dari{" "}
-                    <span className="font-medium">{total}</span> data
-                  </p>
-
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink isActive className="bg-primary text-primary-foreground">
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                          className={page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -324,7 +293,7 @@ export default function PabrikIndexPage() {
                 placeholder="Contoh: PT. Kimia Farma"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="telepon">Nomor Telepon</Label>
               <Input

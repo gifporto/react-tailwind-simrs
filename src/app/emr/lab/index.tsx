@@ -19,16 +19,9 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
 
 import { Search, Eye, Beaker, Loader2, FilePlus } from "lucide-react";
+import { CustomPagination } from "@/components/shared/pagination";
 
 export default function EmrLabIndexPage() {
   const navigate = useNavigate();
@@ -164,7 +157,7 @@ export default function EmrLabIndexPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className="text-[10px]"  variant={`${getStatusVariant(item.status)}`}>
+                            <Badge className="text-[10px]" variant={`${getStatusVariant(item.status)}`}>
                               {item.status.toUpperCase()}
                             </Badge>
                           </TableCell>
@@ -185,26 +178,13 @@ export default function EmrLabIndexPage() {
                   </Table>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Menampilkan <span className="font-medium">{(page - 1) * perPage + 1}</span> - <span className="font-medium">{Math.min(page * perPage, total)}</span> dari <span className="font-medium">{total}</span> order
-                  </p>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious onClick={() => setPage((p) => Math.max(1, p - 1))} className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} />
-                      </PaginationItem>
-                      {Array.from({ length: lastPage }, (_, i) => i + 1).map((p) => (
-                        <PaginationItem key={p}>
-                          <PaginationLink isActive={page === p} onClick={() => setPage(p)} className="cursor-pointer">{p}</PaginationLink>
-                        </PaginationItem>
-                      ))}
-                      <PaginationItem>
-                        <PaginationNext onClick={() => setPage((p) => Math.min(lastPage, p + 1))} className={page === lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"} />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                <CustomPagination
+                  page={page}
+                  perPage={perPage}
+                  total={total}
+                  lastPage={lastPage}
+                  setPage={setPage}
+                />
               </motion.div>
             )}
           </AnimatePresence>

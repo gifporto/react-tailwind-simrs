@@ -346,7 +346,7 @@ export default function InventoriStokPage() {
                             <div className="space-y-2">
                                 <Label>Batch</Label>
                                 <Select onValueChange={(v) => setFormData({ ...formData, id_batch: v })}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue placeholder="No. Batch" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -359,7 +359,7 @@ export default function InventoriStokPage() {
                             <div className="space-y-2">
                                 <Label>Gudang</Label>
                                 <Select onValueChange={(v) => setFormData({ ...formData, id_gudang: v })}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Pilih Lokasi" />
                                     </SelectTrigger>
                                     <SelectContent>
