@@ -28,6 +28,7 @@ import BarangIndexPage from "@/app/inventory/barang";
 import BatchInventoryPage from "@/app/inventory/batch";
 import InventoriStokPage from "@/app/inventory/stock";
 import MutasiStokPage from "@/app/inventory/mutasi";
+import PembelianPage from "@/app/inventory/order";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -159,6 +160,11 @@ export const router = createBrowserRouter([
             path: "inv/mutation",
             element: <MutasiStokPage />,
             handle: { breadcrumb: "Mutasi" },
+          },
+          {
+            path: "inv/order",
+            element: <PembelianPage />,
+            handle: { breadcrumb: "Order" },
           },
 
 

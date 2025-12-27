@@ -151,6 +151,7 @@ export const mainMenus: MenuItem[] = [
       { title: 'Batch', url: '/inv/batch', module: 'inv_batch' },
       { title: 'Stock', url: '/inv/stock', module: 'inv_stock' },
       { title: 'Mutasi', url: '/inv/mutation', module: 'inv_mutation' },
+      { title: 'Order', url: '/inv/order', module: 'inv_order' },
       { title: 'Perencanaan', url: '/inventory/perencanaan', module: 'inv_perencanaan' },
       { title: 'PO / Purchase Order', url: '/inventory/po', module: 'inv_po' },
       { title: 'Barang Masuk / Faktur', url: '/inventory/faktur', module: 'inv_faktur' },
