@@ -3,7 +3,12 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { InvKategoriAPI } from "@/lib/api";
+import {
+  useKategoriList,
+  useCreateKategori,
+  useUpdateKategori,
+  useDeleteKategori,
+} from "@/hooks/queries/use-kategori-queries";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -66,11 +71,7 @@ export default function KategoriInventoryPage() {
   /* =======================
      FETCH DATA
   ======================= */
-  const { data: apiResponse, isLoading, isError, refetch } = useQuery({
-    queryKey: ["inv-kategori-list", page, search],
-    queryFn: () => InvKategoriAPI.getList(page, perPage, search),
-    placeholderData: (previousData) => previousData,
-  });
+  const { data: apiResponse, isLoading } = useKategoriList(page, perPage, search);
 
   const listData = apiResponse?.data || [];
   const pagination = apiResponse?.meta?.pagination;
@@ -80,36 +81,9 @@ export default function KategoriInventoryPage() {
   /* =======================
      MUTATIONS
   ======================= */
-  const createMutation = useMutation({
-    mutationFn: (payload: any) => InvKategoriAPI.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["inv-kategori-list"] });
-      toast.success("Kategori inventori berhasil ditambahkan");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menambah kategori"),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
-      InvKategoriAPI.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["inv-kategori-list"] });
-      toast.success("Kategori inventori berhasil diperbarui");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal memperbarui kategori"),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => InvKategoriAPI.delete(id, {}),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["inv-kategori-list"] });
-      toast.success("Kategori inventori berhasil dihapus");
-      setIsDeleteDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menghapus kategori"),
-  });
+  const createMutation = useCreateKategori();
+  const updateMutation = useUpdateKategori();
+  const deleteMutation = useDeleteKategori();
 
   /* =======================
      HANDLERS
@@ -127,10 +101,19 @@ export default function KategoriInventoryPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const options = {
+      onSuccess: () => {
+        toast.success(selectedItem ? "Kategori diperbarui" : "Kategori ditambahkan");
+        setIsDialogOpen(false);
+      },
+      onError: () => toast.error("Gagal memproses data"),
+    };
+
     if (selectedItem) {
-      updateMutation.mutate({ id: selectedItem.id, payload: formData });
+      updateMutation.mutate({ id: selectedItem.id, payload: formData }, options);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(formData, options);
     }
   };
 

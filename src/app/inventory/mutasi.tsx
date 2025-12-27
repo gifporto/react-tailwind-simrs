@@ -3,7 +3,11 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { InvMutasiAPI, InvBarangAPI, InvBatchAPI, InvGudangAPI } from "@/lib/api";
+import { InvMutasiAPI } from "@/lib/api";
+import { useMutasiList, useCreateMutasi } from "@/hooks/queries/use-mutasi-queries";
+import { useBarangOptions } from "@/hooks/queries/use-barang-queries";
+import { useBatchOptions } from "@/hooks/queries/use-batch-queries";
+import { useGudangOptions } from "@/hooks/queries/use-gudang-queries";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -70,24 +74,14 @@ export default function MutasiStokPage() {
         user_id: 1,
     });
 
+
     /* =======================
        FETCH DATA
     ======================= */
-    const { data: apiResponse, isLoading } = useQuery({
-        queryKey: ["mutasi-list", page, search],
-        queryFn: () => InvMutasiAPI.getList(page, perPage, search),
-        placeholderData: (prev) => prev,
-    });
-
-    const { data: barangList } = useQuery({ queryKey: ["barang-opt"], queryFn: () => InvBarangAPI.getList(1, 100) });
-
-    // Ambil data batch
-    const { data: batchList, isLoading: isLoadingBatch } = useQuery({
-        queryKey: ["batch-opt"],
-        queryFn: () => InvBatchAPI.getList(1, 500)
-    });
-
-    const { data: gudangList } = useQuery({ queryKey: ["inv-gudang-opt"], queryFn: () => InvGudangAPI.getList(1, 100) });
+    const { data: apiResponse, isLoading } = useMutasiList(page, perPage, search);
+    const { data: barangList } = useBarangOptions();
+    const { data: batchList, isLoading: isLoadingBatch } = useBatchOptions();
+    const { data: gudangList } = useGudangOptions();
 
     const listData = (apiResponse as any)?.data || [];
     const pagination = (apiResponse as any)?.meta?.pagination;
@@ -103,35 +97,30 @@ export default function MutasiStokPage() {
     /* =======================
        MUTATIONS
     ======================= */
-    const createMutation = useMutation({
-        mutationFn: (payload: any) => InvMutasiAPI.create(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["mutasi-list"] });
-            toast.success("Mutasi stok berhasil diproses");
-            setIsDialogOpen(false);
-            setFormData({
-                id_barang: "", id_batch: "", id_gudang_dari: "", id_gudang_ke: "",
-                jenis: "TRANSFER", qty: 0, hpp: 0, ref_no: "", keterangan: "",
-                tgl_mutasi: format(new Date(), "yyyy-MM-dd HH:mm:ss"), user_id: 1
-            });
-        },
-        onError: () => toast.error("Gagal memproses mutasi"),
-    });
+    const createMutation = useCreateMutasi();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Siapkan payload dengan pembersihan kondisi khusus
         const payload = {
             ...formData,
             id_gudang_dari: formData.jenis === "MASUK" ? null : formData.id_gudang_dari,
             id_gudang_ke: formData.jenis === "ADJUST" ? null : formData.id_gudang_ke,
         };
 
-        createMutation.mutate(payload);
+        createMutation.mutate(payload, {
+            onSuccess: () => {
+                toast.success("Mutasi stok berhasil diproses");
+                setIsDialogOpen(false);
+                setFormData({
+                    id_barang: "", id_batch: "", id_gudang_dari: "", id_gudang_ke: "",
+                    jenis: "TRANSFER", qty: 0, hpp: 0, ref_no: "", keterangan: "",
+                    tgl_mutasi: format(new Date(), "yyyy-MM-dd HH:mm:ss"), user_id: 1
+                });
+            },
+            onError: () => toast.error("Gagal memproses mutasi"),
+        });
     };
-
-
 
     return (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>

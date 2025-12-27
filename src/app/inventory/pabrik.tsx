@@ -3,6 +3,12 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  usePabrikList,
+  useCreatePabrik,
+  useUpdatePabrik,
+  useDeletePabrik
+} from "@/hooks/queries/use-pabrik-queries";
 import { InvPabrikAPI } from "@/lib/api"; // Sesuaikan path
 import { toast } from "sonner";
 
@@ -64,11 +70,7 @@ export default function PabrikIndexPage() {
   /* =======================
      FETCH DATA
   ======================= */
-  const { data: apiResponse, isLoading, isError, refetch } = useQuery({
-    queryKey: ["pabrik-list", page, search],
-    queryFn: () => InvPabrikAPI.getList(page, perPage, search),
-    placeholderData: (previousData) => previousData,
-  });
+  const { data: apiResponse, isLoading, isError, refetch } = usePabrikList(page, perPage, search);
 
   const listData = apiResponse?.data || [];
   const pagination = apiResponse?.meta?.pagination;
@@ -78,35 +80,9 @@ export default function PabrikIndexPage() {
   /* =======================
      MUTATIONS
   ======================= */
-  const createMutation = useMutation({
-    mutationFn: (payload: any) => InvPabrikAPI.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pabrik-list"] });
-      toast.success("Pabrik berhasil ditambahkan");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menambah pabrik"),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) => InvPabrikAPI.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pabrik-list"] });
-      toast.success("Pabrik berhasil diperbarui");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal memperbarui pabrik"),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => InvPabrikAPI.delete(id, {}),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pabrik-list"] });
-      toast.success("Pabrik berhasil dihapus");
-      setIsDeleteDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menghapus pabrik"),
-  });
+  const createMutation = useCreatePabrik();
+  const updateMutation = useUpdatePabrik();
+  const deleteMutation = useDeletePabrik();
 
   /* =======================
      HANDLERS
@@ -128,10 +104,18 @@ export default function PabrikIndexPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const options = {
+      onSuccess: () => {
+        toast.success(selectedPabrik ? "Pabrik diperbarui" : "Pabrik ditambahkan");
+        setIsDialogOpen(false);
+      },
+      onError: () => toast.error("Terjadi kesalahan teknis"),
+    };
+
     if (selectedPabrik) {
-      updateMutation.mutate({ id: selectedPabrik.id, payload: formData });
+      updateMutation.mutate({ id: selectedPabrik.id, payload: formData }, options);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(formData, options);
     }
   };
 

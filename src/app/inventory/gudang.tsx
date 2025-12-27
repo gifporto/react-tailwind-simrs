@@ -2,8 +2,13 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { InvGudangAPI } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useGudangList,
+  useCreateGudang,
+  useUpdateGudang,
+  useDeleteGudang
+} from "@/hooks/queries/use-gudang-queries";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -66,11 +71,7 @@ export default function GudangIndexPage() {
   /* =======================
      FETCH DATA
   ======================= */
-  const { data: apiResponse, isLoading, isError, refetch } = useQuery({
-    queryKey: ["gudang-list", page, search],
-    queryFn: () => InvGudangAPI.getList(page, perPage, search),
-    placeholderData: (previousData) => previousData,
-  });
+  const { data: apiResponse, isLoading, isError, refetch } = useGudangList(page, perPage, search);
 
   const listData = apiResponse?.data || [];
   const pagination = apiResponse?.meta?.pagination;
@@ -80,35 +81,9 @@ export default function GudangIndexPage() {
   /* =======================
      MUTATIONS (CREATE, UPDATE, DELETE)
   ======================= */
-  const createMutation = useMutation({
-    mutationFn: (payload: any) => InvGudangAPI.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["gudang-list"] });
-      toast.success("Gudang berhasil ditambahkan");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menambah gudang"),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) => InvGudangAPI.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["gudang-list"] });
-      toast.success("Gudang berhasil diperbarui");
-      setIsDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal memperbarui gudang"),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => InvGudangAPI.delete(id, {}),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["gudang-list"] });
-      toast.success("Gudang berhasil dihapus");
-      setIsDeleteDialogOpen(false);
-    },
-    onError: () => toast.error("Gagal menghapus gudang"),
-  });
+  const createMutation = useCreateGudang();
+  const updateMutation = useUpdateGudang();
+  const deleteMutation = useDeleteGudang();
 
   /* =======================
      HANDLERS
@@ -126,10 +101,18 @@ export default function GudangIndexPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const mutationOptions = {
+      onSuccess: () => {
+        toast.success(selectedGudang ? "Gudang diperbarui" : "Gudang ditambahkan");
+        setIsDialogOpen(false);
+      },
+      onError: () => toast.error("Terjadi kesalahan teknis"),
+    };
+
     if (selectedGudang) {
-      updateMutation.mutate({ id: selectedGudang.id, payload: formData });
+      updateMutation.mutate({ id: selectedGudang.id, payload: formData }, mutationOptions);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(formData, mutationOptions);
     }
   };
 
