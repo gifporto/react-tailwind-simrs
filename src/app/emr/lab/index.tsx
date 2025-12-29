@@ -73,7 +73,7 @@ export default function EmrLabIndexPage() {
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="space-y-4 w-full">
               <div>
-                <CardTitle className="text-2xl flex items-center gap-2 text-indigo-600">
+                <CardTitle className="text-2xl flex items-center gap-2 text-primary">
                   <Beaker className="w-6 h-6" />
                   EMR Laboratorium
                 </CardTitle>
@@ -98,7 +98,7 @@ export default function EmrLabIndexPage() {
               </div>
             </div>
 
-            <Button onClick={() => navigate("/emr/laboratory/create")} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={() => navigate("/emr/laboratory/create")}>
               <FilePlus className="w-4 h-4" />
               Order Baru
             </Button>
@@ -137,7 +137,7 @@ export default function EmrLabIndexPage() {
                         <TableRow key={item.id} className="hover:bg-muted/30 transition-colors">
                           <TableCell className="text-muted-foreground text-xs">{(page - 1) * perPage + i + 1}</TableCell>
                           <TableCell>
-                            <div className="font-bold text-indigo-600 text-xs">{item.no_order}</div>
+                            <div className="font-bold text-primary text-xs">{item.no_order}</div>
                             <div className="text-[10px] text-muted-foreground">{formatDate(item.created_at)}</div>
                           </TableCell>
                           <TableCell>
