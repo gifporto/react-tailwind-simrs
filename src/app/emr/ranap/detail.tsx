@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Activity } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { RanapAPI } from "@/lib/api"
+import { EmrRanapAPI } from "@/lib/api"
 import {
     Card,
     CardContent,
@@ -39,7 +39,7 @@ export default function RanapDetailPage() {
 
     const { data: apiResponse, isLoading, isError } = useQuery({
         queryKey: ["ranap-detail", id],
-        queryFn: () => RanapAPI.getDetail(id as string),
+        queryFn: () => EmrRanapAPI.getDetail(id as string),
         enabled: !!id,
     })
 
@@ -205,16 +205,16 @@ export default function RanapDetailPage() {
                     </TabsList>
 
                     <TabsContent value="layanan">
-                        <KunjunganLayanan api="RanapAPI" />
+                        <KunjunganLayanan api="EmrRanapAPI" />
                     </TabsContent>
                     <TabsContent value="unit">
-                        <KunjunganUnit api="RanapAPI" />
+                        <KunjunganUnit api="EmrRanapAPI" />
                     </TabsContent>
                     <TabsContent value="radiologi">
-                        <OrderRadiologi api="RanapAPI" />
+                        <OrderRadiologi api="EmrRanapAPI" />
                     </TabsContent>
                     <TabsContent value="lab">
-                        <OrderLab api="RanapAPI" />
+                        <OrderLab api="EmrRanapAPI" />
                     </TabsContent>
                     <TabsContent value="ttv">
                         <TtvPage />

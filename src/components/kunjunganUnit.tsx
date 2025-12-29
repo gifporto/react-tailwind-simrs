@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, RanapAPI, DoctorAPI, PoliAPI } from "@/lib/api"
+import { EmrIgdAPI, EmrRanapAPI, DoctorAPI, PoliAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -60,7 +60,7 @@ import { cn } from "@/lib/utils"
 
 const API_MAP = {
   EmrIgdAPI: { service: EmrIgdAPI, label: "IGD" },
-  RanapAPI: { service: RanapAPI, label: "Rawat Inap" },
+  EmrRanapAPI: { service: EmrRanapAPI, label: "Rawat Inap" },
 }
 
 interface VisitApiInterface {

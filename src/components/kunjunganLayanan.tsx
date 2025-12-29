@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, RanapAPI, ServiceAPI, DoctorAPI } from "@/lib/api"
+import { EmrIgdAPI, EmrRanapAPI, ServiceAPI, DoctorAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -70,7 +70,7 @@ import {
 
 const API_MAP = {
   EmrIgdAPI: { service: EmrIgdAPI, label: "IGD" },
-  RanapAPI: { service: RanapAPI, label: "Rawat Inap" },
+  EmrRanapAPI: { service: EmrRanapAPI, label: "Rawat Inap" },
 }
 
 interface ServiceApiInterface {

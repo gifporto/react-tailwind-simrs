@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import { EmrIgdAPI, RanapAPI, DoctorAPI, LabAPI } from "@/lib/api"
+import { EmrIgdAPI, EmrRanapAPI, DoctorAPI, LabAPI } from "@/lib/api"
 import {
   Card,
   CardContent,
@@ -78,7 +78,7 @@ import { Input } from "@/components/ui/input"
 
 const API_MAP = {
   EmrIgdAPI: { service: EmrIgdAPI, label: "IGD" },
-  RanapAPI: { service: RanapAPI, label: "Rawat Inap" },
+  EmrRanapAPI: { service: EmrRanapAPI, label: "Rawat Inap" },
 }
 
 interface LabApiInterface {
@@ -459,7 +459,7 @@ const OrderLab: React.FC<OrderLabProps> = ({ api }) => {
               <Button
                 onClick={handleCreateOrder}
                 disabled={actionLoading || formData.selected_services.length === 0}
-                className="bg-primary hover:bg-primary/80 px-8"
+                className="bg-primary hover:bg-primary/80"
               >
                 {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Kirim ke Laboratorium

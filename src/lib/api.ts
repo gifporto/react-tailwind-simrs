@@ -137,7 +137,7 @@ export const EmrIgdAPI = {
     },
 };
 
-export const RanapAPI = {
+export const EmrRanapAPI = {
     getCppt: async (id: string) => {
         const res = await api.get(`/inspections/ranap/${id}/cppt`);
         return res.data;
@@ -401,6 +401,16 @@ export const EmrRadiologyAPI = {
         const res = await api.delete(`/inspections/radiologies/${id}`);
         return res.data;
     },
+
+    processDetail: async (id: string, idDetail: string, payload: any, config?: any) => {
+        const res = await api.post(`/inspections/radiologies/${id}/process/${idDetail}`, payload, config);
+        return res.data;
+    },
+
+    deleteFile: async (id: string, idDetail: string, fileName: string) => {
+        const res = await api.delete(`/inspections/radiologies/${id}/process/${idDetail}/file/${fileName}`);
+        return res.data;
+    },
 };
 
 export const EmrLabAPI = {
@@ -532,41 +542,6 @@ export const AsesmentTriageAPI = {
 
     update: async (id: string, payload: any) => {
         const res = await api.post(`/inspections/igd/${id}/triage`, payload);
-        return res.data;
-    },
-};
-
-export const RadiologyAPI = {
-    getCategory: async (page = 1, limit = 30, search = "") => {
-        const res = await api.get("/master/radiologies/categories", {
-            params: { page, limit, search },
-        });
-        return res.data;
-    },
-
-    getList: async (page = 1, limit = 30, search = "") => {
-        const res = await api.get("/master/radiologies", {
-            params: { page, limit, search },
-        });
-        return res.data;
-    },
-
-    getDetail: async (id: string) => {
-        const res = await api.get(`/master/radiologies/${id}`);
-        return res.data;
-    },
-};
-
-export const PurchaseOrderAPI = {
-    getList: async (page = 1, limit = 30, search = "") => {
-        const res = await api.get("/inventory/purchase-orders", {
-            params: { page, limit, search },
-        });
-        return res.data;
-    },
-
-    create: async (payload: any) => {
-        const res = await api.post("/inventory/purchase-orders", payload);
         return res.data;
     },
 };
@@ -775,7 +750,7 @@ export const InvMutasiAPI = {
     },
 };
 export const InvOrderAPI = {
-     getList: async () => {
+    getList: async () => {
         const res = await api.get("/inventory/pembelian");
         return res.data;
     },
@@ -818,6 +793,32 @@ export const PoliAPI = {
         const res = await api.get("/master/polis", {
             params: { page, limit, search },
         });
+        return res.data;
+    },
+};
+
+export const RadiologyAPI = {
+    getCategory: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/radiologies/categories", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    getService: async () => {
+        const res = await api.get("/master/radiologies?mode=tree");
+        return res.data;
+    },
+
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/master/radiologies", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    getDetail: async (id: string) => {
+        const res = await api.get(`/master/radiologies/${id}`);
         return res.data;
     },
 };
