@@ -61,6 +61,8 @@ export default function EmrRadiologiIndexPage() {
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
+      case "published":
+        return "default";
       case "selesai":
         return "success";
       case "ordered":
@@ -85,7 +87,7 @@ export default function EmrRadiologiIndexPage() {
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="space-y-4 w-full">
               <div>
-                <CardTitle className="text-2xl flex items-center gap-2 text-blue-600">
+                <CardTitle className="text-2xl flex items-center gap-2 text-primary">
                   <Radio className="w-6 h-6" />
                   EMR Radiologi
                 </CardTitle>
@@ -114,7 +116,7 @@ export default function EmrRadiologiIndexPage() {
               </div>
             </div>
 
-            <Button onClick={() => navigate("/emr/radiology/create")} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => navigate("/emr/radiology/create")}>
               <FilePlus className="w-4 h-4" />
               Order Baru
             </Button>
@@ -163,7 +165,7 @@ export default function EmrRadiologiIndexPage() {
                           </TableCell>
 
                           <TableCell>
-                            <div className="font-bold text-blue-600 text-xs">{item.no_order}</div>
+                            <div className="font-bold text-primary text-xs">{item.no_order}</div>
                             <div className="text-[10px] text-muted-foreground">
                               {formatDate(item.tanggal_order)}
                             </div>

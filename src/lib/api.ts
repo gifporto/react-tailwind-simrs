@@ -397,8 +397,18 @@ export const EmrRadiologyAPI = {
         return res.data;
     },
 
+    publish: async (id: string) => {
+        const res = await api.post(`/inspections/radiologies/${id}/publish`);
+        return res.data;
+    },
+
     abort: async (id: string) => {
         const res = await api.delete(`/inspections/radiologies/${id}`);
+        return res.data;
+    },
+
+    restart: async (id: string) => {
+        const res = await api.post(`/inspections/radiologies/${id}/restart`);
         return res.data;
     },
 

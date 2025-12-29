@@ -155,7 +155,7 @@ export default function EmrLabDetailPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="flex items-center gap-2 text-indigo-600">
+                            <CardTitle className="flex items-center gap-2 text-primary">
                                 <Beaker className="w-5 h-5" />
                                 Detail Order Laboratorium
                             </CardTitle>
@@ -226,7 +226,7 @@ export default function EmrLabDetailPage() {
                 {order.catatan && (
                     <Card className="border-indigo-100 bg-indigo-50/20">
                         <CardHeader>
-                            <CardTitle className="text-indigo-700 flex items-center gap-2 text-sm">
+                            <CardTitle className="text-primary flex items-center gap-2 text-sm">
                                 <FileText className="w-4 h-4" /> Catatan Laboratorium
                             </CardTitle>
                         </CardHeader>
@@ -245,7 +245,7 @@ export default function EmrLabDetailPage() {
 
                         {order.status === "ordered" && (
                             <Button
-                                className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700"
+                                className="w-full gap-2"
                                 onClick={() => processMutation.mutate()}
                                 disabled={processMutation.isPending}
                             >
@@ -305,7 +305,7 @@ export default function EmrLabDetailPage() {
                 {/* RINGKASAN STATUS */}
                 <Card>
                     <CardContent className="pt-6 text-center space-y-4">
-                        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${order.status === 'selesai' ? 'bg-green-100 text-green-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${order.status === 'selesai' ? 'bg-green-100 text-green-600' : 'bg-primary/10 text-primary'}`}>
                             <FlaskConical className="w-8 h-8" />
                         </div>
                         <div>
