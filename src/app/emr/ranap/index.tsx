@@ -4,7 +4,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { RanapAPI } from "@/lib/api"; // Pastikan path benar
+import { EmrRanapAPI } from "@/lib/api"; // Pastikan path benar
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ export default function RanapIndexPage() {
   ======================= */
   const { data: apiResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ["ranap-list", page],
-    queryFn: () => RanapAPI.getList(page, perPage),
+    queryFn: () => EmrRanapAPI.getList(page, perPage),
   });
 
   const listData = apiResponse?.data || [];

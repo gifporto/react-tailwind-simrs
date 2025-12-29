@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import { RanapAPI } from "@/lib/api"
+import { EmrRanapAPI } from "@/lib/api"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -65,7 +65,7 @@ export default function CpptPage() {
         setCpptData([])
         setLoading(true)
         try {
-            const response = await RanapAPI.getCppt(id)
+            const response = await EmrRanapAPI.getCppt(id)
             setCpptData(response.data || [])
         } catch (error) {
             toast.error("Gagal memuat data CPPT")
@@ -84,10 +84,10 @@ export default function CpptPage() {
         try {
             const payload = { type: selectedType, ...formData }
             if (isEditing) {
-                await RanapAPI.updateCppt(id, isEditing.toString(), payload)
+                await EmrRanapAPI.updateCppt(id, isEditing.toString(), payload)
                 toast.success("CPPT berhasil diperbarui")
             } else {
-                await RanapAPI.createCppt(id, payload)
+                await EmrRanapAPI.createCppt(id, payload)
                 toast.success("CPPT berhasil ditambahkan")
             }
             setIsModalOpen(false)
@@ -105,7 +105,7 @@ export default function CpptPage() {
         if (!id || !selectedIdForAction) return
         setActionLoading(true)
         try {
-            await RanapAPI.deleteCppt(id, selectedIdForAction.toString(), {
+            await EmrRanapAPI.deleteCppt(id, selectedIdForAction.toString(), {
                 data: { type: selectedType }
             })
             toast.success("Catatan CPPT berhasil dihapus")
@@ -122,7 +122,7 @@ export default function CpptPage() {
     const handleVerify = async (cpptId: number, type: string) => {
         if (!id) return
         try {
-            await RanapAPI.verifyCppt(id, cpptId.toString(), { type })
+            await EmrRanapAPI.verifyCppt(id, cpptId.toString(), { type })
             toast.success("CPPT Terverifikasi")
             await fetchCppt()
         } catch (error) {
@@ -134,7 +134,7 @@ export default function CpptPage() {
         if (!id || !selectedIdForAction) return
         setActionLoading(true)
         try {
-            await RanapAPI.patchCppt(id, selectedIdForAction.toString(), {
+            await EmrRanapAPI.patchCppt(id, selectedIdForAction.toString(), {
                 type: selectedType,
                 notes: noteValue
             })
