@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { useParams } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { RanapAPI } from "@/lib/api"
+import { EmrRanapAPI } from "@/lib/api"
 import Chart from "react-apexcharts"
 
 // Shadcn UI Components
@@ -74,15 +74,15 @@ export default function TtvPage() {
         enabled: !!id,
     })
 
-    const { data: suhuRes, isLoading: loadingSuhu } = fetchQuery("ranap-suhu", RanapAPI.getSuhu)
-    const { data: tensiRes, isLoading: loadingTensi } = fetchQuery("ranap-tensi", RanapAPI.getTensi)
-    const { data: nadiRes, isLoading: loadingNadi } = fetchQuery("ranap-nadi", RanapAPI.getNadi)
-    const { data: respRes, isLoading: loadingResp } = fetchQuery("ranap-respirasi", RanapAPI.getRespiration)
-    const { data: nyeriRes, isLoading: loadingNyeri } = fetchQuery("ranap-nyeri", RanapAPI.getNyeri)
-    const { data: tbRes, isLoading: loadingTb } = fetchQuery("ranap-tb", RanapAPI.getTinggiBadan)
-    const { data: bbRes, isLoading: loadingBb } = fetchQuery("ranap-bb", RanapAPI.getBeratBadan)
-    const { data: spoRes, isLoading: loadingSpo } = fetchQuery("ranap-spo", RanapAPI.getSpo)
-    const { data: interRes, isLoading: loadingInter } = fetchQuery("ranap-intervensi", RanapAPI.getIntervensi)
+    const { data: suhuRes, isLoading: loadingSuhu } = fetchQuery("ranap-suhu", EmrRanapAPI.getSuhu)
+    const { data: tensiRes, isLoading: loadingTensi } = fetchQuery("ranap-tensi", EmrRanapAPI.getTensi)
+    const { data: nadiRes, isLoading: loadingNadi } = fetchQuery("ranap-nadi", EmrRanapAPI.getNadi)
+    const { data: respRes, isLoading: loadingResp } = fetchQuery("ranap-respirasi", EmrRanapAPI.getRespiration)
+    const { data: nyeriRes, isLoading: loadingNyeri } = fetchQuery("ranap-nyeri", EmrRanapAPI.getNyeri)
+    const { data: tbRes, isLoading: loadingTb } = fetchQuery("ranap-tb", EmrRanapAPI.getTinggiBadan)
+    const { data: bbRes, isLoading: loadingBb } = fetchQuery("ranap-bb", EmrRanapAPI.getBeratBadan)
+    const { data: spoRes, isLoading: loadingSpo } = fetchQuery("ranap-spo", EmrRanapAPI.getSpo)
+    const { data: interRes, isLoading: loadingInter } = fetchQuery("ranap-intervensi", EmrRanapAPI.getIntervensi)
 
     const mutationConfig = (key: string, message: string = "Data berhasil diproses") => ({
         onSuccess: () => {
@@ -94,26 +94,26 @@ export default function TtvPage() {
         onError: () => toast.error("Terjadi kesalahan sistem")
     })
 
-    const createSuhu = useMutation({ mutationFn: (val: any) => RanapAPI.createSuhu(id!, val), ...mutationConfig("ranap-suhu") })
-    const createTensi = useMutation({ mutationFn: (val: any) => RanapAPI.createTensi(id!, val), ...mutationConfig("ranap-tensi") })
-    const createNadi = useMutation({ mutationFn: (val: any) => RanapAPI.createNadi(id!, val), ...mutationConfig("ranap-nadi") })
-    const createResp = useMutation({ mutationFn: (val: any) => RanapAPI.createRespiration(id!, val), ...mutationConfig("ranap-respirasi") })
-    const createNyeri = useMutation({ mutationFn: (val: any) => RanapAPI.createNyeri(id!, val), ...mutationConfig("ranap-nyeri") })
-    const createTb = useMutation({ mutationFn: (val: any) => RanapAPI.createTinggiBadan(id!, val), ...mutationConfig("ranap-tb") })
-    const createBb = useMutation({ mutationFn: (val: any) => RanapAPI.createBeratBadan(id!, val), ...mutationConfig("ranap-bb") })
-    const createSpo = useMutation({ mutationFn: (val: any) => RanapAPI.createSpo(id!, val), ...mutationConfig("ranap-spo") })
-    const createInter = useMutation({ mutationFn: (val: any) => RanapAPI.createIntervensi(id!, val), ...mutationConfig("ranap-intervensi") })
+    const createSuhu = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createSuhu(id!, val), ...mutationConfig("ranap-suhu") })
+    const createTensi = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createTensi(id!, val), ...mutationConfig("ranap-tensi") })
+    const createNadi = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createNadi(id!, val), ...mutationConfig("ranap-nadi") })
+    const createResp = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createRespiration(id!, val), ...mutationConfig("ranap-respirasi") })
+    const createNyeri = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createNyeri(id!, val), ...mutationConfig("ranap-nyeri") })
+    const createTb = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createTinggiBadan(id!, val), ...mutationConfig("ranap-tb") })
+    const createBb = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createBeratBadan(id!, val), ...mutationConfig("ranap-bb") })
+    const createSpo = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createSpo(id!, val), ...mutationConfig("ranap-spo") })
+    const createInter = useMutation({ mutationFn: (val: any) => EmrRanapAPI.createIntervensi(id!, val), ...mutationConfig("ranap-intervensi") })
 
     // Delete Mutations
-    const deleteSuhu = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteSuhu(id!, sid), ...mutationConfig("ranap-suhu", "Data suhu dihapus") })
-    const deleteTensi = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteTensi(id!, sid), ...mutationConfig("ranap-tensi", "Data tensi dihapus") })
-    const deleteNadi = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteNadi(id!, sid), ...mutationConfig("ranap-nadi", "Data nadi dihapus") })
-    const deleteResp = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteRespiration(id!, sid), ...mutationConfig("ranap-respirasi", "Data respirasi dihapus") })
-    const deleteNyeri = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteNyeri(id!, sid), ...mutationConfig("ranap-nyeri", "Data nyeri dihapus") })
-    const deleteTb = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteTinggiBadan(id!, sid), ...mutationConfig("ranap-tb", "Data TB dihapus") })
-    const deleteBb = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteBeratBadan(id!, sid), ...mutationConfig("ranap-bb", "Data BB dihapus") })
-    const deleteSpo = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteSpo(id!, sid), ...mutationConfig("ranap-spo", "Data SpO2 dihapus") })
-    const deleteInter = useMutation({ mutationFn: (sid: string) => RanapAPI.deleteIntervensi(id!, sid), ...mutationConfig("ranap-intervensi", "Intervensi dihapus") })
+    const deleteSuhu = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteSuhu(id!, sid), ...mutationConfig("ranap-suhu", "Data suhu dihapus") })
+    const deleteTensi = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteTensi(id!, sid), ...mutationConfig("ranap-tensi", "Data tensi dihapus") })
+    const deleteNadi = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteNadi(id!, sid), ...mutationConfig("ranap-nadi", "Data nadi dihapus") })
+    const deleteResp = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteRespiration(id!, sid), ...mutationConfig("ranap-respirasi", "Data respirasi dihapus") })
+    const deleteNyeri = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteNyeri(id!, sid), ...mutationConfig("ranap-nyeri", "Data nyeri dihapus") })
+    const deleteTb = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteTinggiBadan(id!, sid), ...mutationConfig("ranap-tb", "Data TB dihapus") })
+    const deleteBb = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteBeratBadan(id!, sid), ...mutationConfig("ranap-bb", "Data BB dihapus") })
+    const deleteSpo = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteSpo(id!, sid), ...mutationConfig("ranap-spo", "Data SpO2 dihapus") })
+    const deleteInter = useMutation({ mutationFn: (sid: string) => EmrRanapAPI.deleteIntervensi(id!, sid), ...mutationConfig("ranap-intervensi", "Intervensi dihapus") })
 
     const handleConfirmDelete = () => {
         if (!deleteConfig) return

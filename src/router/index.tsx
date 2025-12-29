@@ -29,12 +29,17 @@ import BatchInventoryPage from "@/app/inventory/batch";
 import InventoriStokPage from "@/app/inventory/stock";
 import MutasiStokPage from "@/app/inventory/mutasi";
 import PembelianPage from "@/app/inventory/order";
+import AnjunganMandiri from "@/app/Apm";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
   {
     element: <PublicRoute />,
     children: [
+      {
+        path: "/apm",
+        element: <AnjunganMandiri />,
+      },
       {
         path: "/login",
         element: <LoginPage />,
@@ -53,6 +58,7 @@ export const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         handle: { breadcrumb: "Dashboard" },
         children: [
+
           {
             path: "/",
             element: <Dashboard />,
@@ -451,7 +457,7 @@ export const router = createBrowserRouter([
     ],
   },
 
-    // ================== OTHER ==================
+  // ================== OTHER ==================
   {
     path: "/403",
     element: <ForbiddenPage />,
