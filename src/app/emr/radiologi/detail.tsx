@@ -64,11 +64,19 @@ import {
     Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Plus, PlusCircle } from "lucide-react";
 
 export default function EmrRadiologiDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const [detailForms, setDetailForms] = useState<{ [key: string]: any }>({});
 
     // State untuk form "Complete"
     const [showResultForm, setShowResultForm] = useState(false);
@@ -130,6 +138,42 @@ export default function EmrRadiologiDetailPage() {
             queryClient.invalidateQueries({ queryKey: ["emr-radiologi-detail", id] });
         },
     });
+
+    // Helper untuk konversi Base64
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
+    // Fungsi Handle Submit Per Detail
+    const handleProcessDetail = async (idDetail: string) => {
+        const data = detailForms[idDetail];
+        if (!data?.dokter_radiologi_id) {
+            toast.error("Pilih dokter radiologi terlebih dahulu");
+            return;
+        }
+
+        try {
+            // Ambil file-file yang sudah di-convert (jika ada) atau tetap array kosong
+            const payload = {
+                hasil: data.hasil,
+                kesan: data.kesan,
+                saran: data.saran,
+                dokter_radiologi_id: data.dokter_radiologi_id,
+                documents: data.documents || [] // Ini berisi array string base64
+            };
+
+            await EmrRadiologyAPI.processDetail(id as string, idDetail, payload);
+            toast.success("Berhasil memproses detail pemeriksaan");
+            queryClient.invalidateQueries({ queryKey: ["emr-radiologi-detail", id] });
+        } catch (error) {
+            toast.error("Gagal memproses data");
+        }
+    };
 
     const handleCompleteSubmit = () => {
         const data = new FormData();
@@ -198,17 +242,172 @@ export default function EmrRadiologiDetailPage() {
                             </Badge>
                         </Info>
                         <div className="md:col-span-2">
-                            <Label className="mb-2 block">Daftar Pemeriksaan</Label>
-                            <div className="border rounded-lg divide-y">
-                                {order.details?.map((item: any) => (
-                                    <div key={item.id} className="p-3 flex justify-between items-center text-sm">
-                                        <span>{item.pemeriksaan?.nama} ({item.pemeriksaan?.kode})</span>
-                                        <Badge className="text-[10px]" variant={`${getStatusVariant(item.status)}`}>
-                                            {item.status.toUpperCase()}
-                                        </Badge>
-                                    </div>
-                                ))}
-                            </div>
+                            <Label className="mb-2 block">Daftar Pemeriksaan (Klik untuk isi hasil)</Label>
+                            <Accordion type="single" collapsible className="w-full border rounded-lg px-4">
+                                {order.details?.map((item: any) => {
+                                    // Inisialisasi state jika belum ada (Old Value)
+                                    if (!detailForms[item.id]) {
+                                        setDetailForms(prev => ({
+                                            ...prev,
+                                            [item.id]: {
+                                                hasil: item.hasil?.hasil || "",
+                                                kesan: item.hasil?.kesan || "",
+                                                saran: item.hasil?.saran || "",
+                                                dokter_radiologi_id: item.hasil?.dokter_radiologi_id?.toString() || "",
+                                                documents: [], // File baru selalu mulai dari kosong
+                                                filePreviews: [] // Untuk UI penanda file terpilih
+                                            }
+                                        }));
+                                    }
+
+                                    const currentFormData = detailForms[item.id] || {};
+
+                                    return (
+                                        <AccordionItem key={item.id} value={item.id.toString()}>
+                                            <AccordionTrigger className="hover:no-underline">
+                                                <div className="flex justify-between items-center w-full pr-4">
+                                                    <span className="text-sm font-medium">{item.pemeriksaan?.nama}</span>
+                                                    <Badge className="text-[10px]" variant={`${getStatusVariant(item.status)}`}>
+                                                        {item.status.toUpperCase()}
+                                                    </Badge>
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="border-t pt-4 space-y-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Dokter Radiologi</Label>
+                                                        <Select
+                                                            value={currentFormData.dokter_radiologi_id}
+                                                            onValueChange={(v) => setDetailForms({
+                                                                ...detailForms,
+                                                                [item.id]: { ...currentFormData, dokter_radiologi_id: v }
+                                                            })}
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="Pilih Dokter" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {doctors.map((doc: any) => (
+                                                                    <SelectItem key={doc.id} value={doc.id.toString()}>{doc.nama_dokter}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Hasil Pemeriksaan</Label>
+                                                        <Input
+                                                            value={currentFormData.hasil}
+                                                            onChange={(e) => setDetailForms({
+                                                                ...detailForms,
+                                                                [item.id]: { ...currentFormData, hasil: e.target.value }
+                                                            })}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Kesan</Label>
+                                                        <Textarea
+                                                            value={currentFormData.kesan}
+                                                            onChange={(e) => setDetailForms({
+                                                                ...detailForms,
+                                                                [item.id]: { ...currentFormData, kesan: e.target.value }
+                                                            })}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Saran</Label>
+                                                        <Textarea
+                                                            value={currentFormData.saran}
+                                                            onChange={(e) => setDetailForms({
+                                                                ...detailForms,
+                                                                [item.id]: { ...currentFormData, saran: e.target.value }
+                                                            })}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* MULTI FILE INPUT SECTION */}
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <Label>Lampiran Gambar / Dokumen (Base64)</Label>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 gap-1"
+                                                            onClick={() => {
+                                                                const input = document.getElementById(`file-upload-${item.id}`) as HTMLInputElement;
+                                                                input?.click();
+                                                            }}
+                                                        >
+                                                            <PlusCircle className="w-4 h-4" /> Tambah File
+                                                        </Button>
+                                                        <input
+                                                            id={`file-upload-${item.id}`}
+                                                            type="file"
+                                                            className="hidden"
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (file) {
+                                                                    const base64 = await fileToBase64(file);
+                                                                    setDetailForms({
+                                                                        ...detailForms,
+                                                                        [item.id]: {
+                                                                            ...currentFormData,
+                                                                            documents: [...(currentFormData.documents || []), base64],
+                                                                            filePreviews: [...(currentFormData.filePreviews || []), file.name]
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    {/* List File yang akan diupload */}
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {currentFormData.filePreviews?.map((name: string, idx: number) => (
+                                                            <Badge key={idx} variant="secondary" className="gap-2">
+                                                                {name}
+                                                                <X className="w-3 h-3 cursor-pointer" onClick={() => {
+                                                                    const newDocs = [...currentFormData.documents];
+                                                                    const newPrevs = [...currentFormData.filePreviews];
+                                                                    newDocs.splice(idx, 1);
+                                                                    newPrevs.splice(idx, 1);
+                                                                    setDetailForms({
+                                                                        ...detailForms,
+                                                                        [item.id]: { ...currentFormData, documents: newDocs, filePreviews: newPrevs }
+                                                                    });
+                                                                }} />
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Tampilkan Old Documents (Jika Ada) */}
+                                                    {item.hasil?.documents?.length > 0 && (
+                                                        <div className="mt-2">
+                                                            <p className="text-[10px] text-muted-foreground mb-1">File Sebelumnya:</p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {item.hasil.documents.map((doc: any, idx: number) => (
+                                                                    <a key={idx} href={doc.url} target="_blank" className="text-[10px] text-blue-600 underline">
+                                                                        {doc.filename}
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <Button
+                                                    className="w-full mt-2"
+                                                    size="sm"
+                                                    onClick={() => handleProcessDetail(item.id)}
+                                                >
+                                                    Simpan Hasil {item.pemeriksaan?.nama}
+                                                </Button>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    );
+                                })}
+                            </Accordion>
                         </div>
                     </CardContent>
                 </Card>
