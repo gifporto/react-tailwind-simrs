@@ -40,30 +40,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { AsesmentMedicAPI, InvBarangAPI } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
 import KunjunganLayanan from "@/components/kunjunganLayanan";
 import type { AddDrugItem } from "./dto/resep-obat-dto";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface DrugEntry {
-  id?: string | number;
-  id_obat: number;
-  nama_obat: string;
-  qty: number;
-  signa: string;
-  cara_pakai: string;
-  pagi: string;
-  siang: string;
-  sore: string;
-  malam: string;
-  indikasi: string;
-  instruksi_khusus: string;
-  catatan: string;
-  isNew?: boolean;
-}
 
 interface Props {
   initialData?: any[];
@@ -78,7 +59,6 @@ export default function Prescription({
 }: Props) {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
-  const [newEntries, setNewEntries] = useState<DrugEntry[]>([]);
   const [historyList, setHistoryList] = useState<any[]>([]);
 
   useEffect(() => {
@@ -86,26 +66,6 @@ export default function Prescription({
       setHistoryList(initialData);
     }
   }, [initialData]);
-
-  const addEntry = () => {
-    const newEntry: DrugEntry = {
-      id: Date.now(),
-      id_obat: 0,
-      nama_obat: "",
-      qty: 1,
-      signa: "",
-      cara_pakai: "",
-      pagi: "0",
-      siang: "0",
-      sore: "0",
-      malam: "0",
-      indikasi: "",
-      instruksi_khusus: "",
-      catatan: "",
-      isNew: true,
-    };
-    setNewEntries([newEntry, ...newEntries]);
-  };
 
   const handleDeleteResep = async (resepId: number) => {
     if (!id) return;
@@ -137,30 +97,8 @@ export default function Prescription({
       </AccordionTrigger>
 
       <AccordionContent className="p-4 space-y-6">
-        <div className="flex items-center justify-between pb-4">
-          <div className="space-y-1">
-            <h4 className="text-sm font-medium flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4 text-primary" /> Input Obat Baru
-            </h4>
-          </div>
-          {editable && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addEntry}
-              disabled={loading}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Tambah Obat
-            </Button>
-          )}
-        </div>
-
         {/* LIST CARD UNTUK INPUT BARU */}
-        <CardInputNewDrug
-          //   newEntries={newEntries}
-          //   setNewEntries={setNewEntries}
-          editable={editable}
-        />
+        <CardInputNewDrug editable={editable} />
 
         {/* RIWAYAT RESEP (Sesuai Struktur JSON) */}
         <div className="space-y-4 pt-4 border-t">
@@ -538,12 +476,19 @@ function CardInputNewDrug({ editable }: CardInputNewDrugProps) {
 
   return (
     <div className="space-y-6 p-4">
-      <Button
-        onClick={addNewDrug}
-        className="gap-2 px-8 bg-blue-600 hover:bg-blue-700"
-      >
-        <PlusCircle className="w-4 h-4" /> Tambah Obat
-      </Button>
+      <div className="flex items-center justify-between pb-4">
+        <div className="space-y-1">
+          <h4 className="text-sm font-medium flex items-center gap-2">
+            <ShoppingCart className="w-4 h-4 text-primary" /> Input Obat Baru
+          </h4>
+        </div>
+
+        {editable && (
+          <Button variant="outline" size="sm" onClick={addNewDrug}>
+            <PlusCircle className="w-4 h-4" /> Tambah Obat
+          </Button>
+        )}
+      </div>
 
       <div className="space-y-6">
         {drugs.map((drug, index) => (
@@ -789,12 +734,7 @@ function CardInputNewDrug({ editable }: CardInputNewDrugProps) {
             Pastikan seluruh dosis dan aturan pakai sudah sesuai sebelum
             mengirim.
           </p>
-          <Button
-            className="px-10 bg-emerald-600 hover:bg-emerald-700"
-            onClick={handleSave}
-          >
-            Kirim ke Farmasi
-          </Button>
+          <Button onClick={handleSave}>Kirim ke Farmasi</Button>
         </div>
       )}
     </div>
