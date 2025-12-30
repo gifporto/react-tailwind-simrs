@@ -52,7 +52,7 @@ export const mainMenus: MenuItem[] = [
     children: [
       {
         title: 'Data Pasien',
-        url: '/master/pasien',
+        url: '/daftar/pasien',
         module: 'reg_pasien',
       },
       {
@@ -152,11 +152,11 @@ export const mainMenus: MenuItem[] = [
       { title: 'Stock', url: '/inv/stock', module: 'inv_stock' },
       { title: 'Mutasi', url: '/inv/mutation', module: 'inv_mutation' },
       { title: 'Order', url: '/inv/order', module: 'inv_order' },
-      { title: 'Perencanaan', url: '/inventory/perencanaan', module: 'inv_perencanaan' },
-      { title: 'PO / Purchase Order', url: '/inventory/po', module: 'inv_po' },
-      { title: 'Barang Masuk / Faktur', url: '/inventory/faktur', module: 'inv_faktur' },
-      { title: 'Retur Faktur', url: '/inventory/retur', module: 'inv_retur' },
-      { title: 'Stok Opname Obat', url: '/inventory/opname', module: 'inv_opname' },
+      // { title: 'Perencanaan', url: '/inventory/perencanaan', module: 'inv_perencanaan' },
+      // { title: 'PO / Purchase Order', url: '/inventory/po', module: 'inv_po' },
+      // { title: 'Barang Masuk / Faktur', url: '/inventory/faktur', module: 'inv_faktur' },
+      // { title: 'Retur Faktur', url: '/inventory/retur', module: 'inv_retur' },
+      // { title: 'Stok Opname Obat', url: '/inventory/opname', module: 'inv_opname' },
     ],
   },
 
@@ -224,7 +224,7 @@ export const mainMenus: MenuItem[] = [
       { title: 'Akun User', url: '/users', module: 'master_user' },
       { title: 'Profesi', url: '/master/profesi', module: 'adm_profesi' },
       { title: 'Poli', url: '/master/poli', module: 'adm_poli' },
-      { title: 'Obat', url: '/master/drugs', module: 'adm_obat' },
+      { title: 'Obat', url: '/master/obat', module: 'adm_obat' },
       { title: 'Kelompok Tarif', url: '/master/kelompok-tarif', module: 'adm_komp_tarif' },
       { title: 'Komponen Tarif', url: '/master/komponen-tarif', module: 'adm_komp_tarif' },
       { title: 'Dokter', url: '/master/dokter', module: 'adm_dokter' },

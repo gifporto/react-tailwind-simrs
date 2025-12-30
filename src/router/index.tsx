@@ -2,9 +2,9 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "@/App";
 import Dashboard from "@/app/Dashboard";
 import LoginPage from "@/app/Login";
-import PatientPage from "@/app/master/pasien";
-import PatientDetailPage from "@/app/master/pasien/detail";
-import PatientCreatePage from "@/app/master/pasien/create";
+import PatientPage from "@/app/pendaftraran/pasien";
+import PatientDetailPage from "@/app/pendaftraran/pasien/detail";
+import PatientCreatePage from "@/app/pendaftraran/pasien/create";
 import ThemeShowcase from "@/app/ThemeShowcase";
 import ErrorPage from "@/app/ErrorPage";
 import ForbiddenPage from "@/app/ForbiddenPage";
@@ -30,6 +30,9 @@ import InventoriStokPage from "@/app/inventory/stock";
 import MutasiStokPage from "@/app/inventory/mutasi";
 import PembelianPage from "@/app/inventory/order";
 import AnjunganMandiri from "@/app/Apm";
+import ObatIndexPage from "@/app/master/obat";
+import FarResepIndexPage from "@/app/farmasi";
+import FarResepDetailPage from "@/app/farmasi/detail";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -67,12 +70,12 @@ export const router = createBrowserRouter([
 
           // ✅ PASIEN
           {
-            path: "master/pasien",
+            path: "daftar/pasien",
             element: <PatientPage />,
             handle: { breadcrumb: "Pasien" },
           },
           {
-            path: "master/pasien/create",
+            path: "daftar/pasien/create",
             element: <PatientCreatePage />,
             handle: { breadcrumb: "Tambah Pasien" },
           },
@@ -173,6 +176,24 @@ export const router = createBrowserRouter([
             handle: { breadcrumb: "Order" },
           },
 
+          //Farmasi
+          {
+            path: "farmasi/resep",
+            element: <FarResepIndexPage />,
+            handle: { breadcrumb: "Daftar Resep" },
+          },
+          {
+            path: "farmasi/resep/detail/:id",
+            element: <FarResepDetailPage />,
+            handle: { breadcrumb: "Detail Resep" },
+          },
+
+          //master
+          {
+            path: "master/obat",
+            element: <ObatIndexPage />,
+            handle: { breadcrumb: "Obat" },
+          },
 
           // Theme showcase for reference
           { path: "theme-showcase", element: <ThemeShowcase /> },

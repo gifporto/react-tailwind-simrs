@@ -96,8 +96,8 @@ export default function CreatePatientPage() {
       };
 
       await PatientsAPI.create(payload);
+      navigate("/daftar/pasien");
       toast.success("Pasien berhasil ditambahkan!");
-      navigate("/master/pasien?created=1");
     } catch (err: any) {
       toast.error("Gagal menambahkan pasien");
     } finally {
@@ -347,7 +347,7 @@ export default function CreatePatientPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate("/master/pasien")}
+                  onClick={() => navigate("/daftar/pasien")}
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Kembali
