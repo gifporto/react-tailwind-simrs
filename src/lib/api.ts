@@ -533,9 +533,13 @@ export const AsesmentMedicAPI = {
         return res.data;
     },
 
-    updateResepObat: async (id: string, payload: any) => {
-        const res = await api.post(`/inspections/igd/${id}/asesmen-medis/resep-obat`, payload);
-        return res.data;
+    // updateResepObat: async (id: string, payload: any) => {
+    //     const res = await api.post(`/inspections/igd/${id}/asesmen-medis/resep-obat`, payload);
+    //     return res.data;
+    // },
+    updateResepObat: async (payload: any) => {
+        const res = await api.post("/prescriptions", payload)
+        return res.data
     },
 
     deleteResepObat: async (id: string, idResepObat: string) => {
