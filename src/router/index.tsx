@@ -31,6 +31,8 @@ import MutasiStokPage from "@/app/inventory/mutasi";
 import PembelianPage from "@/app/inventory/order";
 import AnjunganMandiri from "@/app/Apm";
 import ObatIndexPage from "@/app/master/obat";
+import FarResepIndexPage from "@/app/farmasi";
+import FarResepDetailPage from "@/app/farmasi/detail";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -172,6 +174,18 @@ export const router = createBrowserRouter([
             path: "inv/order",
             element: <PembelianPage />,
             handle: { breadcrumb: "Order" },
+          },
+
+          //Farmasi
+          {
+            path: "farmasi/resep",
+            element: <FarResepIndexPage />,
+            handle: { breadcrumb: "Daftar Resep" },
+          },
+          {
+            path: "farmasi/resep/detail/:id",
+            element: <FarResepDetailPage />,
+            handle: { breadcrumb: "Detail Resep" },
           },
 
           //master

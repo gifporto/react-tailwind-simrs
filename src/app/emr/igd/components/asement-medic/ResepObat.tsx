@@ -42,7 +42,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { AsesmentMedicAPI, ObatAPI } from "@/lib/api";
+import { AsesmentMedicAPI, InvBarangAPI } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import KunjunganLayanan from "@/components/kunjunganLayanan";
@@ -93,7 +93,7 @@ const DrugSearchSection = ({
         }
         try {
             setIsSearching(true);
-            const res = await ObatAPI.getList(1, 30, query);
+            const res = await InvBarangAPI.getList(1, 30, query);
             setResults(res.data || []);
         } catch (error) {
             console.error("Gagal mengambil data obat:", error);
@@ -126,7 +126,7 @@ const DrugSearchSection = ({
             updateField(index, "nama_obat", "");
         } else {
             updateField(index, "id_obat", item.id);
-            updateField(index, "nama_obat", item.desk_brg);
+            updateField(index, "nama_obat", item.nama);
             // Bersihkan hasil setelah memilih untuk merapikan UI
             setResults([]);
             setTempSearch("");
@@ -207,12 +207,12 @@ const DrugSearchSection = ({
                                                 "text-[11px] font-bold uppercase truncate",
                                                 isChecked ? "text-primary" : "text-slate-700"
                                             )}>
-                                                {item.desk_brg}
+                                                {item.nama}
                                             </span>
                                             {isChecked && <Badge className="h-3 px-1 text-[8px]">Terpilih</Badge>}
                                         </div>
                                         <p className="text-[10px] text-muted-foreground mt-0.5">
-                                            {item.spesifikasi} | <span className="font-semibold">Stok: {item.brg_stok}</span>
+                                            {item.spesifikasi}
                                         </p>
                                     </div>
                                 </div>

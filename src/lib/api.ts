@@ -786,6 +786,24 @@ export const InvOrderAPI = {
     },
 };
 
+//Farmasi
+export const FarResepAPI = {
+    getList: async () => {
+        const res = await api.get("/prescriptions");
+        return res.data;
+    },
+
+    getDetail: async (id: string) => {
+        const res = await api.get(`/prescriptions/${id}`);
+        return res.data;
+    },
+
+    approve: async (id: string, payload: { items: { id: number; stock_id: number }[] }) => {
+    const res = await api.post(`/prescriptions/${id}/approve`, payload);
+    return res.data;
+},
+};
+
 // Master
 export const DoctorAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
