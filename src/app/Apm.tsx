@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as faceapi from 'face-api.js';
 import {
   QrCode, User, IdCard, Hospital, CalendarCheck, Stethoscope,
   CheckCircle2, XCircle, Loader2, Info, HandHelping,
@@ -14,6 +15,7 @@ import step3 from '@/assets/step3.svg';
 import step1 from '@/assets/step1.png';
 import step2 from '@/assets/step2.png';
 import step4 from '@/assets/step4.png';
+import { ApmAPI } from '@/lib/api';
 
 const AnjunganMandiri = () => {
   const [qrInput, setQrInput] = useState("");
@@ -26,6 +28,10 @@ const AnjunganMandiri = () => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [countdown, setCountdown] = useState(5);
   const [faceStatus, setFaceStatus] = useState<'scanning' | 'success' | 'error'>('scanning');
+
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [isFaceDetected, setIsFaceDetected] = useState(false);
+  const detectionInterval = useRef<any>(null);
 
   // Logika Timer dan Verifikasi Otomatis
   useEffect(() => {
@@ -48,25 +54,6 @@ const AnjunganMandiri = () => {
 
     return () => clearInterval(timer);
   }, [isFaceModalOpen, faceStatus]);
-
-  // Simulasi Proses Verifikasi Wajah
-  const handleCapture = () => {
-    // Simulasi cek wajah (misal 80% berhasil, 20% gagal)
-    const isSuccess = Math.random() > 0.2;
-
-    setTimeout(() => {
-      if (isSuccess) {
-        setFaceStatus('success');
-        // Opsional: Tutup modal setelah sukses dan pindah ke halaman cetak/selesai
-        setTimeout(() => {
-          setIsFaceModalOpen(false);
-          resetForm();
-        }, 2000);
-      } else {
-        setFaceStatus('error');
-      }
-    }, 1000); // Simulasi delay proses AI
-  };
 
   // Reset status saat modal ditutup/dibuka
   const handleRetryFace = () => {
@@ -133,26 +120,147 @@ const AnjunganMandiri = () => {
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qrInput) return;
+
     setStatus('loading');
 
-    setTimeout(() => {
-      setPatient({
-        nama: "BUDI SANTOSO",
-        norm: "12-34-56",
-        nik: "3301234567890001",
-        no_bpjs: "0001234567890",
-        tgl: new Date().toISOString(),
-        poli: "Poliklinik Penyakit Dalam"
-      });
-      setStatus('success');
+    try {
+      const response = await ApmAPI.create({ value: qrInput });
+
+      if (response.meta?.code === 200 && response.data) {
+        const p = response.data;
+        setPatient({
+          nama: p.nama,
+          nik: p.nik, // Disimpan untuk payload verifikasi wajah
+          tgl_lahir: p.tanggal_lahir,
+          penjamin: p.penjamin,
+          unit: p.unit,
+          dokter: p.dokter, // Data Baru
+          no_bpjs: p.no_bpjs,
+          no_rujukan: p.no_rujukan_bpjs,
+          tgl_periksa: p.tanggal_periksa, // Data Baru
+          is_frista: p.is_frista
+        });
+        setStatus('success');
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error("Kesalahan API:", error);
+      setStatus('error');
+    } finally {
       setQrInput("");
-    }, 1500);
+    }
   };
 
   const resetForm = () => {
     setStatus('welcome');
     setQrInput("");
     setPatient(null);
+  };
+
+  useEffect(() => {
+    const loadModels = async () => {
+      const MODEL_URL = '/models';
+      try {
+        await Promise.all([
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL), // Deteksi wajah
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL), // Cari titik wajah
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL), // Buat encoding/descriptor
+        ]);
+        setModelsLoaded(true);
+      } catch (err) {
+        console.error("Gagal memuat model AI", err);
+      }
+    };
+    loadModels();
+  }, []);
+
+  const startFaceDetection = () => {
+    detectionInterval.current = setInterval(async () => {
+      if (videoRef.current && modelsLoaded && faceStatus === 'scanning') {
+        const detection = await faceapi.detectSingleFace(
+          videoRef.current,
+          new faceapi.SsdMobilenetv1Options({ minConfidence: 0.6 }) // Ambang batas 60%
+        );
+        // Update state apakah ada wajah yang terdeteksi
+        setIsFaceDetected(!!detection);
+      }
+    }, 500);
+  };
+
+  // 3. Modifikasi Timer Logic
+  useEffect(() => {
+    let timer: any;
+    if (isFaceModalOpen && faceStatus === 'scanning') {
+      // Mulai deteksi wajah saat modal buka
+      startFaceDetection();
+
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          // Timer hanya berkurang jika wajah terdeteksi
+          if (isFaceDetected) {
+            if (prev <= 1) {
+              clearInterval(timer);
+              handleCapture();
+              return 0;
+            }
+            return prev - 1;
+          }
+          return prev; // Pause timer jika wajah hilang
+        });
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(timer);
+      if (detectionInterval.current) clearInterval(detectionInterval.current);
+    };
+  }, [isFaceModalOpen, faceStatus, isFaceDetected, modelsLoaded]);
+
+  const handleCapture = async () => {
+    if (!videoRef.current || !patient) return;
+
+    // Set status ke loading agar user tahu proses sedang berjalan
+    setFaceStatus('scanning');
+
+    try {
+      // 1. Ekstrak deskriptor dari frame video saat ini
+      const detection = await faceapi
+        .detectSingleFace(videoRef.current)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!detection) {
+        setFaceStatus('error');
+        return;
+      }
+
+      // 2. Siapkan payload: NIK dan Descriptor (Array 128 Float)
+      // Kita gunakan Array.from() karena descriptor aslinya adalah Float32Array
+      const payload = {
+        nik: patient.nik,
+        encoding: Array.from(detection.descriptor)
+      };
+
+      // 3. Kirim ke backend untuk verifikasi/pendaftaran
+      const response = await ApmAPI.submit(payload);
+
+      if (response.meta?.code === 200 || response.status === 'success') {
+        setFaceStatus('success');
+
+        // Jeda 2.5 detik agar user bisa melihat status sukses sebelum modal tutup
+        setTimeout(() => {
+          setIsFaceModalOpen(false);
+          resetForm();
+          alert("Verifikasi Berhasil! Silakan ambil struk pendaftaran Anda.");
+        }, 2500);
+      } else {
+        setFaceStatus('error');
+      }
+    } catch (error) {
+      console.error("Gagal mengirim payload wajah:", error);
+      setFaceStatus('error');
+    }
   };
 
   return (
@@ -328,13 +436,27 @@ const AnjunganMandiri = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoBox icon={<User />} label="Nama Pasien" value={patient.nama} />
-                <InfoBox icon={<IdCard />} label="No. Rekam Medis" value={patient.norm} />
-                <InfoBox icon={<IdCard />} label="NIK (KTP)" value={patient.nik} />
-                <InfoBox icon={<Hospital />} label="No. Peserta BPJS" value={patient.no_bpjs} />
-                <InfoBox icon={<CalendarCheck />} label="Jadwal Kunjungan" value={new Date(patient.tgl).toLocaleDateString('id-ID', { dateStyle: 'long' })} />
-                <InfoBox icon={<Stethoscope />} label="Tujuan Klinik" value={patient.poli} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Baris 1: Identitas Utama */}
+                <InfoBox icon={<User size={18} />} label="Nama Pasien" value={patient.nama} compact />
+                <InfoBox icon={<IdCard size={18} />} label="NIK (KTP)" value={patient.nik} compact />
+
+                {/* Baris 2: Detail Klinis */}
+                <InfoBox icon={<Hospital size={18} />} label="Unit / Klinik" value={patient.unit} compact />
+                <InfoBox icon={<Stethoscope size={18} />} label="Dokter" value={patient.dokter} compact />
+
+                {/* Baris 3: Jadwal & Administrasi */}
+                <InfoBox icon={<CalendarCheck size={18} />} label="Tanggal Periksa" value={patient.tgl_periksa} compact />
+                <InfoBox icon={<HandHelping size={18} />} label="Penjamin" value={patient.penjamin} compact />
+
+                {/* Baris 4: BPJS Detail */}
+                <InfoBox icon={<IdCard size={18} />} label="No. BPJS" value={patient.no_bpjs} compact />
+                <InfoBox icon={<Barcode size={18} />} label="No. Rujukan" value={patient.no_rujukan} compact />
+
+                {/* Informasi Tambahan: Tanggal Lahir (Full Width / Secondary) */}
+                <div className="md:col-span-2">
+                  <InfoBox icon={<Info size={18} />} label="Tanggal Lahir" value={patient.tgl_lahir} compact />
+                </div>
               </div>
 
               <div className="flex flex-col md:flex-row gap-4 pt-4">
@@ -383,23 +505,26 @@ const AnjunganMandiri = () => {
         <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[40px] border-0 shadow-2xl">
           <div className="p-10 space-y-8 text-center bg-white">
 
-            {/* Header Berdasarkan Status */}
+            {/* Header: Ditambahkan kondisi Loading Models */}
             <div className="space-y-2">
               <h2 className="text-3xl font-black text-[#1B3C6E]">
-                {faceStatus === 'scanning' && "Verifikasi Wajah"}
-                {faceStatus === 'success' && "Verifikasi Berhasil!"}
-                {faceStatus === 'error' && "Verifikasi Gagal"}
+                {!modelsLoaded ? "Memuat AI..." :
+                  faceStatus === 'scanning' ? (isFaceDetected ? "Wajah Terdeteksi" : "Mencari Wajah...") :
+                    faceStatus === 'success' ? "Verifikasi Berhasil!" : "Verifikasi Gagal"}
               </h2>
               <p className="text-slate-500 font-medium">
-                {faceStatus === 'scanning' && "Posisikan wajah Anda tepat di tengah lingkaran"}
-                {faceStatus === 'success' && "Identitas Anda telah terverifikasi oleh sistem"}
-                {faceStatus === 'error' && "Wajah tidak dikenali atau posisi tidak tepat"}
+                {!modelsLoaded ? "Mohon tunggu sebentar..." :
+                  faceStatus === 'scanning' ? (isFaceDetected ? "Mohon diam, sedang memproses..." : "Posisikan wajah Anda di tengah lingkaran") :
+                    faceStatus === 'success' ? "Identitas Anda telah terverifikasi" : "Wajah tidak dikenali atau posisi tidak tepat"}
               </p>
             </div>
 
-            <div className="relative aspect-square max-w-[350px] mx-auto bg-slate-900 rounded-full overflow-hidden shadow-2xl border-[12px] border-slate-50 group">
+            {/* Container Video: Border berubah warna sesuai deteksi AI */}
+            <div className={`relative aspect-square max-w-[350px] mx-auto bg-slate-900 rounded-full overflow-hidden shadow-2xl border-[12px] transition-colors duration-300 group ${faceStatus === 'scanning'
+              ? (isFaceDetected ? 'border-emerald-400' : 'border-slate-200')
+              : 'border-slate-50'
+              }`}>
 
-              {/* Tampilan Kamera / Hasil */}
               {faceStatus === 'scanning' ? (
                 <>
                   <video
@@ -409,39 +534,51 @@ const AnjunganMandiri = () => {
                     muted
                     className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
                   />
-                  <div className="absolute left-0 w-full h-2 bg-cyan-400 shadow-[0_0_20px_#22d3ee] z-30 animate-[scanning_3s_infinite]" />
+
+                  {/* Scanning Line: Hanya muncul jika AI mendeteksi wajah */}
+                  {isFaceDetected && (
+                    <div className="absolute left-0 w-full h-2 bg-[#ED8124] shadow-[0_0_20px_#ED8124] z-30 animate-[scanning_2s_infinite]" />
+                  )}
+
+                  {/* Feedback Visual: Frame target di tengah */}
+                  <div className={`absolute inset-0 flex items-center justify-center z-10 opacity-30 ${isFaceDetected ? 'text-emerald-400' : 'text-white'}`}>
+                    <div className="w-64 h-64 border-2 border-dashed rounded-full border-current" />
+                  </div>
                 </>
               ) : (
-                <div className={`absolute inset-0 rounded-full flex items-center justify-center z-40 animate-in zoom-in duration-500 ${faceStatus === 'success' ? 'bg-emerald-500' : 'bg-red-500'
+                <div className={`absolute inset-0 rounded-full flex items-center justify-center z-40 animate-in zoom-in duration-500 ${faceStatus === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                  {faceStatus === 'success' ? <CheckCircle2 size={120} className="text-white" /> : <XCircle size={120} className="text-white" />}
+                </div>
+              )}
+
+              <div className="absolute inset-0 border-[30px] border-white/40 rounded-full z-20 pointer-events-none" />
+            </div>
+
+            {/* Footer: Timer hanya berjalan/aktif jika wajah terdeteksi */}
+            <div className="flex flex-col gap-4">
+              {faceStatus === 'scanning' && (
+                <div className={`inline-flex items-center justify-center gap-3 px-6 py-4 rounded-2xl transition-colors ${isFaceDetected ? 'bg-emerald-50' : 'bg-orange-50'
                   }`}>
-                  {faceStatus === 'success' ? (
-                    <CheckCircle2 size={120} className="text-white" />
+                  {isFaceDetected ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+                      <span className="text-emerald-600 font-black text-2xl uppercase">
+                        Mengunci: 0{countdown}s
+                      </span>
+                    </div>
                   ) : (
-                    <XCircle size={120} className="text-white" />
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
+                      <span className="text-orange-500 font-bold uppercase">
+                        Menunggu Wajah...
+                      </span>
+                    </div>
                   )}
                 </div>
               )}
 
-              {/* Overlay Frame Tetap Muncul */}
-              <div className="absolute inset-0 border-[30px] border-white/40 rounded-full z-20 pointer-events-none" />
-            </div>
-
-            {/* Footer / Tombol Aksi */}
-            <div className="flex flex-col gap-4">
-              {faceStatus === 'scanning' && (
-                <div className="inline-flex items-center justify-center gap-3 px-6 py-4 bg-orange-50 rounded-2xl">
-                  <div className="w-3 h-3 bg-[#ED8124] rounded-full animate-ping" />
-                  <span className="text-[#ED8124] font-black text-2xl tracking-tight uppercase">
-                    Ambil Foto: 0{countdown}s
-                  </span>
-                </div>
-              )}
-
               {faceStatus === 'error' && (
-                <Button
-                  onClick={handleRetryFace}
-                  className="h-16 bg-[#ED8124] text-white text-xl font-black rounded-2xl shadow-lg"
-                >
+                <Button onClick={handleRetryFace} className="h-16 bg-[#ED8124] text-white text-xl font-black rounded-2xl shadow-lg">
                   <RefreshCw className="mr-2" /> COBA LAGI
                 </Button>
               )}
@@ -451,7 +588,7 @@ const AnjunganMandiri = () => {
                 onClick={() => setIsFaceModalOpen(false)}
                 className="text-slate-400 hover:text-red-500 transition-colors font-bold"
               >
-                {faceStatus === 'success' ? "MENUTUP..." : "BATALKAN PROSES"}
+                {faceStatus === 'success' ? "MENYELESAIKAN..." : "BATALKAN PROSES"}
               </Button>
             </div>
           </div>
@@ -461,14 +598,28 @@ const AnjunganMandiri = () => {
   );
 };
 
-// Sub-komponen yang lebih bersih
-const InfoBox = ({ icon, label, value }: { icon: any, label: string, value: string }) => (
-  <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:border-[#ED8124]/30 transition-colors">
-    <div className="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-      <div className="text-[#ED8124]">{icon}</div>
-      {label}
+const InfoBox = ({ icon, label, value, compact, isAddress }: {
+  icon: any,
+  label: string,
+  value: string,
+  compact?: boolean,
+  isAddress?: boolean
+}) => (
+  <div className={`bg-white rounded-xl shadow-sm border border-slate-100 transition-colors ${compact ? 'p-3' : 'p-4'}`}>
+    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+      <div className="text-[#ED8124] shrink-0">{icon}</div>
+      <span className="truncate">{label}</span>
     </div>
-    <div className="text-xl font-black text-slate-800 break-words leading-tight">{value || "-"}</div>
+    <div
+      className={`
+        ${compact ? 'text-base' : 'text-lg'} 
+        font-black text-slate-800 uppercase leading-tight
+        ${isAddress ? 'line-clamp-2' : 'truncate'}
+      `}
+      title={value} // Munculkan teks lengkap saat kursor diarahkan (hover)
+    >
+      {value || "-"}
+    </div>
   </div>
 );
 

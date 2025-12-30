@@ -150,7 +150,7 @@ export default function FarResepDetailPage() {
                             </span>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-0">
+                    <CardContent>
                         <div className="divide-y divide-border">
                             {resep.details?.map((detail: any, index: number) => {
                                 const isSelected = selectedItems.hasOwnProperty(detail.id);
