@@ -81,9 +81,10 @@ export default function PatientDetailPage() {
   const handleDelete = async () => {
     try {
       await PatientsAPI.delete(patientId);
-      navigate("/master/pasien?deleted=1");
+      navigate("/daftar/pasien");
+      toast.success("Pasien berhasil dihapus!");
     } catch (err) {
-      console.error("Delete error:", err);
+      toast.error("Gagal menyimpan perubahan");
     }
   };
 
@@ -278,7 +279,7 @@ export default function PatientDetailPage() {
 
         {/* ================= ACTION ================= */}
         <div className="flex flex-wrap gap-2 pt-4">
-          <Button variant="outline" onClick={() => navigate("/master/pasien")}>
+          <Button variant="outline" onClick={() => navigate("/daftar/pasien")}>
             Kembali
           </Button>
 

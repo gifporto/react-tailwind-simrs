@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,6 @@ import {
   PaginationLink,
 } from "@/components/ui/pagination";
 
-import { toast } from "sonner";
 import {
   Search,
   Users,
@@ -45,17 +44,11 @@ import type { Patient } from "@/types/patient";
 
 export default function PatientPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const [search, setSearch] = React.useState("");
   const [page, setPage] = React.useState(1);
 
   const limit = 30;
-
-  // Params dari URL
-  const deleted = searchParams.get("deleted");
-  const created = searchParams.get("created");
-  const updated = searchParams.get("updated");
 
   const [debouncedSearch, setDebouncedSearch] = React.useState(search);
   const {
@@ -75,22 +68,6 @@ export default function PatientPage() {
 
     return () => clearTimeout(t);
   }, [search]);
-
-
-  // Handle Toast untuk created / deleted / updated
-  React.useEffect(() => {
-    if (deleted === "1") toast.success("Pasien berhasil dihapus!");
-    if (created === "1") toast.success("Pasien berhasil dibuat!");
-    if (updated === "1") toast.success("Pasien berhasil diperbarui!");
-
-    if (deleted === "1" || created === "1" || updated === "1") {
-      const t = setTimeout(() => {
-        navigate("/master/pasien", { replace: true });
-      }, 500);
-
-      return () => clearTimeout(t);
-    }
-  }, [deleted, created, updated]);
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === "0000-00-00") return "-";
@@ -231,15 +208,15 @@ export default function PatientPage() {
             >
               <div className="space-y-1">
                 <CardTitle className="text-2xl text-primary flex items-center gap-2">
-                  Data Master Pasien
+                  Data Pasien
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Kelola data master pasien rumah sakit
+                  Kelola data pasien rumah sakit
                 </p>
               </div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
-                  onClick={() => navigate("/master/pasien/create")}
+                  onClick={() => navigate("/daftar/pasien/create")}
                   className="gap-2"
                 >
                   <UserPlus className="w-4 h-4" />
@@ -358,7 +335,7 @@ export default function PatientPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() =>
-                                  navigate(`/master/pasien/detail/${patient.id}`)
+                                  navigate(`/daftar/pasien/detail/${patient.id}`)
                                 }
                                 className="gap-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                               >

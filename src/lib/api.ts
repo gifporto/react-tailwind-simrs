@@ -786,8 +786,6 @@ export const InvOrderAPI = {
     },
 };
 
-
-
 // Master
 export const DoctorAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
@@ -893,6 +891,11 @@ export const ObatAPI = {
         const res = await api.get("/master/drugs", {
             params: { page, limit, search },
         });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/master/drugs", payload);
         return res.data;
     },
 };
