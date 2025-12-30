@@ -3,6 +3,30 @@
 
 import { api } from "./axios";
 
+const STATIC_KEY = "SERGOFUzR0YzNzhWRlc2KV5aVldGMzZERlIjJSYoUlhEJEVeKlJAQFRA";
+
+export const ApmAPI = {
+    create: async (payload: { value: string }) => {
+        const res = await api.post("/apm/check-booking-code", payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': STATIC_KEY,
+            }
+        });
+        return res.data;
+    },
+
+    submit: async (payload: { nik: string, encoding: number[] }) => {
+        const res = await api.post("/apm/bpjs-verify", payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': STATIC_KEY,
+            }
+        });
+        return res.data;
+    },
+};
+
 export const AuthAPI = {
     login: async (email: string, password: string) => {
         const res = await api.post("/auth/login", {
