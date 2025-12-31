@@ -1,15 +1,10 @@
-"use client";
-
-import React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PatientsAPI } from "@/lib/api";
-import { motion } from "framer-motion";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -17,361 +12,271 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-import {
-  CalendarIcon,
-  Save,
-  ArrowLeft,
-  UserPlus,
-  Loader2,
-} from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { ArrowLeft, Save } from "lucide-react";
+import { usePatientCreate } from "@/querys/patient";
 
 export default function CreatePatientPage() {
   const navigate = useNavigate();
+  const mutation = usePatientCreate();
 
-  const [formData, setFormData] = React.useState({
-    norm: "",
+  // State awal sesuai payload yang Anda minta
+  const [formData, setFormData] = useState<any>({
     nik: "",
-    bpjs_number: "",
+    nama: "",
+    no_bpjs: "",
     ihs_number: "",
-    gender: "",
-    name: "",
+    tmp_lahir: "",
+    tgl_lahir: "",
+    sex: "",
+    id_agama: "",
+    id_sts_menikah: "",
+    id_pendidikan: "",
+    id_pekerjaan: "",
+    alamat_ktp: "",
+    id_kel_ktp: "",
+    alamat_domisili: "",
+    id_kel_domisili: "",
+    hp: "",
+    hp_2: "",
     email: "",
-    phones: "",
-    addresses: {
-      ktp: "",
-      domisili: "",
-    },
-    birth_date: "",
-    family_name: "",
+    nama_keluarga: "",
+    nik_keluarga: "",
+    alamat_keluarga: "",
+    id_kel_keluarga: "",
+    hp_keluarga: "",
+    id_hub_keluarga: "",
   });
-  const [birthDate, setBirthDate] = React.useState<Date | undefined>(undefined);
-  const [saving, setSaving] = React.useState(false);
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
-
-    if (name.startsWith("addresses.")) {
-      const key = name.split(".")[1];
-      setFormData({
-        ...formData,
-        addresses: {
-          ...formData.addresses,
-          [key]: value,
-        },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleGenderChange = (value: string) => {
-    setFormData({
-      ...formData,
-      gender: value,
-    });
+  const handleSelect = (name: string, value: string) => {
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSameAsKtp = (checked: boolean) => {
+    if (checked) {
+      setFormData({
+        ...formData,
+        alamat_domisili: formData.alamat_ktp,
+        id_kel_domisili: formData.id_kel_ktp,
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
+
+    if (!formData.nama || !formData.nik) {
+      return toast.error("Nama dan NIK wajib diisi");
+    }
 
     try {
-      // Convert phones string to array
-      const payload = {
-        ...formData,
-        phones: formData.phones
-          .split(",")
-          .map((phone) => phone.trim())
-          .filter((phone) => phone),
-      };
-
-      await PatientsAPI.create(payload);
+      await mutation.mutateAsync(formData);
+      toast.success("Pasien baru berhasil didaftarkan");
       navigate("/daftar/pasien");
-      toast.success("Pasien berhasil ditambahkan!");
-    } catch (err: any) {
-      toast.error("Gagal menambahkan pasien");
-    } finally {
-      setSaving(false);
+    } catch (error) {
+      toast.error("Gagal mendaftarkan pasien");
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      <Card>
-        <CardHeader className="border-b">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex items-center gap-3"
-          >
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <UserPlus className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-2xl text-primary">Tambah Pasien Baru</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Lengkapi form berikut untuk menambahkan data pasien baru
-              </p>
-            </div>
-          </motion.div>
-        </CardHeader>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b pb-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Tambah Pasien Baru</h1>
+            <p className="text-sm text-muted-foreground">
+              Lengkapi data rekam medis pasien di bawah ini.
+            </p>
+          </div>
+        </div>
+        <Button
+          onClick={handleSubmit}
+          disabled={mutation.isPending}
+          className="gap-2"
+        >
+          <Save className="w-4 h-4" />
+          {mutation.isPending ? "Menyimpan..." : "Simpan Pasien"}
+        </Button>
+      </div>
 
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Identitas Utama */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="space-y-4"
+      <form className="grid grid-cols-1 gap-6">
+        {/* SEKSI 1: IDENTITAS PRIBADI */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Identitas Pribadi</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-2 lg:col-span-2">
+              <Label>
+                Nama Lengkap <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                name="nama"
+                placeholder="Masukkan nama sesuai KTP"
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>
+                NIK <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                name="nik"
+                maxLength={16}
+                placeholder="16 digit NIK"
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Jenis Kelamin</Label>
+              <Select onValueChange={(v) => handleSelect("sex", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih L/P" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="L">Laki-laki</SelectItem>
+                  <SelectItem value="P">Perempuan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Tempat Lahir</Label>
+              <Input
+                name="tmp_lahir"
+                placeholder="Kota lahir"
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tanggal Lahir</Label>
+              <Input name="tgl_lahir" type="date" onChange={handleChange} />
+            </div>
+            <div className="space-y-2">
+              <Label>Agama</Label>
+              <Select onValueChange={(v) => handleSelect("id_agama", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Agama" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Islam</SelectItem>
+                  <SelectItem value="2">Kristen</SelectItem>
+                  <SelectItem value="3">Katolik</SelectItem>
+                  {/* Tambahkan sesuai master data */}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>No. BPJS</Label>
+              <Input
+                name="no_bpjs"
+                placeholder="000..."
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Nomor HP</Label>
+              <Input name="hp" placeholder="0812..." onChange={handleChange} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* SEKSI 2: ALAMAT */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Informasi Alamat</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label>Alamat Lengkap (KTP)</Label>
+              <Textarea
+                name="alamat_ktp"
+                placeholder="Jl. Nama Jalan, No. Rumah, RT/RW"
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2 bg-muted/50 p-3 rounded-md">
+              <Checkbox id="sameAsKtp" onCheckedChange={handleSameAsKtp} />
+              <label
+                htmlFor="sameAsKtp"
+                className="text-sm font-medium leading-none cursor-pointer"
               >
-                <h3 className="text-lg font-semibold text-primary border-b pb-2 flex items-center gap-2">
-                  Identitas Utama
-                </h3>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    NORM <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    name="norm"
-                    value={formData.norm}
-                    onChange={handleChange}
-                    placeholder="Nomor Rekam Medis"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    Nama Lengkap <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Nama lengkap pasien"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    NIK
-                  </Label>
-                  <Input
-                    name="nik"
-                    value={formData.nik}
-                    onChange={handleChange}
-                    placeholder="Nomor Induk Kependudukan"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    No. BPJS
-                  </Label>
-                  <Input
-                    name="bpjs_number"
-                    value={formData.bpjs_number}
-                    onChange={handleChange}
-                    placeholder="Nomor BPJS"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    No. IHS
-                  </Label>
-                  <Input
-                    name="ihs_number"
-                    value={formData.ihs_number}
-                    onChange={handleChange}
-                    placeholder="Nomor IHS"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    Jenis Kelamin <span className="text-destructive">*</span>
-                  </Label>
-                  <Select value={formData.gender} onValueChange={handleGenderChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Pilih jenis kelamin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="L">Laki-laki</SelectItem>
-                      <SelectItem value="P">Perempuan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </motion.div>
-
-              {/* Data Tambahan */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="space-y-4"
-              >
-                <h3 className="text-lg font-semibold text-primary border-b pb-2 flex items-center gap-2">
-                  Data Tambahan
-                </h3>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Tanggal Lahir
-                  </Label>
-
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-between font-normal"
-                      >
-                        {birthDate
-                          ? birthDate.toLocaleDateString("id-ID")
-                          : "Pilih tanggal lahir"}
-                        <CalendarIcon className="h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        captionLayout="dropdown"
-                        selected={birthDate}
-                        onSelect={(date) => {
-                          setBirthDate(date);
-                          setFormData({
-                            ...formData,
-                            birth_date: date
-                              ? date.toISOString().split("T")[0]
-                              : "",
-                          });
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    Nama Keluarga
-                  </Label>
-                  <Input
-                    name="family_name"
-                    value={formData.family_name}
-                    onChange={handleChange}
-                    placeholder="Nama keluarga/ayah/ibu"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    Email
-                  </Label>
-                  <Input
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="alamat@email.com"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    Nomor Telepon
-                  </Label>
-                  <Input
-                    name="phones"
-                    value={formData.phones}
-                    onChange={handleChange}
-                    placeholder="Pisahkan dengan koma untuk multiple nomor"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    Alamat KTP
-                  </Label>
-                  <Input
-                    name="addresses.ktp"
-                    value={formData.addresses.ktp}
-                    onChange={handleChange}
-                    placeholder="Alamat sesuai KTP"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    Alamat Domisili
-                  </Label>
-                  <Input
-                    name="addresses.domisili"
-                    value={formData.addresses.domisili}
-                    onChange={handleChange}
-                    placeholder="Alamat tempat tinggal saat ini"
-                  />
-                </div>
-              </motion.div>
+                Alamat domisili sama dengan alamat KTP
+              </label>
             </div>
 
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="flex gap-3 pt-6 border-t"
-            >
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/daftar/pasien")}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Kembali
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button type="submit" disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Simpan Pasien
-                    </>
-                  )}
-                </Button>
-              </motion.div>
-            </motion.div>
-          </form>
-        </CardContent>
-      </Card>
-    </motion.div>
+            <div className="space-y-2">
+              <Label>Alamat Domisili</Label>
+              <Textarea
+                name="alamat_domisili"
+                value={formData.alamat_domisili}
+                placeholder="Alamat tempat tinggal saat ini"
+                onChange={handleChange}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* SEKSI 3: KELUARGA */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              Kontak Keluarga / Penanggung Jawab
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Nama Keluarga</Label>
+              <Input name="nama_keluarga" onChange={handleChange} />
+            </div>
+            <div className="space-y-2">
+              <Label>Hubungan Keluarga</Label>
+              <Select onValueChange={(v) => handleSelect("id_hub_keluarga", v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Hubungan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Orang Tua</SelectItem>
+                  <SelectItem value="2">Suami/Istri</SelectItem>
+                  <SelectItem value="3">Anak</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>No. HP Keluarga</Label>
+              <Input name="hp_keluarga" onChange={handleChange} />
+            </div>
+            <div className="space-y-2">
+              <Label>NIK Keluarga</Label>
+              <Input
+                name="nik_keluarga"
+                onChange={handleChange}
+                maxLength={16}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+
+      <div className="flex justify-end gap-4 pb-10">
+        <Button variant="ghost" onClick={() => navigate(-1)}>
+          Batal
+        </Button>
+        <Button size="lg" onClick={handleSubmit} disabled={mutation.isPending}>
+          {mutation.isPending ? "Mendaftarkan..." : "Simpan Data Pasien"}
+        </Button>
+      </div>
+    </div>
   );
 }

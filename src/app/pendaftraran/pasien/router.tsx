@@ -1,4 +1,5 @@
 import PatientPage from ".";
+import CreatePatientPage from "./create";
 import PatientDetailPage from "./detail";
 import UpdatePatientPage from "./edit";
 
@@ -9,6 +10,11 @@ export const pasienPendaftaran = {
     {
       index: true,
       element: <PatientPage />,
+    },
+    {
+      path: "create",
+      handle: { breadcrumb: "Tambah Pasien" },
+      element: <CreatePatientPage />,
     },
     {
       path: ":id",
