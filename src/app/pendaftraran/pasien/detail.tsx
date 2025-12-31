@@ -21,7 +21,7 @@ export default function PatientDetailPage() {
     return <div className="p-8 text-center">Data pasien tidak ditemukan.</div>;
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6 mx-auto">
       {/* Header & Navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -41,9 +41,7 @@ export default function PatientDetailPage() {
             </div>
           </div>
         </div>
-        <Button onClick={() => navigate(`/daftar/pasien/edit/${id}`)}>
-          Edit Profil Pasien
-        </Button>
+        <Button onClick={() => navigate(`edit`)}>Edit Profil Pasien</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -195,7 +193,7 @@ function DetailItem({
 // Skeleton saat loading
 function LoadingSkeleton() {
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6 mx-auto">
       <div className="flex gap-4 items-center">
         <Skeleton className="h-10 w-10 rounded-md" />
         <div className="space-y-2">
@@ -206,6 +204,7 @@ function LoadingSkeleton() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Skeleton className="h-[300px] md:col-span-2" />
         <Skeleton className="h-[300px]" />
+        <Skeleton className="h-[300px] md:col-span-2" />
       </div>
     </div>
   );
