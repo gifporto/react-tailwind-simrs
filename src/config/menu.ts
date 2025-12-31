@@ -62,7 +62,7 @@ export const mainMenus: MenuItem[] = [
       },
       {
         title: "IGD",
-        url: "/igd",
+        url: "/pendaftaran/igd",
         module: "reg_igd",
       },
       {
