@@ -1,8 +1,5 @@
-"use client";
-
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PatientsAPI } from "@/lib/api";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,33 +20,20 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { User } from "lucide-react";
+import { usePatient } from "@/querys/patient";
 
 export default function PatientDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const patientId = String(id);
+  // const [patient, setPatient] = React.useState<any>(null);
+  // const [originalPatient, setOriginalPatient] = React.useState<any>(null);
+  // const [saving, setSaving] = React.useState(false);
+  // const [isEditing, setIsEditing] = React.useState(false);
 
-  const [patient, setPatient] = React.useState<any>(null);
-  const [originalPatient, setOriginalPatient] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [saving, setSaving] = React.useState(false);
+  const { data, isLoading } = usePatient(id!);
 
-  const [isEditing, setIsEditing] = React.useState(false);
-
-  React.useEffect(() => {
-    const loadDetail = async () => {
-      try {
-        const result: any = await PatientsAPI.getDetail(patientId);
-        // API returns data under different keys (e.g., nama, sex, tgl_lahir)
-        setPatient(result.data);
-        setOriginalPatient(result.data);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadDetail();
-  }, [patientId]);
+  return "test" + data;
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -62,7 +46,7 @@ export default function PatientDetailPage() {
   const handleUpdate = async () => {
     setSaving(true);
     try {
-      await PatientsAPI.update(patientId, patient);
+      // await PatientsAPI.update(patientId, patient);
       toast.success("Pasien berhasil diperbarui!");
       setIsEditing(false);
       setOriginalPatient(patient);
@@ -80,7 +64,7 @@ export default function PatientDetailPage() {
 
   const handleDelete = async () => {
     try {
-      await PatientsAPI.delete(patientId);
+      // await PatientsAPI.delete(patientId);
       navigate("/daftar/pasien");
       toast.success("Pasien berhasil dihapus!");
     } catch (err) {
@@ -88,16 +72,10 @@ export default function PatientDetailPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <Card className="p-6">
-        <LoadingSkeleton lines={6} />
-      </Card>
-    );
-  }
-
   if (!patient) {
-    return <Card className="text-center text-gray-500">Data tidak ditemukan</Card>;
+    return (
+      <Card className="text-center text-gray-500">Data tidak ditemukan</Card>
+    );
   }
 
   const formatDate = (dateString: string) => {
@@ -131,28 +109,27 @@ export default function PatientDetailPage() {
     </div>
   );
 
-
   return (
     <Card>
       <CardHeader className="border-b">
-        <div
-          className="flex items-center gap-3"
-        >
+        <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
             <User className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl text-primary">{isEditing ? "Edit Data Pasien" : "Detail Pasien"}</CardTitle>
+            <CardTitle className="text-2xl text-primary">
+              {isEditing ? "Edit Data Pasien" : "Detail Pasien"}
+            </CardTitle>
             <p className="text-sm text-muted-foreground">
-              {isEditing ? "Edit form berikut untuk update data pasien" : "Menampilkan form data pasien"}
-
+              {isEditing
+                ? "Edit form berikut untuk update data pasien"
+                : "Menampilkan form data pasien"}
             </p>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-8">
-
         {/* ================= IDENTITAS UTAMA ================= */}
         <section>
           <h3 className="text-lg font-semibold text-primary border-b pb-2 mb-6 flex items-center gap-2">
@@ -162,10 +139,20 @@ export default function PatientDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {renderField("NORM", "norm", patient.norm, false)}
             {renderField("Nama Lengkap", "nama", patient.nama)}
-            {renderField("Jenis Kelamin", "sex", formatGender(patient.sex), false)}
+            {renderField(
+              "Jenis Kelamin",
+              "sex",
+              formatGender(patient.sex),
+              false
+            )}
 
             {renderField("Tempat Lahir", "tmp_lahir", patient.tmp_lahir)}
-            {renderField("Tanggal Lahir", "tgl_lahir", formatDate(patient.tgl_lahir), false)}
+            {renderField(
+              "Tanggal Lahir",
+              "tgl_lahir",
+              formatDate(patient.tgl_lahir),
+              false
+            )}
             {renderField("NIK", "nik", patient.nik)}
 
             {renderField("No BPJS", "no_bpjs", patient.no_bpjs)}
@@ -185,7 +172,11 @@ export default function PatientDetailPage() {
             {renderField("Email", "email", patient.email)}
 
             {renderField("Alamat KTP", "alamat_ktp", patient.alamat_ktp)}
-            {renderField("Alamat Domisili", "alamat_domisili", patient.alamat_domisili)}
+            {renderField(
+              "Alamat Domisili",
+              "alamat_domisili",
+              patient.alamat_domisili
+            )}
           </div>
         </section>
 
@@ -197,8 +188,16 @@ export default function PatientDetailPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {renderField("Agama", "agama", patient.agama?.nama_agama || "-")}
-            {renderField("Pendidikan", "pendidikan", patient.pendidikan?.desk_pendidikan || "-")}
-            {renderField("Pekerjaan", "pekerjaan", patient.pekerjaan?.desk_pekerjaan || "-")}
+            {renderField(
+              "Pendidikan",
+              "pendidikan",
+              patient.pendidikan?.desk_pendidikan || "-"
+            )}
+            {renderField(
+              "Pekerjaan",
+              "pekerjaan",
+              patient.pekerjaan?.desk_pekerjaan || "-"
+            )}
 
             {renderField(
               "Status Menikah",
@@ -217,18 +216,28 @@ export default function PatientDetailPage() {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderField("Nama Keluarga", "nama_keluarga", patient.nama_keluarga)}
+            {renderField(
+              "Nama Keluarga",
+              "nama_keluarga",
+              patient.nama_keluarga
+            )}
             {renderField("NIK Keluarga", "nik_keluarga", patient.nik_keluarga)}
             {renderField("No HP Keluarga", "hp_keluarga", patient.hp_keluarga)}
 
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Hubungan Keluarga</Label>
+              <Label className="text-xs text-muted-foreground">
+                Hubungan Keluarga
+              </Label>
               <p className="text-sm">
                 {patient.hub_keluarga?.desk_hub_keluarga || "-"}
               </p>
             </div>
 
-            {renderField("Alamat Keluarga", "alamat_keluarga", patient.alamat_keluarga)}
+            {renderField(
+              "Alamat Keluarga",
+              "alamat_keluarga",
+              patient.alamat_keluarga
+            )}
           </div>
         </section>
 
@@ -240,7 +249,9 @@ export default function PatientDetailPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs text-muted-foreground">Tipe Pasien</Label>
+              <Label className="text-xs text-muted-foreground">
+                Tipe Pasien
+              </Label>
               <p className="text-sm">
                 {patient.tipe_pasien?.desk_tipe_pasien || "-"}
               </p>
@@ -248,7 +259,9 @@ export default function PatientDetailPage() {
 
             <div>
               <Label className="text-xs text-muted-foreground">Retensi</Label>
-              <p className="text-sm">{patient.retensi === "Y" ? "Ya" : "Tidak"}</p>
+              <p className="text-sm">
+                {patient.retensi === "Y" ? "Ya" : "Tidak"}
+              </p>
             </div>
           </div>
         </section>
@@ -306,21 +319,22 @@ export default function PatientDetailPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Hapus Pasien?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Data pasien <strong>{patient.nama}</strong> akan dihapus secara permanen.
+                    Data pasien <strong>{patient.nama}</strong> akan dihapus
+                    secara permanen.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
                 <AlertDialogFooter>
                   <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Ya, Hapus</AlertDialogAction>
+                  <AlertDialogAction onClick={handleDelete}>
+                    Ya, Hapus
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           )}
         </div>
-
       </CardContent>
-
     </Card>
   );
 }

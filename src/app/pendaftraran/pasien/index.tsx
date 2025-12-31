@@ -154,7 +154,7 @@ export default function PatientPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() =>
-                              navigate(`/daftar/pasien/detail/${patient.id}`)
+                              navigate(`/daftar/pasien/${patient.id}`)
                             }
                           >
                             <Eye className="w-4 h-4 mr-1" /> Detail
