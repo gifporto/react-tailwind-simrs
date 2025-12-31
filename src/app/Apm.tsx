@@ -42,6 +42,7 @@ const AnjunganMandiri = () => {
   const [bpjsErrorMessage, setBpjsErrorMessage] = useState("");
 
   const printRef = useRef<HTMLDivElement>(null);
+  const isPrintingRef = useRef(false);
 
 
   const handleDownloadPdf = () => {
@@ -255,6 +256,33 @@ const AnjunganMandiri = () => {
     };
   }, [isFaceModalOpen, faceStatus, isFaceDetected, modelsLoaded]);
 
+  // Effect untuk looping check BPJS setiap 5 detik saat modal error terbuka
+  useEffect(() => {
+    let interval: any;
+
+    // Jalankan interval setiap 5000ms (5 detik)
+    interval = setInterval(async () => {
+      try {
+        const payload = { bpjs: patient.no_bpjs };
+        const response = await ApmAPI.checkBpjs(payload);
+
+        // Jika sidik jari berhasil (kode "1"), otomatis cetak dan tutup modal
+        if (response.meta?.code === 200 && response.data?.kode === "1") {
+          clearInterval(interval);
+          setIsBpjsErrorModalOpen(false); // Tutup modal error
+          await handleCetakTanpaWajah(); // Lanjutkan cetak antrean
+        }
+      } catch (error) {
+        console.error("Polling BPJS Error:", error);
+      }
+    }, 5000);
+
+    // Cleanup: matikan interval jika modal ditutup atau komponen unmount
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isBpjsErrorModalOpen, patient]);
+
   const handleCapture = async () => {
     if (!videoRef.current || !patient) return;
     setFaceStatus('scanning');
@@ -332,7 +360,7 @@ const AnjunganMandiri = () => {
     // Membuka URL di background untuk memicu server lokal (EXE)
     const url = `http://127.0.0.1:5000/run_exe?no_peserta=${patient.no_bpjs}`;
 
-    fetch(url, { 
+    fetch(url, {
       mode: 'no-cors',
       redirect: 'follow',
     })
@@ -344,6 +372,9 @@ const AnjunganMandiri = () => {
   };
 
   const handleCetakTanpaWajah = async () => {
+    if (isPrintingRef.current) return;
+
+    isPrintingRef.current = true;
     setStatus('loading');
     try {
       const payload = {
@@ -365,16 +396,20 @@ const AnjunganMandiri = () => {
         setTimeout(() => {
           handleDownloadPdf();
           resetForm();
+
+          isPrintingRef.current = false;
         }, 800);
 
         return true;
       } else {
         setStatus('error');
+        isPrintingRef.current = false;
         return true;
       }
     } catch (error) {
       console.error("Gagal cetak antrean:", error);
       setStatus('error');
+      isPrintingRef.current = false;
     }
   };
 
@@ -611,12 +646,12 @@ const AnjunganMandiri = () => {
                       )}
                     </Button>
 
-                    <Button
+                    {/* <Button
                       // onClick={() => setIsFaceModalOpen(true)}
                       className="flex-[2] h-20 bg-[#ED8124] hover:bg-[#d6721d] text-white text-2xl font-black rounded-2xl shadow-[0_15px_30px_rgba(237,129,36,0.3)] transition-all hover:scale-[1.02] active:scale-95"
                     >
                       LANJUT VERIFIKASI <ArrowRight className="ml-3 w-8 h-8" />
-                    </Button>
+                    </Button> */}
                   </div>
                 ) : (
                   /* JIKA FALSE: TOMBOL CETAK ANTRIAN */
@@ -765,7 +800,7 @@ const AnjunganMandiri = () => {
 
             <div className="flex flex-col gap-3">
               <FingerprintRunner
-              noPeserta={patient?.no_bpjs}
+                noPeserta={patient?.no_bpjs}
               />
               {/* <Button
                 onClick={handleRunFingerprintExe}
