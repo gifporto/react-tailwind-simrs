@@ -1,416 +1,188 @@
-"use client";
-
-import React from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Eye, Phone, Search, UserPlus } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { usePatients } from "@/hooks/queries/usePatients";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
-  TableHeader,
-  TableRow,
-  TableHead,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import { CustomPagination } from "@/components/shared/pagination";
+import GenderBadge from "@/components/gender-badge";
+import { formatDateSafely } from "@/lib/datetime";
+import { usePatientList } from "@/querys/patient";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination";
-
-import {
-  Search,
-  Users,
-  Phone,
-  CreditCard,
-  Calendar,
-  UserPlus,
-  Eye,
-  Mars,
-  Venus
-} from "lucide-react";
-import LoadingSkeleton from "@/components/LoadingSkeleton";
-import type { Patient } from "@/types/patient";
+function SkeletonTable() {
+  return (
+    <div className="space-y-3">
+      <Skeleton className="h-[400px] w-full rounded-xl" />
+    </div>
+  );
+}
 
 export default function PatientPage() {
   const navigate = useNavigate();
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(15);
+  const [search, setSearch] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
 
-  const [search, setSearch] = React.useState("");
-  const [page, setPage] = React.useState(1);
-
-  const limit = 30;
-
-  const [debouncedSearch, setDebouncedSearch] = React.useState(search);
-  const {
-    data,
-    isLoading,
-  } = usePatients(page, limit, debouncedSearch);
-
-  const patients: Patient[] = data?.data ?? [];
-  const lastPage = data?.meta?.pagination?.total_pages ?? 1;
-  const total = data?.meta?.pagination?.total ?? 0;
-
-
-  React.useEffect(() => {
-    const t = setTimeout(() => {
+  useEffect(() => {
+    const handler = setTimeout(() => {
       setDebouncedSearch(search);
+      setPage(1);
     }, 500);
-
-    return () => clearTimeout(t);
+    return () => clearTimeout(handler);
   }, [search]);
 
-  const formatDate = (dateString: string) => {
-    if (!dateString || dateString === "0000-00-00") return "-";
-    try {
-      return new Date(dateString).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return "-";
-    }
-  };
+  const { data, isFetching } = usePatientList(page, limit, debouncedSearch);
 
-  // Gender Badge with theme colors
-  const getGenderBadge = (gender: string) => {
-    if (gender === "L") {
-      return (
-        <Badge variant="secondary" className="gap-1 bg-blue-50">
-          <Mars className="w-3 h-3 text-blue-500" />
-          Laki-laki
-        </Badge>
-      );
-    }
-    if (gender === "P") {
-      return (
-        <Badge variant="secondary" className="gap-1 bg-pink-50">
-          <Venus className="w-3 h-3 text-pink-500" />
-          Perempuan
-        </Badge>
-      );
-    }
-    return (
-      <span>-</span>
-    );
-  };
-
-  // BPJS Badge
-  const getBpjsBadge = (bpjsNumber: string) => {
-    if (!bpjsNumber) {
-      return (
-        <span>-</span>
-      );
-    }
-    return (
-      <Badge variant="success" className="gap-1 font-mono text-xs">
-        <CreditCard className="w-3 h-3" />
-        {bpjsNumber}
-      </Badge>
-    );
-  };
-
-  // Age Badge with variant based on age group
-  const getAgeBadge = (age: number) => {
-    if (!age || age === 0) {
-      return <span>-</span>;
-    }
-    let variant: "info" | "warning" | "secondary" | "outline" | "destructive" = "outline";
-
-    if (age < 12) variant = "info";
-    else if (age < 18) variant = "outline";
-    else if (age < 32) variant = "secondary";
-    else if (age < 60) variant = "warning";
-    else variant = "destructive";
-
-    return (
-      <Badge variant={variant} className="gap-1">
-        <Calendar className="w-3 h-3" />
-        {age || 0} th
-      </Badge>
-    );
-  };
-
-  // Phone Badge
-  const getPhoneBadge = (phones: string[]) => {
-    if (!phones || phones.length === 0) {
-      return (
-        <span>-</span>
-      );
-    }
-    return (
-      <div className="flex flex-wrap gap-1">
-        {phones.slice(0, 1).map((phone, idx) => (
-          <Badge key={idx} variant="secondary" className="gap-1 text-xs">
-            <Phone className="w-3 h-3" />
-            {phone}
-          </Badge>
-        ))}
-        {phones.length > 1 && (
-          <Badge variant="outline" className="text-xs">
-            +{phones.length - 1}
-          </Badge>
-        )}
-      </div>
-    );
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.05 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  const tableRowVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.05 },
-    }),
-  };
+  const patients = data?.data ?? [];
+  const pagination = data?.meta?.pagination;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      <Card>
-        <CardHeader className="border-b">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="space-y-4"
-          >
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-row justify-between items-start"
-            >
-              <div className="space-y-1">
-                <CardTitle className="text-2xl text-primary flex items-center gap-2">
-                  Data Pasien
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Kelola data pasien rumah sakit
-                </p>
-              </div>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button
-                  onClick={() => navigate("/daftar/pasien/create")}
-                  className="gap-2"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Tambah Pasien Baru
-                </Button>
-              </motion.div>
-            </motion.div>
+    <div className="p-6 space-y-6">
+      <div className="flex flex-row justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Data Pasien</h1>
+          <p className="text-muted-foreground">
+            Kelola dan lihat informasi rekam medis pasien.
+          </p>
+        </div>
+        <Button
+          onClick={() => navigate("/daftar/pasien/create")}
+          className="gap-2"
+        >
+          <UserPlus className="w-4 h-4" /> Tambah Pasien
+        </Button>
+      </div>
 
-            <motion.div variants={itemVariants} className="flex items-center gap-3">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Cari berdasarkan nama, NIK, atau NORM..."
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-10"
-                />
-              </div>
-              <Badge variant="secondary" className="gap-1 px-3 py-1.5">
-                <Users className="w-3 h-3" />
-                {total} pasien
-              </Badge>
-            </motion.div>
-          </motion.div>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cari Nama, NIK, atau NORM..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Baris per halaman:
+              </span>
+              <Select
+                value={limit.toString()}
+                onValueChange={(v) => {
+                  setLimit(Number(v));
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
 
-        <CardContent className="pt-6">
-          <AnimatePresence mode="wait">
-            {isLoading ? (
-              <LoadingSkeleton lines={15} />
-            ) : patients.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="text-center py-16"
-              >
-                <Users className="w-16 h-16 mx-auto text-muted-foreground/50" />
-                <div className="text-muted-foreground text-lg font-medium mt-4">
-                  Tidak ada pasien ditemukan
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Coba sesuaikan pencarian atau tambah pasien baru
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="table"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/50">
-                        <TableHead className="font-semibold w-12">No</TableHead>
-                        <TableHead className="font-semibold">NORM</TableHead>
-                        <TableHead className="font-semibold">Nama Pasien</TableHead>
-                        <TableHead className="font-semibold">NIK</TableHead>
-                        <TableHead className="font-semibold">BPJS</TableHead>
-                        <TableHead className="font-semibold">Gender</TableHead>
-                        <TableHead className="font-semibold">Tgl Lahir</TableHead>
-                        <TableHead className="font-semibold">Umur</TableHead>
-                        <TableHead className="font-semibold">Telepon</TableHead>
-                        <TableHead className="text-center font-semibold">Aksi</TableHead>
+        <CardContent>
+          {isFetching ? (
+            <SkeletonTable />
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="w-[100px]">NORM</TableHead>
+                    <TableHead>Nama Pasien</TableHead>
+                    <TableHead>NIK</TableHead>
+                    <TableHead>L/P</TableHead>
+                    <TableHead>No. HP</TableHead>
+                    <TableHead>Tgl Lahir</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {patients.length > 0 ? (
+                    patients.map((patient: any) => (
+                      <TableRow key={patient.id} className="hover:bg-muted/30">
+                        <TableCell className="font-mono font-medium text-blue-600">
+                          {patient.norm}
+                        </TableCell>
+                        <TableCell className="font-medium uppercase">
+                          {patient.nama}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {patient.nik || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <GenderBadge gender={patient.sex} />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Phone className="w-3 h-3 text-muted-foreground" />
+                            {patient.hp || "-"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDateSafely(patient.tgl_lahir, "dd MMM yyyy")}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              navigate(`/daftar/pasien/detail/${patient.id}`)
+                            }
+                          >
+                            <Eye className="w-4 h-4 mr-1" /> Detail
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-
-                    <TableBody>
-                      {patients.map((patient: Patient, i: number) => (
-                        <motion.tr
-                          key={patient.id}
-                          custom={i}
-                          variants={tableRowVariants}
-                          initial="hidden"
-                          animate="visible"
-                          className="group hover:bg-muted/50 transition-colors"
-                        >
-                          <TableCell className="font-medium text-muted-foreground">
-                            {(page - 1) * limit + (i + 1)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="font-mono">
-                              {patient.norm || "-"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {patient.name || "-"}
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-mono text-sm text-muted-foreground">
-                              {patient.nik || "-"}
-                            </span>
-                          </TableCell>
-                          <TableCell>{getBpjsBadge(patient.bpjs_number || "")}</TableCell>
-                          <TableCell>{getGenderBadge(patient.gender || "")}</TableCell>
-                          <TableCell>
-                            <span className="text-sm text-muted-foreground">
-                              {formatDate(patient.birth_date || "")}
-                            </span>
-                          </TableCell>
-                          <TableCell>{getAgeBadge(patient.age ?? 0)}</TableCell>
-
-                          <TableCell>{getPhoneBadge(patient.phones)}</TableCell>
-                          <TableCell className="text-center">
-                            <motion.div
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  navigate(`/daftar/pasien/detail/${patient.id}`)
-                                }
-                                className="gap-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                                Detail
-                              </Button>
-                            </motion.div>
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Pagination */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="flex items-center justify-between mt-4"
-                >
-                  <div className="text-sm text-muted-foreground">
-                    Menampilkan {(page - 1) * limit + 1} sampai{" "}
-                    {Math.min(page * limit, total)} dari {total} pasien
-                  </div>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => page > 1 && setPage(page - 1)}
-                          className={
-                            page === 1
-                              ? "pointer-events-none opacity-50"
-                              : "cursor-pointer"
-                          }
-                        />
-                      </PaginationItem>
-
-                      {Array.from({ length: Math.min(5, lastPage) }, (_, i) => {
-                        const startPage = Math.max(
-                          1,
-                          Math.min(page - 2, lastPage - 4)
-                        );
-                        const currentPage = startPage + i;
-                        return currentPage <= lastPage ? (
-                          <PaginationItem key={currentPage}>
-                            <PaginationLink
-                              isActive={page === currentPage}
-                              onClick={() => setPage(currentPage)}
-                              className="cursor-pointer"
-                            >
-                              {currentPage}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ) : null;
-                      })}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => page < lastPage && setPage(page + 1)}
-                          className={
-                            page === lastPage
-                              ? "pointer-events-none opacity-50"
-                              : "cursor-pointer"
-                          }
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-24 text-center">
+                        Tidak ada data ditemukan.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
-    </motion.div>
+
+      <CustomPagination
+        page={page}
+        perPage={limit}
+        total={pagination?.total || 0}
+        lastPage={pagination?.total_pages || 1}
+        setPage={setPage}
+      />
+    </div>
   );
 }
