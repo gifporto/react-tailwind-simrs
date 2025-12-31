@@ -16,6 +16,16 @@ export const ApmAPI = {
         return res.data;
     },
 
+    checkBpjs: async (payload: { bpjs: string, }) => {
+        const res = await api.post("/apm/bpjs-check", payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': STATIC_KEY,
+            }
+        });
+        return res.data;
+    },
+
     submit: async (payload: { nik: string, kode_booking: string, encoding: number[] }) => {
         const res = await api.post("/apm/bpjs-verify", payload, {
             headers: {
