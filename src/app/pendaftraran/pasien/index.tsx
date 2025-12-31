@@ -62,10 +62,7 @@ export default function PatientPage() {
             Kelola dan lihat informasi rekam medis pasien.
           </p>
         </div>
-        <Button
-          onClick={() => navigate("/daftar/pasien/create")}
-          className="gap-2"
-        >
+        <Button onClick={() => navigate("create")} className="gap-2">
           <UserPlus className="w-4 h-4" /> Tambah Pasien
         </Button>
       </div>
