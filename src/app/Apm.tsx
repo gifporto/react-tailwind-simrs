@@ -16,11 +16,14 @@ import step1 from '@/assets/step1.png';
 import step2 from '@/assets/step2.png';
 import step4 from '@/assets/step4.png';
 import { ApmAPI } from '@/lib/api';
+import html2pdf from 'html2pdf.js';
+import StrukTemplate from './PrintTemplate';
 
 const AnjunganMandiri = () => {
   const [qrInput, setQrInput] = useState("");
   const [status, setStatus] = useState<'welcome' | 'loading' | 'success' | 'error'>('welcome');
   const [patient, setPatient] = useState<any>(null);
+
   const [isFaceModalOpen, setIsFaceModalOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [activeStep, setActiveStep] = useState(0);
@@ -33,6 +36,55 @@ const AnjunganMandiri = () => {
   const [isFaceDetected, setIsFaceDetected] = useState(false);
   const detectionInterval = useRef<any>(null);
 
+  const printRef = useRef<HTMLDivElement>(null);
+  
+
+  const handleDownloadPdf = () => {
+    const element = printRef.current;
+    if (!element) return;
+
+    // 1. Buat Jendela Baru (Pop up tersembunyi)
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (!printWindow) return;
+
+    // 2. Tulis konten struk dengan CSS murni
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>Cetak Struk Antrean</title>
+        <style>
+          @page { margin: 0; }
+          body { 
+            margin: 0; 
+            padding: 5mm; 
+            font-family: Arial, sans-serif;
+            background: white;
+            color: black;
+          }
+          /* Paksa warna hitam putih murni */
+          * { 
+            color: black !important; 
+            background: transparent !important; 
+            box-shadow: none !important;
+          }
+        </style>
+      </head>
+      <body>
+        ${element.innerHTML}
+        <script>
+          // Tunggu gambar (jika ada) selesai dimuat, lalu print
+          window.onload = function() {
+            window.print();
+            window.onafterprint = function() {
+              window.close();
+            };
+          };
+        </script>
+      </body>
+    </html>
+  `);
+    printWindow.document.close();
+  };
   // Logika Timer dan Verifikasi Otomatis
   useEffect(() => {
     let timer: any;
@@ -55,10 +107,11 @@ const AnjunganMandiri = () => {
     return () => clearInterval(timer);
   }, [isFaceModalOpen, faceStatus]);
 
-  // Reset status saat modal ditutup/dibuka
   const handleRetryFace = () => {
     setFaceStatus('scanning');
     setCountdown(5);
+    setIsFaceDetected(false); // Reset deteksi
+    startCamera(); // Pastikan kamera dipicu kembali
   };
 
   // Fungsi untuk membuka kamera
@@ -131,6 +184,7 @@ const AnjunganMandiri = () => {
         setPatient({
           nama: p.nama,
           nik: p.nik, // Disimpan untuk payload verifikasi wajah
+          kode_booking: qrInput,
           tgl_lahir: p.tanggal_lahir,
           penjamin: p.penjamin,
           unit: p.unit,
@@ -219,12 +273,9 @@ const AnjunganMandiri = () => {
 
   const handleCapture = async () => {
     if (!videoRef.current || !patient) return;
-
-    // Set status ke loading agar user tahu proses sedang berjalan
     setFaceStatus('scanning');
 
     try {
-      // 1. Ekstrak deskriptor dari frame video saat ini
       const detection = await faceapi
         .detectSingleFace(videoRef.current)
         .withFaceLandmarks()
@@ -235,25 +286,28 @@ const AnjunganMandiri = () => {
         return;
       }
 
-      // 2. Siapkan payload: NIK dan Descriptor (Array 128 Float)
-      // Kita gunakan Array.from() karena descriptor aslinya adalah Float32Array
       const payload = {
         nik: patient.nik,
+        kode_booking: patient.kode_booking,
         encoding: Array.from(detection.descriptor)
       };
 
-      // 3. Kirim ke backend untuk verifikasi/pendaftaran
       const response = await ApmAPI.submit(payload);
 
       if (response.meta?.code === 200 || response.status === 'success') {
-        setFaceStatus('success');
+        const dataUntukCetak = {
+          ...response.data,
+          request_id: response.meta.request_id
+        };
 
-        // Jeda 2.5 detik agar user bisa melihat status sukses sebelum modal tutup
+        setPatient(dataUntukCetak);
+
+        setFaceStatus('success');
         setTimeout(() => {
+          handleDownloadPdf();
           setIsFaceModalOpen(false);
           resetForm();
-          alert("Verifikasi Berhasil! Silakan ambil struk pendaftaran Anda.");
-        }, 2500);
+        }, 2000);
       } else {
         setFaceStatus('error');
       }
@@ -262,6 +316,54 @@ const AnjunganMandiri = () => {
       setFaceStatus('error');
     }
   };
+
+  const handleCetakTanpaWajah = async () => {
+    setStatus('loading');
+    try {
+      const payload = {
+        nik: patient.nik,
+        kode_booking: patient.kode_booking,
+        encoding: [] // Payload sesuai permintaan: encode kosong
+      };
+
+      const response = await ApmAPI.submit(payload);
+
+      if (response.meta?.code === 200 || response.status === 'success') {
+        const dataUntukCetak = {
+          ...response.data,
+          request_id: response.meta.request_id
+        };
+
+        setPatient(dataUntukCetak);
+
+        setTimeout(() => {
+          handleDownloadPdf();
+          resetForm();
+        }, 500);
+
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error("Gagal cetak antrean:", error);
+      setStatus('error');
+    }
+  };
+
+  // Logic untuk Auto-Retry jika gagal
+  useEffect(() => {
+    let retryTimer: any;
+
+    if (faceStatus === 'error') {
+      // Berikan jeda 2 detik sebelum mencoba lagi secara otomatis
+      retryTimer = setTimeout(() => {
+        console.log("Mencoba scan ulang otomatis...");
+        handleRetryFace();
+      }, 2000);
+    }
+
+    return () => clearTimeout(retryTimer);
+  }, [faceStatus]);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen w-full bg-[#1B3C6E] overflow-hidden relative font-sans text-slate-900">
@@ -351,18 +453,30 @@ const AnjunganMandiri = () => {
             </div>
 
             {/* Input tetap ada di bawah untuk menangkap input scanner meskipun loading */}
-            <form onSubmit={handleScan} className="relative">
-              <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                <Barcode className={`w-6 h-6 ${status === 'loading' ? 'text-slate-300' : 'text-[#ED8124]'}`} />
+            {/* Input tetap ada di bawah untuk menangkap input scanner meskipun loading */}
+            <form onSubmit={handleScan} className="flex gap-2">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                  <Barcode className={`w-6 h-6 ${status === 'loading' ? 'text-slate-300' : 'text-[#ED8124]'}`} />
+                </div>
+                <input
+                  ref={inputRef}
+                  value={qrInput}
+                  onChange={(e) => setQrInput(e.target.value)}
+                  disabled={status === 'loading'}
+                  placeholder={status === 'loading' ? "SEDANG PROSES..." : "SCAN DI SINI"}
+                  className="w-full h-16 pl-14 pr-6 text-xl font-bold tracking-[0.2em] text-center border-2 border-slate-100 bg-slate-50 rounded-2xl focus-visible:ring-4 focus-visible:ring-orange-500/10 transition-all"
+                />
               </div>
-              <input
-                ref={inputRef}
-                value={qrInput}
-                onChange={(e) => setQrInput(e.target.value)}
-                disabled={status === 'loading'}
-                placeholder={status === 'loading' ? "SEDANG PROSES..." : "SCAN DI SINI"}
-                className="w-full h-16 pl-14 pr-6 text-xl font-bold tracking-[0.2em] text-center border-2 border-slate-100 bg-slate-50 rounded-2xl focus-visible:ring-4 focus-visible:ring-orange-500/10 transition-all"
-              />
+
+              {/* Tombol Submit Tambahan */}
+              <Button
+                type="submit"
+                disabled={status === 'loading' || !qrInput}
+                className="h-16 w-16 px-6 bg-[#ED8124] hover:bg-[#d6721d] text-white rounded-2xl transition-all flex items-center justify-center shrink-0"
+              >
+                <ArrowRight className="w-8 h-8" />
+              </Button>
             </form>
           </CardContent>
         </Card>
@@ -438,7 +552,9 @@ const AnjunganMandiri = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* Baris 1: Identitas Utama */}
-                <InfoBox icon={<User size={18} />} label="Nama Pasien" value={patient.nama} compact />
+                <div className="md:col-span-2">
+                  <InfoBox icon={<User size={18} />} label="Nama Pasien" value={patient.nama} compact />
+                </div>
                 <InfoBox icon={<IdCard size={18} />} label="NIK (KTP)" value={patient.nik} compact />
 
                 {/* Baris 2: Detail Klinis */}
@@ -454,9 +570,7 @@ const AnjunganMandiri = () => {
                 <InfoBox icon={<Barcode size={18} />} label="No. Rujukan" value={patient.no_rujukan} compact />
 
                 {/* Informasi Tambahan: Tanggal Lahir (Full Width / Secondary) */}
-                <div className="md:col-span-2">
-                  <InfoBox icon={<Info size={18} />} label="Tanggal Lahir" value={patient.tgl_lahir} compact />
-                </div>
+                <InfoBox icon={<Info size={18} />} label="Tanggal Lahir" value={patient.tgl_lahir} compact />
               </div>
 
               <div className="flex flex-col md:flex-row gap-4 pt-4">
@@ -467,12 +581,24 @@ const AnjunganMandiri = () => {
                 >
                   BATAL
                 </Button>
-                <Button
-                  onClick={() => setIsFaceModalOpen(true)}
-                  className="flex-[2] h-20 bg-[#ED8124] hover:bg-[#d6721d] text-white text-2xl font-black rounded-2xl shadow-[0_15px_30px_rgba(237,129,36,0.3)] transition-all hover:scale-[1.02] active:scale-95"
-                >
-                  LANJUT VERIFIKASI <ArrowRight className="ml-3 w-8 h-8" />
-                </Button>
+
+                {patient.is_frista ? (
+                  /* JIKA TRUE: TOMBOL LANJUT VERIFIKASI */
+                  <Button
+                    onClick={() => setIsFaceModalOpen(true)}
+                    className="flex-[2] h-20 bg-[#ED8124] hover:bg-[#d6721d] text-white text-2xl font-black rounded-2xl shadow-[0_15px_30px_rgba(237,129,36,0.3)] transition-all hover:scale-[1.02] active:scale-95"
+                  >
+                    LANJUT VERIFIKASI <ArrowRight className="ml-3 w-8 h-8" />
+                  </Button>
+                ) : (
+                  /* JIKA FALSE: TOMBOL CETAK ANTRIAN */
+                  <Button
+                    onClick={handleCetakTanpaWajah}
+                    className="flex-[2] h-20 bg-[#1B3C6E] hover:bg-[#152e55] text-white text-2xl font-black rounded-2xl shadow-[0_15px_30px_rgba(27,60,110,0.3)] transition-all hover:scale-[1.02] active:scale-95"
+                  >
+                    CETAK ANTRIAN <Barcode className="ml-3 w-8 h-8" />
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -515,7 +641,8 @@ const AnjunganMandiri = () => {
               <p className="text-slate-500 font-medium">
                 {!modelsLoaded ? "Mohon tunggu sebentar..." :
                   faceStatus === 'scanning' ? (isFaceDetected ? "Mohon diam, sedang memproses..." : "Posisikan wajah Anda di tengah lingkaran") :
-                    faceStatus === 'success' ? "Identitas Anda telah terverifikasi" : "Wajah tidak dikenali atau posisi tidak tepat"}
+                    faceStatus === 'success' ? "Identitas Anda telah terverifikasi" :
+                      "Gagal mengenali wajah. Mengulang otomatis dalam 2 detik..."} {/* Ubah Pesan Ini */}
               </p>
             </div>
 
@@ -594,6 +721,13 @@ const AnjunganMandiri = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Template Cetak Tersembunyi */}
+      <div style={{ display: 'none' }}>
+        <div ref={printRef}>
+          <StrukTemplate patient={patient} />
+        </div>
+      </div>
     </div>
   );
 };
