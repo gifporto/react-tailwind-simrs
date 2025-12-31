@@ -37,7 +37,7 @@ const AnjunganMandiri = () => {
   const detectionInterval = useRef<any>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
-  
+
 
   const handleDownloadPdf = () => {
     const element = printRef.current;
@@ -85,27 +85,6 @@ const AnjunganMandiri = () => {
   `);
     printWindow.document.close();
   };
-  // Logika Timer dan Verifikasi Otomatis
-  useEffect(() => {
-    let timer: any;
-
-    if (isFaceModalOpen && faceStatus === 'scanning') {
-      setCountdown(5); // Reset timer ke 3
-
-      timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleCapture(); // Panggil fungsi capture saat 0
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(timer);
-  }, [isFaceModalOpen, faceStatus]);
 
   const handleRetryFace = () => {
     setFaceStatus('scanning');
@@ -349,21 +328,6 @@ const AnjunganMandiri = () => {
       setStatus('error');
     }
   };
-
-  // Logic untuk Auto-Retry jika gagal
-  useEffect(() => {
-    let retryTimer: any;
-
-    if (faceStatus === 'error') {
-      // Berikan jeda 2 detik sebelum mencoba lagi secara otomatis
-      retryTimer = setTimeout(() => {
-        console.log("Mencoba scan ulang otomatis...");
-        handleRetryFace();
-      }, 2000);
-    }
-
-    return () => clearTimeout(retryTimer);
-  }, [faceStatus]);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen w-full bg-[#1B3C6E] overflow-hidden relative font-sans text-slate-900">
@@ -642,7 +606,7 @@ const AnjunganMandiri = () => {
                 {!modelsLoaded ? "Mohon tunggu sebentar..." :
                   faceStatus === 'scanning' ? (isFaceDetected ? "Mohon diam, sedang memproses..." : "Posisikan wajah Anda di tengah lingkaran") :
                     faceStatus === 'success' ? "Identitas Anda telah terverifikasi" :
-                      "Gagal mengenali wajah. Mengulang otomatis dalam 2 detik..."} {/* Ubah Pesan Ini */}
+                      "Gagal mengenali wajah. Silakan tekan tombol coba lagi."} {/* <-- Ubah pesan di sini */}
               </p>
             </div>
 

@@ -6,7 +6,7 @@ const StrukTemplate = forwardRef<HTMLDivElement, { patient: any }>(({ patient },
 
     const s = {
         container: {
-            width: '72mm',
+            width: '77mm',
             backgroundColor: '#ffffff',
             color: '#000000',
             fontFamily: 'Arial, sans-serif', // Menggunakan font sans-serif agar mirip gambar
