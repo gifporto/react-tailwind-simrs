@@ -1,8 +1,9 @@
+import { igdPendaftaran } from "./igd/router";
 import { pasienPendaftaran } from "./pasien/router";
 
 export const pendaftaranRoutes = [
   {
     path: "pendaftaran",
-    children: [pasienPendaftaran],
+    children: [pasienPendaftaran, igdPendaftaran],
   },
 ];
