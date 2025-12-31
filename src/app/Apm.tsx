@@ -18,6 +18,7 @@ import step4 from '@/assets/step4.png';
 import { ApmAPI } from '@/lib/api';
 import html2pdf from 'html2pdf.js';
 import StrukTemplate from './PrintTemplate';
+import FingerprintRunner from './FIngerPrintRunner';
 
 const AnjunganMandiri = () => {
   const [qrInput, setQrInput] = useState("");
@@ -763,12 +764,15 @@ const AnjunganMandiri = () => {
             </div>
 
             <div className="flex flex-col gap-3">
-              <Button
+              <FingerprintRunner
+              noPeserta={patient?.no_bpjs}
+              />
+              {/* <Button
                 onClick={handleRunFingerprintExe}
                 className="h-16 bg-[#1B3C6E] hover:bg-[#152e55] text-white text-lg font-bold rounded-2xl shadow-lg flex items-center justify-center gap-3"
               >
                 <HandHelping /> AKTIVASI FINGERPRINT
-              </Button>
+              </Button> */}
 
               <Button
                 variant="ghost"
