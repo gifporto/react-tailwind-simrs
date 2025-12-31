@@ -18,8 +18,18 @@ import { ArrowLeft, Save } from "lucide-react";
 import { usePatientCreate } from "@/querys/patient";
 
 export default function CreatePatientPage() {
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const navigate = useNavigate();
   const mutation = usePatientCreate();
+
+  const ErrorMessage = ({ name }: { name: string }) => {
+    if (!errors[name]) return null;
+    return (
+      <p className="text-xs font-medium text-destructive mt-1">
+        {errors[name][0]} {/* Ambil pesan pertama dari array */}
+      </p>
+    );
+  };
 
   // State awal sesuai payload yang Anda minta
   const [formData, setFormData] = useState<any>({
@@ -71,17 +81,20 @@ export default function CreatePatientPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.nama || !formData.nik) {
-      return toast.error("Nama dan NIK wajib diisi");
-    }
+    setErrors({});
 
     try {
       await mutation.mutateAsync(formData);
       toast.success("Pasien baru berhasil didaftarkan");
       navigate("/daftar/pasien");
-    } catch (error) {
-      toast.error("Gagal mendaftarkan pasien");
+    } catch (error: any) {
+      // Cek apakah ini error validasi (422)
+      if (error.response?.status === 422) {
+        setErrors(error.response.data.data); // Ambil objek data yang berisi array pesan error
+        toast.error("Mohon periksa kembali inputan Anda");
+      } else {
+        toast.error("Terjadi kesalahan pada server");
+      }
     }
   };
 
@@ -126,6 +139,7 @@ export default function CreatePatientPage() {
                 placeholder="Masukkan nama sesuai KTP"
                 onChange={handleChange}
               />
+              <ErrorMessage name="nama" />
             </div>
             <div className="space-y-2">
               <Label>
@@ -137,9 +151,12 @@ export default function CreatePatientPage() {
                 placeholder="16 digit NIK"
                 onChange={handleChange}
               />
+              <ErrorMessage name="nik" />
             </div>
             <div className="space-y-2">
-              <Label>Jenis Kelamin</Label>
+              <Label>
+                Jenis Kelamin <span className="text-red-500">*</span>
+              </Label>
               <Select onValueChange={(v) => handleSelect("sex", v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih L/P" />
@@ -149,21 +166,30 @@ export default function CreatePatientPage() {
                   <SelectItem value="P">Perempuan</SelectItem>
                 </SelectContent>
               </Select>
+              <ErrorMessage name="sex" />
             </div>
             <div className="space-y-2">
-              <Label>Tempat Lahir</Label>
+              <Label>
+                Tempat Lahir <span className="text-red-500">*</span>
+              </Label>
               <Input
                 name="tmp_lahir"
                 placeholder="Kota lahir"
                 onChange={handleChange}
               />
+              <ErrorMessage name="tmp_lahir" />
             </div>
             <div className="space-y-2">
-              <Label>Tanggal Lahir</Label>
+              <Label>
+                Tanggal Lahir <span className="text-red-500">*</span>
+              </Label>
               <Input name="tgl_lahir" type="date" onChange={handleChange} />
+              <ErrorMessage name="tgl_lahir" />
             </div>
             <div className="space-y-2">
-              <Label>Agama</Label>
+              <Label>
+                Agama <span className="text-red-500">*</span>
+              </Label>
               <Select onValueChange={(v) => handleSelect("id_agama", v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih Agama" />
@@ -175,6 +201,7 @@ export default function CreatePatientPage() {
                   {/* Tambahkan sesuai master data */}
                 </SelectContent>
               </Select>
+              <ErrorMessage name="id_agama" />
             </div>
             <div className="space-y-2">
               <Label>No. BPJS</Label>
@@ -183,10 +210,16 @@ export default function CreatePatientPage() {
                 placeholder="000..."
                 onChange={handleChange}
               />
+
+              <ErrorMessage name="no_bpjs" />
             </div>
             <div className="space-y-2">
-              <Label>Nomor HP</Label>
+              <Label>
+                Nomor HP <span className="text-red-500">*</span>
+              </Label>
               <Input name="hp" placeholder="0812..." onChange={handleChange} />
+
+              <ErrorMessage name="hp" />
             </div>
           </CardContent>
         </Card>
@@ -198,12 +231,16 @@ export default function CreatePatientPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label>Alamat Lengkap (KTP)</Label>
+              <Label>
+                Alamat Lengkap (KTP) <span className="text-red-500">*</span>
+              </Label>
               <Textarea
                 name="alamat_ktp"
                 placeholder="Jl. Nama Jalan, No. Rumah, RT/RW"
                 onChange={handleChange}
               />
+
+              <ErrorMessage name="alamat_ktp" />
             </div>
 
             <div className="flex items-center space-x-2 bg-muted/50 p-3 rounded-md">
@@ -214,6 +251,8 @@ export default function CreatePatientPage() {
               >
                 Alamat domisili sama dengan alamat KTP
               </label>
+
+              <ErrorMessage name="sameAsKtp" />
             </div>
 
             <div className="space-y-2">
@@ -224,6 +263,8 @@ export default function CreatePatientPage() {
                 placeholder="Alamat tempat tinggal saat ini"
                 onChange={handleChange}
               />
+
+              <ErrorMessage name="alamat_domisili" />
             </div>
           </CardContent>
         </Card>
@@ -239,6 +280,8 @@ export default function CreatePatientPage() {
             <div className="space-y-2">
               <Label>Nama Keluarga</Label>
               <Input name="nama_keluarga" onChange={handleChange} />
+
+              <ErrorMessage name="nama_keluarga" />
             </div>
             <div className="space-y-2">
               <Label>Hubungan Keluarga</Label>
@@ -252,10 +295,14 @@ export default function CreatePatientPage() {
                   <SelectItem value="3">Anak</SelectItem>
                 </SelectContent>
               </Select>
+
+              <ErrorMessage name="id_hub_keluarga" />
             </div>
             <div className="space-y-2">
               <Label>No. HP Keluarga</Label>
               <Input name="hp_keluarga" onChange={handleChange} />
+
+              <ErrorMessage name="hp_keluarga" />
             </div>
             <div className="space-y-2">
               <Label>NIK Keluarga</Label>
@@ -264,6 +311,8 @@ export default function CreatePatientPage() {
                 onChange={handleChange}
                 maxLength={16}
               />
+
+              <ErrorMessage name="nik_keluarga" />
             </div>
           </CardContent>
         </Card>
