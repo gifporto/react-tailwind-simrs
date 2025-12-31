@@ -1,69 +1,65 @@
-"use client"
-
-import { useState, useEffect } from "react" // 1. Import hooks
-import { useMatches, useNavigate, useLocation } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
-import { AppSidebar } from "@/components/app-sidebar"
+import { useState, useEffect, Fragment } from "react";
+import { useMatches, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
-  Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Toaster } from "@/components/ui/sonner"
+} from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
-export default function PageLayout({ children }: { children: React.ReactNode }) {
-  const [isScrolled, setIsScrolled] = useState(false) // 2. State untuk scroll
-  const matches = useMatches()
-  const navigate = useNavigate()
-  const location = useLocation()
+export default function PageLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [isScrolled, setIsScrolled] = useState(false); // 2. State untuk scroll
+  const matches = useMatches();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // 3. Logic untuk mendeteksi posisi scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
-        setIsScrolled(true)
+        setIsScrolled(true);
       } else {
-        setIsScrolled(false)
+        setIsScrolled(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const breadcrumbs = matches
     .filter((match) => (match.handle as any)?.breadcrumb)
     .map((match) => ({
       label: (match.handle as any).breadcrumb as string,
       href: match.pathname,
-    }))
+    }));
 
   return (
     <SidebarProvider>
       <AppSidebar />
 
       <SidebarInset>
-        <Toaster
-          richColors
-          position="top-right"
-          closeButton
-          theme="light"
-        />
+        <Toaster richColors position="top-right" closeButton theme="light" />
 
         {/* HEADER DENGAN KONDISI SCROLL */}
-        <header 
+        <header
           className={`sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 transition-all duration-300 ease-in-out ${
-            isScrolled 
-              ? "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" 
+            isScrolled
+              ? "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
               : "bg-transparent border-transparent"
           }`}
         >
@@ -71,31 +67,31 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
 
-            <Breadcrumb>
-              <BreadcrumbList>
-                {breadcrumbs.map((item, index) => {
-                  const isLast = index === breadcrumbs.length - 1
+            <BreadcrumbList>
+              {breadcrumbs.map((item, index) => {
+                const isLast = index === breadcrumbs.length - 1;
 
-                  return (
-                    <BreadcrumbItem key={item.href}>
-                      {!isLast ? (
-                        <>
-                          <BreadcrumbLink
-                            onClick={() => navigate(item.href)}
-                            className="cursor-pointer"
-                          >
-                            {item.label}
-                          </BreadcrumbLink>
-                          <BreadcrumbSeparator />
-                        </>
-                      ) : (
+                return (
+                  <Fragment key={item.href}>
+                    <BreadcrumbItem>
+                      {isLast ? (
                         <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink
+                          onClick={() => navigate(item.href)}
+                          className="cursor-pointer"
+                        >
+                          {item.label}
+                        </BreadcrumbLink>
                       )}
                     </BreadcrumbItem>
-                  )
-                })}
-              </BreadcrumbList>
-            </Breadcrumb>
+
+                    {/* Separator diletakkan DI LUAR BreadcrumbItem */}
+                    {!isLast && <BreadcrumbSeparator />}
+                  </Fragment>
+                );
+              })}
+            </BreadcrumbList>
           </div>
         </header>
 
@@ -120,5 +116,5 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
