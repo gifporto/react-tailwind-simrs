@@ -16,7 +16,7 @@ export const ApmAPI = {
         return res.data;
     },
 
-    submit: async (payload: { nik: string, encoding: number[] }) => {
+    submit: async (payload: { nik: string, kode_booking: string, encoding: number[] }) => {
         const res = await api.post("/apm/bpjs-verify", payload, {
             headers: {
                 'Content-Type': 'application/json',
