@@ -16,7 +16,7 @@ export function usePatientList(
 
 export function usePatient(id: string) {
   return useQuery({
-    queryKey: [],
+    queryKey: ["patients", "detail", id],
     queryFn: () => PatientsAPI.getDetail(id),
     select: (data) => data,
   });
