@@ -30,7 +30,7 @@ import AnjunganMandiri from "@/app/Apm";
 import ObatIndexPage from "@/app/master/obat";
 import FarResepIndexPage from "@/app/farmasi";
 import FarResepDetailPage from "@/app/farmasi/detail";
-import PatientPage from "@/app/pendaftraran/pasien";
+import { pendaftaranRoutes } from "@/app/pendaftraran/router";
 
 export const router = createBrowserRouter([
   // ================== PUBLIC ==================
@@ -65,15 +65,18 @@ export const router = createBrowserRouter([
             handle: { breadcrumb: "Dashboard" },
           },
 
+          // pendaftaran routes
+          ...pendaftaranRoutes,
+
           // ✅ PASIEN
-          {
-            path: "daftar/pasien",
-            element: <PatientPage />,
-          },
-          {
-            path: "daftar/pasien/:id",
-            element: <PatientDetailPage />,
-          },
+          // {
+          //   path: "daftar/pasien",
+          //   element: <PatientPage />,
+          // },
+          // {
+          //   path: "daftar/pasien/:id",
+          //   element: <PatientDetailPage />,
+          // },
           // {
           //   path: "daftar/pasien/create",
           //   element: <PatientCreatePage />,
