@@ -11,6 +11,7 @@ export const pasienPendaftaran = {
     },
     {
       path: ":id",
+      handle: { breadcrumb: "Detail Pasien" },
       element: <PatientDetailPage />,
     },
   ],
