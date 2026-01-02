@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Struk Antrian</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Container utama mensimulasikan kertas thermal 75mm */
+        .struk-container {
+            width: 75mm;
+            background-color: #ffffff;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            padding: 4mm 2mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            line-height: 1.2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .divider-solid {
+            border-bottom: 1px solid #000;
+            margin: 5px 0;
+        }
+
+        .divider-dashed {
+            border-bottom: 1px dashed #ccc;
+            margin: 8px 0;
+        }
+
+        .flex-row {
+            display: flex;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .label {
+            width: 60px;
+        }
+
+        .checklist-table {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 11px;
+            border-collapse: collapse;
+        }
+
+        .checklist-table th {
+            text-align: left;
+            border-bottom: 1px solid #000;
+        }
+
+        .checklist-table td {
+            padding: 4px 0;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 15px;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+        }
+
+        .warning-box {
+            margin-top: 15px;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .bottom-summary {
+            border-top: 1px solid #000;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* Pengaturan Cetak */
+        @media print {
+            body { background-color: white; padding: 0; }
+            .struk-container { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="struk-container">
+        <div class="header">
+            <h2 style="font-size: 16px; margin: 0; font-weight: bold;">NO ANTRIAN DOKTER</h2>
+            <h1 style="font-size: 32px; margin: 5px 0; font-weight: bold;">B-042</h1>
+            <h2 style="font-size: 14px; margin: 0; font-weight: bold;">NO RUANG</h2>
+            <p style="font-size: 11px; font-weight: bold; margin: 5px 0;">
+                Silahkan Menuju Nurse Station (Perawat) Rawat Jalan
+            </p>
+            <div class="divider-solid"></div>
+        </div>
+
+        <div style="padding: 0 1mm;">
+            <div style="margin-bottom: 10px;">
+                <div class="flex-row" style="font-size: 12px;">
+                    <span class="label" style="font-weight: bold;">NO RM</span>
+                    <span style="margin-right: 5px;">:</span>
+                    <span style="font-weight: bold;">00-12-34-56</span>
+                </div>
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase;">
+                    BUDI SANTOSO, TN
+                </div>
+                <div class="flex-row" style="color: #333;">
+                    <span>15-08-1985</span>
+                    <span style="margin: 0 5px;">|</span>
+                    <span>38 Thn</span>
+                </div>
+            </div>
+
+            <div class="divider-dashed"></div>
+
+            <div style="font-size: 11px;">
+                <div class="flex-row">
+                    <span class="label">Tujuan</span>
+                    <span style="margin-right: 5px;">:</span>
+                    <span style="font-weight: bold;">dr. Andi Wijaya, Sp.PD</span>
+                </div>
+                <div class="flex-row">
+                    <span class="label">Poli</span>
+                    <span style="margin-right: 5px;">:</span>
+                    <span style="font-weight: bold;">Penyakit Dalam</span>
+                </div>
+                <div class="flex-row">
+                    <span class="label">Penjamin</span>
+                    <span style="margin-right: 5px;">:</span>
+                    <span style="font-weight: bold;">BPJS KESEHATAN</span>
+                </div>
+                <div style="margin-top: 5px; font-size: 10px; color: #555; font-style: italic;">
+                    Waktu Cetak: <span id="current-time"></span>
+                </div>
+            </div>
+
+            <table class="checklist-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Dokter</th>
+                        <th style="text-align: left;">Jenis Pelayanan</th>
+                        <th style="text-align: right;">Petugas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>____</td><td>Radiologi</td><td style="text-align: right;">____</td></tr>
+                    <tr><td>____</td><td>Laboratorium</td><td style="text-align: right;">____</td></tr>
+                    <tr><td>____</td><td>Fisioterapi</td><td style="text-align: right;">____</td></tr>
+                    <tr><td>____</td><td>Tindakan</td><td style="text-align: right;">____</td></tr>
+                    <tr><td>____</td><td>Farmasi/Resep</td><td style="text-align: right;">____</td></tr>
+                    <tr><td>____</td><td>Poli Klinik</td><td style="text-align: right;">____</td></tr>
+                    <tr><td>____</td><td>Assesment</td><td style="text-align: right;">____</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-text">
+            <p style="margin: 5px 0; font-weight: bold;">Harap dibawa pasien sampai pelayanan selesai</p>
+            <p style="margin: 0; font-style: italic;">Keep this ticket until the service completed</p>
+        </div>
+
+        <div class="divider-solid" style="margin: 10px 0;"></div>
+
+        <div style="font-size: 11px; text-align: center;">
+            Saat pasien dipanggil tidak ada, maka akan dilewati minimal 3 pasien, dan melakukan registrasi ulang di nurse station
+        </div>
+
+        <div class="warning-box">
+            <p style="font-weight: bold; margin: 0 0 5px 0;">Early Warning for Disaster:</p>
+            <p style="margin: 0;">Apabila terjadi alarm keadaan gawat darurat, jangan panik. Ikuti arahan petugas untuk evakuasi menuju titik kumpul.</p>
+        </div>
+
+        <div class="bottom-summary">
+            No Antrian: B-042 No Ruang:<br />
+            dr. Andi Wijaya, Sp.PD<br />
+            No RM : 00-12-34-56<br />
+            Nama Pasien : BUDI SANTOSO, TN<br />
+        </div>
+    </div>
+
+    <script>
+        // Script sederhana untuk menampilkan waktu saat ini
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('id-ID') + ' ' + 
+                            now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('current-time').innerText = formattedDate;
+    </script>
+</body>
+</html>

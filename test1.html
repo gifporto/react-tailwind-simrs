@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Preview Struk Antrian</title>
+    <style>
+        /* Container untuk simulasi tampilan di layar saja */
+        body {
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            margin: 0;
+        }
+
+        /* UI STRUK (Sesuai dengan const styles dalam kode Anda) */
+        .printArea {
+            width: 75mm;
+            padding: 6mm;
+            background-color: #fff;
+            font-family: Arial, sans-serif;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+        }
+
+        .header {
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 0 0 2px 0;
+            text-transform: uppercase;
+        }
+
+        .subheader {
+            font-size: 11pt;
+            margin: 0 0 10px 0;
+            line-height: 1.2;
+            font-weight: normal;
+        }
+
+        .queueNumber {
+            font-size: 72pt;
+            font-weight: bold;
+            margin: 5px 0;
+            line-height: 1;
+        }
+
+        .barcodeContainer {
+            width: 80%;
+            height: 50px;
+            margin: 15px auto;
+        }
+
+        .barcodeStripes {
+            width: 100%;
+            height: 100%;
+            /* Barcode murni CSS dari kode Anda */
+            background: repeating-linear-gradient(
+                90deg,
+                #000,
+                #000 1px,
+                #fff 1px,
+                #fff 3px,
+                #000 3px,
+                #000 4px,
+                #fff 4px,
+                #fff 5px,
+                #000 5px,
+                #000 7px,
+                #fff 7px,
+                #fff 8px
+            );
+            background-size: 30px 100%;
+        }
+
+        .timestamp {
+            font-size: 10pt;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .hr {
+            border: 0;
+            border-top: 1px solid #000;
+            margin: 12px 0;
+        }
+
+        .disasterWarning {
+            text-align: left;
+            font-size: 12pt; /* Sesuai perubahan terakhir Anda */
+            line-height: 1.4;
+        }
+
+        .warningTitle {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="printArea">
+        <div class="container">
+            <h1 class="header">RUMAH SAKIT UAD</h1> 
+            
+            <p class="subheader">
+                PENDAFTARAN<br />
+                NO ANTRIAN
+            </p>
+            
+            <div class="queueNumber">286-8</div>
+
+            <div class="barcodeContainer">
+                <div class="barcodeStripes"></div>
+            </div>
+            
+            <div class="timestamp">
+                02 Jan 2026, 09:38
+            </div>
+
+            <hr class="hr" />
+
+            <div class="disasterWarning">
+                <div class="warningTitle">Early Warning for Disaster:</div>
+                Apabila terjadi alarm keadaan gawat darurat, jangan panik. 
+                Ikuti arahan petugas untuk evakuasi menuju titik kumpul. 
+                Pastikan orang yang bersama anda berada di titik kumpul.
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,34 +1,51 @@
 import React, { forwardRef } from 'react';
 
+// Interface disesuaikan agar sesuai dengan key dari Response API
 interface PrintData {
-  nomorAntrean: string;
-  waktu: string;
-  instansi: string;
-  unit: string;
+  nomor_antrian: string;
+  poli: string;
+  nama_pasien: string;
+  is_bpjs: boolean;
+  // Field tambahan jika Anda ingin tetap menampilkan waktu secara dinamis
+  waktu?: string; 
 }
 
 export const PrintTemplate = forwardRef<HTMLDivElement, { data: PrintData }>((props, ref) => {
   const { data } = props;
+
+  // Jika data belum siap, jangan render apapun
+  if (!data || !data.nomor_antrian) return null;
+
+  // Fallback untuk waktu jika tidak dikirim dari parent
+  const waktuCetak = data.waktu || new Date().toLocaleString('id-ID', { 
+    dateStyle: 'medium', 
+    timeStyle: 'short' 
+  });
 
   return (
     /* Container luar disembunyikan di layar, hanya muncul saat proses print */
     <div style={{ display: 'none' }}>
       <div ref={ref} style={styles.printArea}>
         <div style={styles.container}>
-          <h1 style={styles.header}>{data.instansi}</h1>
+          {/* Mapping Instansi (Statis atau bisa dari data.nama_pasien jika perlu context) */}
+          <h1 style={styles.header}>RUMAH SAKIT UAD</h1> 
+          
           <p style={styles.subheader}>
-            {data.unit}<br />
+            PENDAFTARAN<br />
             NO ANTRIAN
           </p>
           
-          <div style={styles.queueNumber}>{data.nomorAntrean}</div>
+          {/* Mapping nomor_antrian dari API */}
+          <div style={styles.queueNumber}>{data.nomor_antrian}</div>
 
           {/* Barcode Murni CSS */}
           <div style={styles.barcodeContainer}>
             <div style={styles.barcodeStripes}></div>
           </div>
           
-          <div style={styles.timestamp}>{data.waktu}</div>
+          <div style={styles.timestamp}>
+             {waktuCetak}
+          </div>
 
           <hr style={styles.hr} />
 
@@ -46,7 +63,7 @@ export const PrintTemplate = forwardRef<HTMLDivElement, { data: PrintData }>((pr
 
 const styles: { [key: string]: React.CSSProperties } = {
   printArea: {
-    width: '80mm', // Lebar standar kertas thermal
+    width: '75mm',
     padding: '6mm',
     backgroundColor: '#fff',
     fontFamily: 'Arial, sans-serif',
@@ -82,7 +99,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   barcodeStripes: {
     width: '100%',
     height: '100%',
-    // Membuat pola garis barcode menggunakan CSS Gradient
     background: `repeating-linear-gradient(
       90deg,
       #000,
@@ -98,11 +114,12 @@ const styles: { [key: string]: React.CSSProperties } = {
       #fff 7px,
       #fff 8px
     )`,
-    backgroundSize: '30px 100%', // Membuat pola berulang secara natural
+    backgroundSize: '30px 100%',
   },
   timestamp: {
     fontSize: '10pt',
     marginBottom: '10px',
+    textTransform: 'uppercase'
   },
   hr: {
     border: '0',
@@ -111,7 +128,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   disasterWarning: {
     textAlign: 'left',
-    fontSize: '8.5pt',
+    fontSize: '12pt',
     lineHeight: 1.4,
   },
   warningTitle: {

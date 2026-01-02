@@ -6,7 +6,7 @@ const StrukTemplate = forwardRef<HTMLDivElement, { patient: any }>(({ patient },
 
     const s = {
         container: {
-            width: '77mm',
+            width: '75mm',
             backgroundColor: '#ffffff',
             color: '#000000',
             fontFamily: 'Arial, sans-serif', // Menggunakan font sans-serif agar mirip gambar
@@ -32,14 +32,14 @@ const StrukTemplate = forwardRef<HTMLDivElement, { patient: any }>(({ patient },
         },
         footerText: {
             textAlign: 'center' as const,
-            fontSize: '10px',
+            fontSize: '12px',
             marginTop: '15px',
             borderTop: '1px solid #000',
             paddingTop: '10px',
         },
         warningBox: {
             marginTop: '15px',
-            fontSize: '10px',
+            fontSize: '12px',
             textAlign: 'center' as const,
         }
     };
@@ -127,7 +127,7 @@ const StrukTemplate = forwardRef<HTMLDivElement, { patient: any }>(({ patient },
 
             <div style={{ borderTop: '1px solid #000', margin: '10px 0' }}></div>
 
-            <div style={{ fontSize: '10px', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', textAlign: 'center' }}>
                 Saat pasien dipanggil tidak ada, maka akan dilewati minimal 3 pasien, dan melakukan registrasi ulang di nurse station
             </div>
 
@@ -136,7 +136,7 @@ const StrukTemplate = forwardRef<HTMLDivElement, { patient: any }>(({ patient },
                 <p style={{ margin: 0 }}>Apabila terjadi alarm keadaan gawat darurat, jangan panik. Ikuti arahan petugas untuk evakuasi menuju titik kumpul. Pastikan orang yang bersama dengan anda berada di titik kumpul.</p>
             </div>
 
-            <div style={{ borderTop: '1px solid #000', marginTop: '10px', paddingTop: '10px', fontSize: '10px', textAlign: 'center' }}>
+            <div style={{ borderTop: '1px solid #000', marginTop: '10px', paddingTop: '10px', fontSize: '12px', textAlign: 'center' }}>
                 No Antrian: {patient.nomor_antrian} No Ruang:<br />
                 {patient.dokter}<br />
                 No RM :{patient.no_rm}<br />
