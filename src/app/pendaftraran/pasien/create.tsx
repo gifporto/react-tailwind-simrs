@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
 import { usePatientCreate } from "@/querys/patient";
+import { SearchKelurahan } from "@/components/search/search-kelurahan";
 
 export default function CreatePatientPage() {
   const navigate = useNavigate();
@@ -99,9 +100,10 @@ export default function CreatePatientPage() {
           <h1 className="text-2xl font-bold">Tambah Pasien Baru</h1>
         </div>
         <Button
-          onClick={handleSubmit(onSubmit)}
+          onClick={handleSubmit(onSubmit, (errors) =>
+            console.log("Validasi Gagal:", errors)
+          )}
           disabled={mutation.isPending}
-          className="gap-2"
         >
           <Save className="w-4 h-4" />{" "}
           {mutation.isPending ? "Menyimpan..." : "Simpan Pasien"}
@@ -318,6 +320,25 @@ export default function CreatePatientPage() {
                 />
                 <FieldError name="email" />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Kelurahan (KTP) *</Label>
+              <Controller
+                name="id_kel_ktp"
+                control={control}
+                render={({ field }) => (
+                  <SearchKelurahan
+                    {...field}
+                    placeholder="Cari kelurahan sesuai KTP..."
+                    className={
+                      errors.id_kel_ktp
+                        ? "border-destructive focus-visible:ring-destructive"
+                        : ""
+                    }
+                  />
+                )}
+              />
+              <FieldError name="id_kel_ktp" />
             </div>
             <div className="space-y-2">
               <Label>Alamat Lengkap (KTP) *</Label>
