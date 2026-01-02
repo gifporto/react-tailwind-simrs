@@ -18,7 +18,6 @@ import step4 from '@/assets/step4.png';
 import { ApmAPI } from '@/lib/api';
 import html2pdf from 'html2pdf.js';
 import StrukTemplate from './PrintTemplate';
-import FingerprintRunner from './FIngerPrintRunner';
 
 const AnjunganMandiri = () => {
   const [qrInput, setQrInput] = useState("");
@@ -37,12 +36,7 @@ const AnjunganMandiri = () => {
   const [isFaceDetected, setIsFaceDetected] = useState(false);
   const detectionInterval = useRef<any>(null);
 
-  const [isBpjsChecking, setIsBpjsChecking] = useState(false); // State loading baru untuk BPJS
-  const [isBpjsErrorModalOpen, setIsBpjsErrorModalOpen] = useState(false);
-  const [bpjsErrorMessage, setBpjsErrorMessage] = useState("");
-
   const printRef = useRef<HTMLDivElement>(null);
-  const isPrintingRef = useRef(false);
 
 
   const handleDownloadPdf = () => {
@@ -256,33 +250,6 @@ const AnjunganMandiri = () => {
     };
   }, [isFaceModalOpen, faceStatus, isFaceDetected, modelsLoaded]);
 
-  // Effect untuk looping check BPJS setiap 5 detik saat modal error terbuka
-  useEffect(() => {
-    let interval: any;
-
-    // Jalankan interval setiap 5000ms (5 detik)
-    interval = setInterval(async () => {
-      try {
-        const payload = { bpjs: patient.no_bpjs };
-        const response = await ApmAPI.checkBpjs(payload);
-
-        // Jika sidik jari berhasil (kode "1"), otomatis cetak dan tutup modal
-        if (response.meta?.code === 200 && response.data?.kode === "1") {
-          clearInterval(interval);
-          setIsBpjsErrorModalOpen(false); // Tutup modal error
-          await handleCetakTanpaWajah(); // Lanjutkan cetak antrean
-        }
-      } catch (error) {
-        console.error("Polling BPJS Error:", error);
-      }
-    }, 5000);
-
-    // Cleanup: matikan interval jika modal ditutup atau komponen unmount
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isBpjsErrorModalOpen, patient]);
-
   const handleCapture = async () => {
     if (!videoRef.current || !patient) return;
     setFaceStatus('scanning');
@@ -329,52 +296,7 @@ const AnjunganMandiri = () => {
     }
   };
 
-  const handleCheckBpjs = async () => {
-    if (!patient?.no_bpjs) return;
-
-    setIsBpjsChecking(true);
-    try {
-      const payload = { bpjs: patient.no_bpjs };
-      const response = await ApmAPI.checkBpjs(payload);
-
-      // Cek jika sukses (kode "1")
-      if (response.meta?.code === 200 && response.data?.kode === "1") {
-        await handleCetakTanpaWajah();
-      } else {
-        // Jika gagal (kode selain "1", misal peserta belum finger)
-        setBpjsErrorMessage(response.meta?.message || "Validasi Fingerprint BPJS diperlukan.");
-        setIsBpjsErrorModalOpen(true);
-      }
-    } catch (error) {
-      console.error("Gagal Check BPJS:", error);
-      setBpjsErrorMessage("Terjadi kesalahan koneksi saat pengecekan BPJS.");
-      setIsBpjsErrorModalOpen(true);
-    } finally {
-      setIsBpjsChecking(false);
-    }
-  };
-
-  const handleRunFingerprintExe = () => {
-    if (!patient?.no_bpjs) return;
-
-    // Membuka URL di background untuk memicu server lokal (EXE)
-    const url = `http://127.0.0.1:5000/run_exe?no_peserta=${patient.no_bpjs}`;
-
-    fetch(url, {
-      mode: 'no-cors',
-      redirect: 'follow',
-    })
-      .then(() => {
-        console.log("Perintah buka EXE dikirim");
-        setIsBpjsErrorModalOpen(false); // Tutup modal setelah klik
-      })
-      .catch(err => console.error("Gagal memicu EXE:", err));
-  };
-
   const handleCetakTanpaWajah = async () => {
-    if (isPrintingRef.current) return;
-
-    isPrintingRef.current = true;
     setStatus('loading');
     try {
       const payload = {
@@ -396,20 +318,14 @@ const AnjunganMandiri = () => {
         setTimeout(() => {
           handleDownloadPdf();
           resetForm();
+        }, 500);
 
-          isPrintingRef.current = false;
-        }, 800);
-
-        return true;
       } else {
         setStatus('error');
-        isPrintingRef.current = false;
-        return true;
       }
     } catch (error) {
       console.error("Gagal cetak antrean:", error);
       setStatus('error');
-      isPrintingRef.current = false;
     }
   };
 
@@ -631,28 +547,13 @@ const AnjunganMandiri = () => {
                 </Button>
 
                 {patient.is_frista ? (
-                  <div className="flex-[3] flex flex-col md:flex-row gap-4">
-                    <Button
-                      onClick={handleCheckBpjs}
-                      disabled={isBpjsChecking}
-                      className="flex-1 h-20 bg-emerald-600 hover:bg-emerald-700 text-white text-xl font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center"
-                    >
-                      {isBpjsChecking ? (
-                        <Loader2 className="animate-spin w-8 h-8" />
-                      ) : (
-                        <>
-                          CHECK BPJS <CheckCircle2 className="ml-3 w-6 h-6" />
-                        </>
-                      )}
-                    </Button>
-
-                    {/* <Button
-                      // onClick={() => setIsFaceModalOpen(true)}
-                      className="flex-[2] h-20 bg-[#ED8124] hover:bg-[#d6721d] text-white text-2xl font-black rounded-2xl shadow-[0_15px_30px_rgba(237,129,36,0.3)] transition-all hover:scale-[1.02] active:scale-95"
-                    >
-                      LANJUT VERIFIKASI <ArrowRight className="ml-3 w-8 h-8" />
-                    </Button> */}
-                  </div>
+                  /* JIKA TRUE: TOMBOL LANJUT VERIFIKASI */
+                  <Button
+                    onClick={() => setIsFaceModalOpen(true)}
+                    className="flex-[2] h-20 bg-[#ED8124] hover:bg-[#d6721d] text-white text-2xl font-black rounded-2xl shadow-[0_15px_30px_rgba(237,129,36,0.3)] transition-all hover:scale-[1.02] active:scale-95"
+                  >
+                    LANJUT VERIFIKASI <ArrowRight className="ml-3 w-8 h-8" />
+                  </Button>
                 ) : (
                   /* JIKA FALSE: TOMBOL CETAK ANTRIAN */
                   <Button
@@ -687,13 +588,14 @@ const AnjunganMandiri = () => {
         </div>
       </div>
 
-      {/* <Dialog open={isFaceModalOpen} onOpenChange={(val) => {
+      <Dialog open={isFaceModalOpen} onOpenChange={(val) => {
         setIsFaceModalOpen(val);
         if (!val) setFaceStatus('scanning'); // reset saat tutup
       }}>
         <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[40px] border-0 shadow-2xl">
           <div className="p-10 space-y-8 text-center bg-white">
 
+            {/* Header: Ditambahkan kondisi Loading Models */}
             <div className="space-y-2">
               <h2 className="text-3xl font-black text-[#1B3C6E]">
                 {!modelsLoaded ? "Memuat AI..." :
@@ -704,10 +606,11 @@ const AnjunganMandiri = () => {
                 {!modelsLoaded ? "Mohon tunggu sebentar..." :
                   faceStatus === 'scanning' ? (isFaceDetected ? "Mohon diam, sedang memproses..." : "Posisikan wajah Anda di tengah lingkaran") :
                     faceStatus === 'success' ? "Identitas Anda telah terverifikasi" :
-                      "Gagal mengenali wajah. Silakan tekan tombol coba lagi."}
+                      "Gagal mengenali wajah. Silakan tekan tombol coba lagi."} {/* <-- Ubah pesan di sini */}
               </p>
             </div>
 
+            {/* Container Video: Border berubah warna sesuai deteksi AI */}
             <div className={`relative aspect-square max-w-[350px] mx-auto bg-slate-900 rounded-full overflow-hidden shadow-2xl border-[12px] transition-colors duration-300 group ${faceStatus === 'scanning'
               ? (isFaceDetected ? 'border-emerald-400' : 'border-slate-200')
               : 'border-slate-50'
@@ -723,10 +626,12 @@ const AnjunganMandiri = () => {
                     className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
                   />
 
+                  {/* Scanning Line: Hanya muncul jika AI mendeteksi wajah */}
                   {isFaceDetected && (
                     <div className="absolute left-0 w-full h-2 bg-[#ED8124] shadow-[0_0_20px_#ED8124] z-30 animate-[scanning_2s_infinite]" />
                   )}
 
+                  {/* Feedback Visual: Frame target di tengah */}
                   <div className={`absolute inset-0 flex items-center justify-center z-10 opacity-30 ${isFaceDetected ? 'text-emerald-400' : 'text-white'}`}>
                     <div className="w-64 h-64 border-2 border-dashed rounded-full border-current" />
                   </div>
@@ -740,6 +645,7 @@ const AnjunganMandiri = () => {
               <div className="absolute inset-0 border-[30px] border-white/40 rounded-full z-20 pointer-events-none" />
             </div>
 
+            {/* Footer: Timer hanya berjalan/aktif jika wajah terdeteksi */}
             <div className="flex flex-col gap-4">
               {faceStatus === 'scanning' && (
                 <div className={`inline-flex items-center justify-center gap-3 px-6 py-4 rounded-2xl transition-colors ${isFaceDetected ? 'bg-emerald-50' : 'bg-orange-50'
@@ -774,47 +680,6 @@ const AnjunganMandiri = () => {
                 className="text-slate-400 hover:text-red-500 transition-colors font-bold"
               >
                 {faceStatus === 'success' ? "MENYELESAIKAN..." : "BATALKAN PROSES"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog> */}
-
-      {/* MODAL ERROR BPJS / FINGERPRINT */}
-      <Dialog open={isBpjsErrorModalOpen} onOpenChange={setIsBpjsErrorModalOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[32px] border-0 shadow-2xl">
-          <div className="p-8 text-center bg-white space-y-6">
-            <div className="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-              <Info size={48} />
-            </div>
-
-            <div className="space-y-2">
-              <h2 className="text-2xl font-black text-slate-800">Verifikasi Dibutuhkan</h2>
-              <p className="text-slate-500 font-medium leading-relaxed">
-                {bpjsErrorMessage}
-              </p>
-              <p className="text-sm text-[#ED8124] font-bold">
-                Silakan tekan tombol di bawah untuk melakukan Validasi Fingerprint.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <FingerprintRunner
-                noPeserta={patient?.no_bpjs}
-              />
-              {/* <Button
-                onClick={handleRunFingerprintExe}
-                className="h-16 bg-[#1B3C6E] hover:bg-[#152e55] text-white text-lg font-bold rounded-2xl shadow-lg flex items-center justify-center gap-3"
-              >
-                <HandHelping /> AKTIVASI FINGERPRINT
-              </Button> */}
-
-              <Button
-                variant="ghost"
-                onClick={() => setIsBpjsErrorModalOpen(false)}
-                className="text-slate-400 font-bold"
-              >
-                TUTUP
               </Button>
             </div>
           </div>
