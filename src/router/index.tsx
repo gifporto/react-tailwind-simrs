@@ -20,6 +20,7 @@ import RanapIndexPage from "@/app/emr/ranap";
 import RanapDetailPage from "@/app/emr/ranap/detail";
 import GudangIndexPage from "@/app/inventory/gudang";
 import PabrikIndexPage from "@/app/inventory/pabrik";
+import SupplierIndexPage from "@/app/inventory/supplier";
 import KategoriInventoryPage from "@/app/inventory/kategori";
 import BarangIndexPage from "@/app/inventory/barang";
 import BatchInventoryPage from "@/app/inventory/batch";
@@ -148,6 +149,11 @@ export const router = createBrowserRouter([
             path: "inv/pabrik",
             element: <PabrikIndexPage />,
             handle: { breadcrumb: "Pabrik" },
+          },
+          {
+            path: "inv/supplier",
+            element: <SupplierIndexPage />,
+            handle: { breadcrumb: "Supplier" },
           },
           {
             path: "inv/kategori",

@@ -178,6 +178,7 @@ export const mainMenus: MenuItem[] = [
     children: [
       { title: "Gudang", url: "/inv/gudang", module: "inv_gudang" },
       { title: "Pabrik", url: "/inv/pabrik", module: "inv_pabrik" },
+      { title: "Supplier", url: "/inv/supplier", module: "inv_supplier" },
       { title: "Kategori", url: "/inv/kategori", module: "inv_kategori" },
       { title: "Barang", url: "/inv/barang", module: "inv_barang" },
       { title: "Batch", url: "/inv/batch", module: "inv_batch" },

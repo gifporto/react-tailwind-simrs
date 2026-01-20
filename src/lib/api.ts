@@ -641,6 +641,30 @@ export const InvPabrikAPI = {
         return res.data;
     },
 };
+
+export const InvSupplierAPI = {
+    getList: async (page = 1, limit = 30, search = "") => {
+        const res = await api.get("/inventory/suppliers", {
+            params: { page, limit, search },
+        });
+        return res.data;
+    },
+
+    create: async (payload: any) => {
+        const res = await api.post("/inventory/suppliers", payload);
+        return res.data;
+    },
+
+    update: async (id: string, payload: any) => {
+        const res = await api.put(`/inventory/suppliers/${id}`, payload);
+        return res.data;
+    },
+
+    delete: async (id: string, payload: any) => {
+        const res = await api.delete(`/inventory/suppliers/${id}`, payload);
+        return res.data;
+    },
+};
 export const InvKategoriAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/inventory/categories", {
