@@ -132,12 +132,20 @@ export default function BarangIndexPage() {
   const handleOpenDialog = (item?: any) => {
     if (item) {
       setSelectedItem(item);
+      // If item is OBAT and has obat object, merge it with the item data
+      const obatData = item.jenis === "OBAT" && item.obat ? item.obat : {};
       setFormData({
         ...initialFormState, // Reset ke default dulu
         ...item, // Timpa dengan data yang ada
+        ...obatData, // Merge data obat jika ada
         id_kategori: item.id_kategori?.toString() || "",
         id_satuan: item.id_satuan?.toString() || "",
         id_pabrik: item.id_pabrik?.toString() || "",
+        // Convert numeric strings to numbers for specific fields
+        min_stok: item.min_stok ? parseFloat(item.min_stok) : 0,
+        max_stok: item.max_stok ? parseFloat(item.max_stok) : 0,
+        suhu_min: obatData.suhu_min ? parseFloat(obatData.suhu_min) : 0,
+        suhu_max: obatData.suhu_max ? parseFloat(obatData.suhu_max) : 0,
       });
     } else {
       setSelectedItem(null);
