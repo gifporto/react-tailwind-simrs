@@ -56,6 +56,7 @@ import {
 import { Search, Box, Loader2, Plus, Edit, Trash2, Factory, Pill } from "lucide-react";
 import { CustomPagination } from "@/components/shared/pagination";
 import { useKategoriOptions } from "@/hooks/queries/use-kategori-queries";
+import { usePabrikOptions } from "@/hooks/queries/use-pabrik-queries";
 import { useUnitOptions } from "@/hooks/queries/use-unit-queries";
 
 export default function BarangIndexPage() {
@@ -110,8 +111,8 @@ export default function BarangIndexPage() {
   ======================= */
   const { data: apiResponse, isLoading } = useBarangList(page, perPage, search);
   const { data: kategoriList } = useKategoriOptions();
-  const { data: pabrikList, isLoading: isLoadingPabrik } = useKategoriOptions(); // Asumsi endpoint sama atau ganti ke usePabrikOptions
-  const { data: satuanList, isLoading: isLoadingSatuan } = useUnitOptions();
+  const { data: pabrikList, isLoading: isLoadingPabrik } = usePabrikOptions(1, 1000);
+  const { data: satuanList, isLoading: isLoadingSatuan } = useUnitOptions(1, 1000);
 
   const listData = apiResponse?.data || [];
   const pagination = apiResponse?.meta?.pagination;
