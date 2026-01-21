@@ -27,6 +27,8 @@ import BatchInventoryPage from "@/app/inventory/batch";
 import InventoriStokPage from "@/app/inventory/stock";
 import MutasiStokPage from "@/app/inventory/mutasi";
 import PembelianPage from "@/app/inventory/order";
+import ConsumeIndexPage from "@/app/inventory/consume";
+import ConsumeHistoryPage from "@/app/inventory/consume-history";
 import AnjunganMandiri from "@/app/Apm";
 import ObatIndexPage from "@/app/master/obat";
 import FarResepIndexPage from "@/app/farmasi";
@@ -184,6 +186,16 @@ export const router = createBrowserRouter([
             path: "inv/order",
             element: <PembelianPage />,
             handle: { breadcrumb: "Order" },
+          },
+          {
+            path: "inv/consume",
+            element: <ConsumeIndexPage />,
+            handle: { breadcrumb: "Konsumsi Barang" },
+          },
+          {
+            path: "inv/consume-history",
+            element: <ConsumeHistoryPage />,
+            handle: { breadcrumb: "Riwayat Konsumsi" },
           },
 
           //Farmasi

@@ -185,6 +185,8 @@ export const mainMenus: MenuItem[] = [
       { title: "Stock", url: "/inv/stock", module: "inv_stock" },
       { title: "Mutasi", url: "/inv/mutation", module: "inv_mutation" },
       { title: "Order", url: "/inv/order", module: "inv_order" },
+      { title: "Konsumsi Barang", url: "/inv/consume", module: "inv_consume" },
+      { title: "Riwayat Konsumsi", url: "/inv/consume-history", module: "inv_consume_history" },
       // { title: 'Perencanaan', url: '/inventory/perencanaan', module: 'inv_perencanaan' },
       // { title: 'PO / Purchase Order', url: '/inventory/po', module: 'inv_po' },
       // { title: 'Barang Masuk / Faktur', url: '/inventory/faktur', module: 'inv_faktur' },

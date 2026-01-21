@@ -665,6 +665,59 @@ export const InvSupplierAPI = {
         return res.data;
     },
 };
+
+export const InvConsumeAPI = {
+    getConsumableList: async (
+        page = 1,
+        limit = 15,
+        search = "",
+        jenis?: string,
+        idGudang?: number
+    ) => {
+        const res = await api.get("/inventory/consume", {
+            params: { page, limit, search, jenis, id_gudang: idGudang },
+        });
+        return res.data;
+    },
+
+    createConsume: async (payload: any) => {
+        const res = await api.post("/inventory/consume", payload);
+        return res.data;
+    },
+
+    getHistory: async (
+        page = 1,
+        limit = 15,
+        params?: {
+            search?: string;
+            startDate?: string;
+            endDate?: string;
+            idGudang?: number;
+            idBarang?: number;
+        }
+    ) => {
+        const res = await api.get("/inventory/consume/history", {
+            params: {
+                page,
+                limit,
+                search: params?.search,
+                start_date: params?.startDate,
+                end_date: params?.endDate,
+                id_gudang: params?.idGudang,
+                id_barang: params?.idBarang,
+            },
+        });
+        return res.data;
+    },
+
+    checkStock: async (idBarang: number, idGudang?: number) => {
+        const res = await api.get(`/inventory/consume/check-stock/${idBarang}`, {
+            params: { id_gudang: idGudang },
+        });
+        return res.data;
+    },
+};
+
 export const InvKategoriAPI = {
     getList: async (page = 1, limit = 30, search = "") => {
         const res = await api.get("/inventory/categories", {
